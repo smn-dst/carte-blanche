@@ -1,12 +1,15 @@
 
 ###> symfony/framework-bundle ###
 /.env.local
+/.env.prod
+/node_modules/
 /.env.local.php
 /.env.*.local
 /config/secrets/prod/prod.decrypt.private.php
 /public/bundles/
 /var/
 /vendor/
+
 ###< symfony/framework-bundle ###
 
 ###> phpunit/phpunit ###
@@ -18,3 +21,11 @@
 /public/assets/
 /assets/vendor/
 ###< symfony/asset-mapper ###
+
+###> phpstan/phpstan ###
+phpstan.neon
+###< phpstan/phpstan ###
+
+###> friendsofphp/php-cs-fixer ###
+php-cs-fixer.phar
+###< friendsofphp/php-cs-fixer ###
