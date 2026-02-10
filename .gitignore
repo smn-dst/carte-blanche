@@ -29,3 +29,7 @@ phpstan.neon
 ###> friendsofphp/php-cs-fixer ###
 php-cs-fixer.phar
 ###< friendsofphp/php-cs-fixer ###
+
+###> symfony/flex ###
+compose.override.yaml
+###< symfony/flex ###
