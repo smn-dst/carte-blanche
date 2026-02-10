@@ -1,31 +1,15 @@
 <?php
 
-declare(strict_types=1);
+// Configuration PHP-CS-Fixer : définit les règles de style du code
 
-use PhpCsFixer\Config;
-use PhpCsFixer\Finder;
-use PhpCsFixer\Runner\Parallel\ParallelConfigFactory;
+$finder = (new PhpCsFixer\Finder())
+    ->in(__DIR__)           // Cherche dans tout le projet
+    ->exclude('var')        // SAUF le dossier var/
+    ->exclude('vendor')     // SAUF le dossier vendor/
+    ->exclude('node_modules'); // SAUF le dossier node_modules/
 
-return (new Config())
-    ->setParallelConfig(ParallelConfigFactory::detect()) // @TODO 4.0 no need to call this manually
-    ->setRiskyAllowed(false)
+return (new PhpCsFixer\Config())
     ->setRules([
-        '@auto' => true,
-        '@Symfony' => true
+        '@Symfony' => true,  // Utilise les règles de style Symfony
     ])
-    // 💡 by default, Fixer looks for `*.php` files excluding `./vendor/` - here, you can groom this config
-    ->setFinder(
-        (new Finder())
-            // 💡 root folder to check
-            ->in(__DIR__)
-            // 💡 additional files, eg bin entry file
-            // ->append([__DIR__.'/bin-entry-file'])
-            // 💡 folders to exclude, if any
-            // ->exclude([/* ... */])
-            // 💡 path patterns to exclude, if any
-            // ->notPath([/* ... */])
-            // 💡 extra configs
-            // ->ignoreDotFiles(false) // true by default in v3, false in v4 or future mode
-            // ->ignoreVCS(true) // true by default
-    )
-;
+    ->setFinder($finder);

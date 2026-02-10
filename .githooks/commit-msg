@@ -1,0 +1,44 @@
+#!/bin/sh
+
+# =============================================================================
+# Hook commit-msg : vérifie le format Conventional Commits
+# Format : type(scope): description   OU   type: description
+# Exemple : feat(auth): ajout de la page login
+# =============================================================================
+
+MESSAGE=$(cat "$1")
+
+# Regex : type obligatoire, scope optionnel entre parenthèses, : espace, puis texte
+if ! echo "$MESSAGE" | grep -qE "^(feat|fix|docs|style|refactor|test|chore|perf|ci|build|revert)(\(.+\))?: .+"; then
+    echo ""
+    echo "❌ Format de commit invalide !"
+    echo ""
+    echo "Format attendu : type(scope): description"
+    echo "                 type: description"
+    echo ""
+    echo "Types autorisés :"
+    echo "  feat     - nouvelle fonctionnalité"
+    echo "  fix      - correction de bug"
+    echo "  docs     - documentation"
+    echo "  style    - formatage (pas de changement de logique)"
+    echo "  refactor - refactoring (ni feat, ni fix)"
+    echo "  test     - ajout ou modification de tests"
+    echo "  chore    - maintenance, dépendances"
+    echo "  perf     - amélioration de performance"
+    echo "  ci       - configuration CI/CD"
+    echo "  build    - système de build, Docker"
+    echo "  revert   - annulation d'un commit"
+    echo ""
+    echo "Scope optionnel (entre parenthèses) :"
+    echo "  auth, entity, cart, stripe, maps, ai, api, mailer..."
+    echo ""
+    echo "Exemples :"
+    echo "  feat(auth): ajout de la vérification email"
+    echo "  fix(cart): correction du calcul du total"
+    echo "  chore: mise à jour des dépendances"
+    echo "  docs: ajout du README"
+    echo ""
+    exit 1
+fi
+
+echo "✅ Message de commit OK"
