@@ -49,7 +49,7 @@ jobs:
       postgres:
         image: postgres:16-alpine
         env:
-          POSTGRES_DB: carte_blanche_test
+          POSTGRES_DB: carte_blanche_test_test
           POSTGRES_USER: carte_blanche
           POSTGRES_PASSWORD: carte_blanche
         ports:
