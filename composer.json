@@ -82,6 +82,13 @@
         "symfony/polyfill-php84": "*"
     },
     "scripts": {
+        "phpstan": "phpstan analyse --memory-limit=512M",
+        "phpunit": "php bin/phpunit",
+        "phpunit:unit": "php bin/phpunit --testsuite Unit",
+        "phpunit:functional": "php bin/phpunit --testsuite Functional",
+        "quality": ["@phpstan", "@phpunit"],
+        "test": ["@phpunit:unit", "@phpunit:functional"],
+        
         "auto-scripts": {
             "cache:clear": "symfony-cmd",
             "assets:install %PUBLIC_DIR%": "symfony-cmd",

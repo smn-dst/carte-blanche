@@ -1,0 +1,65 @@
+#!/bin/sh
+
+# =============================================================================
+# Hook prepare-commit-msg : pré-remplit le message de commit
+# basé sur le nom de la branche
+#
+# Si la branche s'appelle feat/auth-login, le message sera pré-rempli avec :
+#   feat(auth):
+#
+# Si la branche s'appelle fix/cart-total, le message sera pré-rempli avec :
+#   fix(cart):
+# =============================================================================
+
+COMMIT_MSG_FILE=$1
+COMMIT_SOURCE=$2
+
+# Ne rien faire si c'est un merge, amend, squash ou message déjà fourni (-m)
+case "$COMMIT_SOURCE" in
+    merge|squash|commit)
+        exit 0
+        ;;
+    message)
+        # L'utilisateur a fourni un message avec -m, ne pas toucher
+        exit 0
+        ;;
+esac
+
+# Récupérer le nom de la branche courante
+BRANCH=$(git symbolic-ref --short HEAD 2>/dev/null)
+
+# Si pas de branche (detached HEAD), ne rien faire
+if [ -z "$BRANCH" ]; then
+    exit 0
+fi
+
+# Ne rien faire sur main ou develop
+case "$BRANCH" in
+    main|develop|master)
+        exit 0
+        ;;
+esac
+
+# Extraire le type et le scope depuis le nom de branche
+# Formats supportés : feat/auth-login, fix/cart, chore/update-deps
+TYPE=$(echo "$BRANCH" | sed -n 's#^\(feat\|fix\|docs\|style\|refactor\|test\|chore\|perf\|ci\|build\|revert\)/.*#\1#p')
+
+if [ -n "$TYPE" ]; then
+    # Extraire le scope (premier mot après le /)
+    SCOPE=$(echo "$BRANCH" | sed -n 's#^[a-z]*/\([a-z]*\).*#\1#p')
+
+    # Lire le message actuel (template git)
+    CURRENT_MSG=$(cat "$COMMIT_MSG_FILE")
+
+    # Pré-remplir avec le type(scope): 
+    if [ -n "$SCOPE" ]; then
+        PREFIX="${TYPE}(${SCOPE}): "
+    else
+        PREFIX="${TYPE}: "
+    fi
+
+    # Écrire le préfixe suivi du template original
+    printf '%s%s' "$PREFIX" "$CURRENT_MSG" > "$COMMIT_MSG_FILE"
+fi
+
+exit 0

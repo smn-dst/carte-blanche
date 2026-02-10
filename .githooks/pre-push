@@ -1,0 +1,37 @@
+#!/bin/sh
+
+# =============================================================================
+# Hook pre-push : interdit les push directs sur main et develop
+# Oblige à passer par des pull requests
+# =============================================================================
+
+RED='\033[0;31m'
+YELLOW='\033[1;33m'
+NC='\033[0m'
+
+# Lire les infos du push (stdin)
+while read LOCAL_REF LOCAL_SHA REMOTE_REF REMOTE_SHA; do
+    # Extraire le nom de la branche distante
+    REMOTE_BRANCH=$(echo "$REMOTE_REF" | sed 's#refs/heads/##')
+
+    if [ "$REMOTE_BRANCH" = "main" ] || [ "$REMOTE_BRANCH" = "master" ]; then
+        echo ""
+        echo "${RED}=========================================="
+        echo "  ✗ PUSH BLOQUÉ sur $REMOTE_BRANCH"
+        echo "==========================================${NC}"
+        echo ""
+        echo "  Les push directs sur ${YELLOW}$REMOTE_BRANCH${NC} sont interdits."
+        echo "  Utilise une branche et crée une Pull Request."
+        echo ""
+        echo "  Workflow :"
+        echo "    1. git checkout -b feat/ma-feature"
+        echo "    2. git push origin feat/ma-feature"
+        echo "    3. Créer une PR sur GitHub"
+        echo ""
+        echo "${YELLOW}  Pour bypass en urgence : git push --no-verify${NC}"
+        echo ""
+        exit 1
+    fi
+done
+
+exit 0

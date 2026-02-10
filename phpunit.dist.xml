@@ -17,11 +17,18 @@
         <server name="SHELL_VERBOSITY" value="-1" />
     </php>
 
-    <testsuites>
-        <testsuite name="Project Test Suite">
-            <directory>tests</directory>
-        </testsuite>
-    </testsuites>
+<testsuites>
+    <testsuite name="Unit">
+        <directory>tests/Unit</directory>
+    </testsuite>
+    <testsuite name="Functional">
+        <directory>tests/Functional</directory>
+    </testsuite>
+    <testsuite name="E2E">
+        <directory>tests/e2e</directory>
+        <file>tests/e2e/home.cy.js</file>
+    </testsuite>
+</testsuites>
 
     <source ignoreSuppressionOfDeprecations="true"
             ignoreIndirectDeprecations="true"
