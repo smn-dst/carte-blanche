@@ -10,23 +10,31 @@ concurrency:
   group: ci-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  APP_ENV: test
+  PHP_VERSION: "8.4"
+  NODE_VERSION: 22
+
 jobs:
 
-  # ─── QUALITY ─────────────
+  # ─── SETUP ───────────────
 
-  lint-php:
-    name: "PHP Quality (CS-Fixer + PHPStan)"
+  setup:
+    name: "Install dependencies"
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2,php-cs-fixer:latest
+          tools: composer:v2, php-cs-fixer
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
       - name: Cache Composer
         uses: actions/cache@v4
@@ -36,140 +44,158 @@ jobs:
           restore-keys: composer-
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-interaction
+      - run: composer install --no-progress --no-interaction --no-scripts
+      - run: npm ci
+
+      - name: Upload vendor
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+          retention-days: 1
+
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules/
+          retention-days: 1
+
+  # ─── QUALITY ──────────────
+
+  lint-php:
+    name: "PHP Quality (CS-Fixer + PHPStan)"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+          tools: composer:v2, php-cs-fixer
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+
+      - run: cp .env.test .env
       - run: composer run cs-check
       - run: composer run phpstan
 
   lint-js:
     name: "JS Quality (ESLint)"
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules/
+
       - run: npm run lint
 
   lint-twig:
     name: "Twig & YAML Lint"
+    needs: [setup]
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          name: vendor
+          path: vendor/
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-interaction
       - run: php bin/console lint:twig templates/
       - run: php bin/console lint:yaml config/
       - run: php bin/console lint:container
 
-  # ─── TESTS ────────────────
+  # ─── TESTS ───────────────────────
 
   unit-tests:
     name: "Tests unitaires"
     needs: [lint-php]
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          name: vendor
+          path: vendor/
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-interaction
       - run: composer run phpunit:unit
 
   functional-tests:
     name: "Tests fonctionnels"
     needs: [lint-php]
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          name: vendor
+          path: vendor/
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-interaction
       - run: composer run phpunit:functional
 
-  # ─── E2E ───────────────────
+  # ─── E2E ─────────────────────
 
   e2e:
     name: "Tests E2E (Cypress)"
     needs: [unit-tests, functional-tests, lint-js]
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: test
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
-          cache: npm
+          node-version: ${{ env.NODE_VERSION }}
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - uses: actions/download-artifact@v4
         with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+          name: vendor
+          path: vendor/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: node_modules
+          path: node_modules/
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-interaction
-      - run: npm ci
-
-      - name: Build assets
-        run: npm run build
 
       - name: Demarrer le serveur
         run: |
@@ -186,41 +212,29 @@ jobs:
           name: cypress-screenshots
           path: cypress/screenshots/
 
-  # ─── BUILD (main) ───────────────────
+  # ─── BUILD (main) ────────────────
 
   build:
     name: "Build production"
     if: github.ref == 'refs/heads/main'
     needs: [e2e, lint-twig]
     runs-on: ubuntu-latest
-    env:
-      APP_ENV: prod
     steps:
       - uses: actions/checkout@v4
 
       - uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.4"
+          php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
           tools: composer:v2
 
-      - uses: actions/setup-node@v4
+      - uses: actions/download-artifact@v4
         with:
-          node-version: 22
-          cache: npm
+          name: vendor
+          path: vendor/
 
-      - name: Cache Composer
-        uses: actions/cache@v4
-        with:
-          path: vendor
-          key: composer-${{ hashFiles('composer.lock') }}
-          restore-keys: composer-
+      - run: cp .env.test .env
+      - run: composer install --no-progress --no-dev --optimize-autoloader --no-scripts
+      - run: php bin/console cache:warmup --env=prod --no-debug
 
-      - run: composer install --no-progress --no-dev --optimize-autoloader
-      - run: npm ci
-      - run: npm run build
-
-      - name: Cache warmup
-        run: php bin/console cache:warmup --env=prod --no-debug
-
-      - run: echo "Build prod OK — prêt pour le déploiement"
+      - run: echo "Build prod OK"
