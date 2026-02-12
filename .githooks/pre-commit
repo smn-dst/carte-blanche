@@ -88,9 +88,18 @@ if [ -n "$STAGED_PHP_FILES" ]; then
     fi
 
     if [ -n "$CS_FIXER" ]; then
-        # Lancer sur les fichiers staged uniquement
+        # Exclure les fichiers générés (assets/vendor, etc.)
+        CS_FIXER_FILES=""
+        for F in $STAGED_PHP_FILES; do
+            case "$F" in
+                assets/vendor/*) ;;
+                *) CS_FIXER_FILES="$CS_FIXER_FILES $F" ;;
+            esac
+        done
+        # Lancer sur les fichiers staged (hors exclus)
         FIXER_OUTPUT=""
-        for FILE in $STAGED_PHP_FILES; do
+        for FILE in $CS_FIXER_FILES; do
+            [ -z "$FILE" ] && continue
             RESULT=$($CS_FIXER fix "$FILE" --dry-run --diff 2>&1)
             if [ $? -ne 0 ]; then
                 FIXER_OUTPUT="${FIXER_OUTPUT}\n${RESULT}"
@@ -125,13 +134,23 @@ if [ -n "$STAGED_PHP_FILES" ]; then
     fi
 
     if [ -n "$PHPSTAN" ]; then
-        $PHPSTAN analyse --memory-limit=512M --no-progress $STAGED_PHP_FILES 2>&1
-
-        if [ $? -ne 0 ]; then
-            echo "${RED}  ✗ Erreurs PHPStan détectées !${NC}"
-            HAS_ERRORS=1
+        # Ne passer que les fichiers dans src/ ou tests/ (exclut les configs type .php-cs-fixer.dist.php)
+        PHPSTAN_FILES=""
+        for F in $STAGED_PHP_FILES; do
+            case "$F" in
+                src/*|tests/*) PHPSTAN_FILES="$PHPSTAN_FILES $F" ;;
+            esac
+        done
+        if [ -n "$(echo "$PHPSTAN_FILES" | tr -d '[:space:]')" ]; then
+            $PHPSTAN analyse --memory-limit=512M --no-progress $PHPSTAN_FILES 2>&1
+            if [ $? -ne 0 ]; then
+                echo "${RED}  ✗ Erreurs PHPStan détectées !${NC}"
+                HAS_ERRORS=1
+            else
+                echo "${GREEN}  ✓ Analyse statique OK${NC}"
+            fi
         else
-            echo "${GREEN}  ✓ Analyse statique OK${NC}"
+            echo "${GREEN}  ✓ Aucun fichier PHP dans src/ ou tests/, skip PHPStan${NC}"
         fi
     fi
 else

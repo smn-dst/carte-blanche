@@ -6,7 +6,8 @@ $finder = (new PhpCsFixer\Finder())
     ->in(__DIR__)           // Cherche dans tout le projet
     ->exclude('var')        // SAUF le dossier var/
     ->exclude('vendor')     // SAUF le dossier vendor/
-    ->exclude('node_modules'); // SAUF le dossier node_modules/
+    ->exclude('node_modules') // SAUF le dossier node_modules/
+    ->exclude('assets/vendor'); // SAUF le dossier assets/vendor/
 
 return (new PhpCsFixer\Config())
     ->setRules([
