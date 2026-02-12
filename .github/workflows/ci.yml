@@ -26,7 +26,7 @@ jobs:
         with:
           php-version: "8.4"
           extensions: amqp, intl, pdo_pgsql
-          tools: composer:v2
+          tools: composer:v2,php-cs-fixer:latest
 
       - name: Cache Composer
         uses: actions/cache@v4
