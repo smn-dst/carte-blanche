@@ -80,6 +80,8 @@ jobs:
         with:
           name: vendor
           path: vendor/
+          
+      - run: chmod +x vendor/bin/*
 
       - run: cp .env.test .env
       - run: composer run cs-check
@@ -100,7 +102,8 @@ jobs:
         with:
           name: node_modules
           path: node_modules/
-
+      
+      - run: chmod +x node_modules/.bin/*
       - run: npm run lint
 
   lint-twig:
