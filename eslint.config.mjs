@@ -29,6 +29,6 @@ export default [
     ...cypress.configs.recommended,
   },
   {
-    ignores: ["node_modules/", "vendor/", "public/", "var/"],
+    ignores: ["node_modules/", "vendor/", "public/", "var/", "assets/vendor/"],
   },
 ];
