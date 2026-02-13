@@ -2,155 +2,252 @@ name: CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [dev, main, tests]
   pull_request:
-    branches: [main]
+    branches: [dev, main]
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  APP_ENV: test
+  PHP_VERSION: "8.4"
+  NODE_VERSION: 22
 
 jobs:
-  # === Job 1 : Qualite de code ===
-  quality:
-    runs-on: ubuntu-latest
 
+  # ─── SETUP ───────────────
+
+  setup:
+    name: "Install dependencies"
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: pdo_pgsql, intl, zip, amqp
-          tools: composer:v2
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+          tools: composer:v2, php-cs-fixer
 
-      - name: Install PHP dependencies
-        run: composer install --prefer-dist --no-progress
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
 
-      - name: PHP-CS-Fixer
-        run: |
-          curl -L https://github.com/PHP-CS-Fixer/PHP-CS-Fixer/releases/latest/download/php-cs-fixer.phar -o php-cs-fixer.phar
-          chmod +x php-cs-fixer.phar
-          ./php-cs-fixer.phar fix --dry-run --diff
+      - name: Cache Composer
+        uses: actions/cache@v4
+        with:
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
-      - name: PHPStan
-        run: php vendor/bin/phpstan analyse --memory-limit=512M
+      - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
+      - run: npm ci
+      - run: php bin/console importmap:install
 
-      - name: Lint Twig
-        run: php bin/console lint:twig templates/
-        continue-on-error: true
+      - name: Upload vendor
+        uses: actions/upload-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+          retention-days: 1
 
-      - name: Lint YAML
-        run: php bin/console lint:yaml config/
+      - name: Upload assets vendor
+        uses: actions/upload-artifact@v4
+        with:
+          name: assets-vendor
+          path: assets/vendor/
+          retention-days: 1
 
-  # === Job 2 : Tests PHPUnit ===
-  phpunit:
+  # ─── QUALITY ──────────────
+
+  lint-php:
+    name: "PHP Quality (CS-Fixer + PHPStan)"
+    needs: [setup]
     runs-on: ubuntu-latest
-    needs: quality
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: carte_blanche_test_test
-          POSTGRES_USER: carte_blanche
-          POSTGRES_PASSWORD: carte_blanche
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: pdo_pgsql, intl, zip, amqp
-          tools: composer:v2
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+          tools: composer:v2, php-cs-fixer
 
-      - name: Install dependencies
-        run: composer install --prefer-dist --no-progress
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
 
-      - name: Prepare test database
-        env:
-          DATABASE_URL: postgresql://carte_blanche:carte_blanche@localhost:5432/carte_blanche_test?serverVersion=16
-          MAILER_DSN: "null://null"
-          MESSENGER_TRANSPORT_DSN: "in-memory://"
-        run: |
-          php bin/console --env=test doctrine:migrations:migrate --no-interaction
+      - run: chmod +x vendor/bin/*
 
-      - name: Run Unit tests
-        env:
-          DATABASE_URL: postgresql://carte_blanche:carte_blanche@localhost:5432/carte_blanche_test?serverVersion=16
-          MAILER_DSN: "null://null"
-          MESSENGER_TRANSPORT_DSN: "in-memory://"
-        run: php bin/phpunit --testsuite Unit
+      - run: cp .env.test .env
+      - run: composer run cs-check
+      - run: composer run phpstan
 
-      - name: Run Functional tests
-        env:
-          DATABASE_URL: postgresql://carte_blanche:carte_blanche@localhost:5432/carte_blanche_test?serverVersion=16
-          MAILER_DSN: "null://null"
-          MESSENGER_TRANSPORT_DSN: "in-memory://"
-        run: php bin/phpunit --testsuite Functional
+  lint-js:
+    name: "JS Quality (ESLint)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
 
-  # === Job 3 : Tests E2E Cypress ===
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - run: npm ci
+      - run: npm run lint
+
+  lint-twig:
+    name: "Twig & YAML Lint"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+
+      - run: cp .env.test .env
+      - run: php bin/console lint:twig templates/
+      - run: php bin/console lint:yaml config/
+      - run: php bin/console lint:container
+
+  # ─── TESTS ───────────────────────
+
+  unit-tests:
+    name: "Tests unitaires"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+
+      - run: cp .env.test .env
+      - run: composer run phpunit:unit
+
+  functional-tests:
+    name: "Tests fonctionnels"
+    needs: [setup]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: assets-vendor
+          path: assets/vendor/
+
+      - run: chmod +x vendor/bin/*
+      - run: cp .env.test .env
+      - run: composer run phpunit:functional
+
+  # ─── E2E ─────────────────────
+
   e2e:
+    name: "Tests E2E (Cypress)"
+    needs: [setup]
     runs-on: ubuntu-latest
-    needs: phpunit
-
-    services:
-      postgres:
-        image: postgres:16-alpine
-        env:
-          POSTGRES_DB: carte_blanche
-          POSTGRES_USER: carte_blanche
-          POSTGRES_PASSWORD: carte_blanche
-        ports:
-          - 5432:5432
-        options: >-
-          --health-cmd pg_isready
-          --health-interval 10s
-          --health-timeout 5s
-          --health-retries 5
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup PHP 8.4
-        uses: shivammathur/setup-php@v2
+      - uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.4'
-          extensions: pdo_pgsql, intl, zip, amqp
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+
+      - name: Cache Cypress
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ hashFiles('package-lock.json') }}
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: vendor
+          path: vendor/
+
+      - uses: actions/download-artifact@v4
+        with:
+          name: assets-vendor
+          path: assets/vendor/
+
+      - run: npm ci
+      - run: cp .env.test .env
+
+      - name: Demarrer le serveur
+        run: |
+          php -S 127.0.0.1:8888 -t public > /dev/null 2>&1 &
+          sleep 3
+
+      - name: Cypress
+        run: npx cypress run
+
+      - name: Upload screenshots on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-screenshots
+          path: cypress/screenshots/
+
+  # ─── BUILD (main) ────────────────
+
+  build:
+    name: "Build production"
+    if: github.ref == 'refs/heads/main'
+    needs: [lint-php, lint-js, lint-twig, unit-tests, functional-tests, e2e]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: ${{ env.PHP_VERSION }}
+          extensions: amqp, intl, pdo_pgsql
           tools: composer:v2
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/download-artifact@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          name: vendor
+          path: vendor/
 
-      - name: Install dependencies
-        run: |
-          composer install --prefer-dist --no-progress
-          npm ci
+      - run: cp .env.test .env
+      - run: composer install --no-progress --no-dev --optimize-autoloader --no-scripts
+      - run: php bin/console cache:warmup --env=prod --no-debug
 
-      - name: Prepare database
-        env:
-          DATABASE_URL: postgresql://carte_blanche:carte_blanche@localhost:5432/carte_blanche?serverVersion=16
-          MAILER_DSN: "null://null"
-          MESSENGER_TRANSPORT_DSN: "in-memory://"
-        run: |
-          php bin/console doctrine:migrations:migrate --no-interaction
-
-      - name: Run Cypress
-        uses: cypress-io/github-action@v6
-        with:
-          start: php -S 127.0.0.1:8888 -t public
-          wait-on: 'http://127.0.0.1:8888'
-          wait-on-timeout: 60
-        env:
-          DATABASE_URL: postgresql://carte_blanche:carte_blanche@localhost:5432/carte_blanche?serverVersion=16
-          MAILER_DSN: "null://null"
-          MESSENGER_TRANSPORT_DSN: "in-memory://"
+      - run: echo "Build prod OK"
