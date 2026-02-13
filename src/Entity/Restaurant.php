@@ -92,7 +92,7 @@ class Restaurant
     #[ORM\Column(enumType: StatusRestaurantEnum::class, options: ['default' => 'brouillon'])]
     private StatusRestaurantEnum $status = StatusRestaurantEnum::BROUILLON;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'restaurants')]
     #[ORM\JoinColumn(name: 'owner_id', referencedColumnName: 'id', nullable: false)]
     private ?User $owner = null;
 

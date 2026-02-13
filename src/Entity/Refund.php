@@ -30,15 +30,15 @@ class Refund
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'refunds')]
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id', nullable: false)]
     private ?Order $order = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'refundsRequested')]
     #[ORM\JoinColumn(name: 'requested_by_id', referencedColumnName: 'id', nullable: false)]
     private ?User $requestedBy = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'refundsProcessed')]
     #[ORM\JoinColumn(name: 'processed_by_id', referencedColumnName: 'id', nullable: true)]
     private ?User $processedBy = null;
 
