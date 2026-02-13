@@ -1,0 +1,305 @@
+@startuml Carte Blanche - Schema BDD
+
+!theme plain
+skinparam linetype ortho
+skinparam classAttributeIconSize 0
+skinparam nodesep 80
+skinparam ranksep 60
+skinparam classFontSize 13
+skinparam classAttributeFontSize 11
+skinparam classFontStyle bold
+
+hide circle
+
+' ============================================================
+' ENTITE USER
+' ============================================================
+
+entity "User" as user {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * email : VARCHAR(180) <<UNIQUE>> <<NOT NULL>>
+  * password : VARCHAR(255) <<NOT NULL>>
+  * roles : JSON <<NOT NULL>> <<DEFAULT '["ROLE_USER"]'>>
+  * first_name : VARCHAR(100) <<NOT NULL>>
+  * last_name : VARCHAR(100) <<NOT NULL>>
+  phone : VARCHAR(20) <<NULLABLE>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  * is_verified : BOOLEAN <<NOT NULL>> <<DEFAULT FALSE>>
+  * is_suspended : BOOLEAN <<NOT NULL>> <<DEFAULT FALSE>>
+}
+
+' ============================================================
+' ENTITE RESTAURANT (= annonce + enchere)
+' ============================================================
+
+entity "Restaurant" as restaurant {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  .. Annonce ..
+  * name : VARCHAR(255) <<NOT NULL>>
+  description : TEXT <<NULLABLE>>
+  * address : VARCHAR(255) <<NOT NULL>>
+  * latitude : DOUBLE <<NOT NULL>>
+  * longitude : DOUBLE <<NOT NULL>>
+  * capacity : INT <<NOT NULL>>
+  annual_revenue : DECIMAL(12,2) <<NULLABLE>>
+  rent : DECIMAL(10,2) <<NULLABLE>>
+  lease_remaining : INT <<NULLABLE>>
+  * asking_price : DECIMAL(12,2) <<NOT NULL>>
+  pappers_url : VARCHAR(255) <<NULLABLE>>
+  * view_count : INT <<NOT NULL>> <<DEFAULT 0>>
+  * favorite_count : INT <<NOT NULL>> <<DEFAULT 0>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  updated_at : TIMESTAMP <<NULLABLE>>
+  .. Enchere ..
+  auction_date : DATE <<NULLABLE>>
+  auction_time : TIME <<NULLABLE>>
+  auction_location : VARCHAR(255) <<NULLABLE>>
+  auction_location_lat : DOUBLE <<NULLABLE>>
+  auction_location_lng : DOUBLE <<NULLABLE>>
+  ticket_price : DECIMAL(8,2) <<NULLABLE>>
+  * max_capacity : INT <<NOT NULL>> <<DEFAULT 50>>
+  * tickets_sold : INT <<NOT NULL>> <<DEFAULT 0>>
+  .. Statut ..
+  * status : VARCHAR(20) <<NOT NULL>> <<DEFAULT 'brouillon'>>
+  --
+  * **owner_id** : INT <<FK>> → User.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE CATEGORY
+' ============================================================
+
+entity "Category" as category {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * name : VARCHAR(100) <<NOT NULL>>
+  * slug : VARCHAR(100) <<UNIQUE>> <<NOT NULL>>
+  description : TEXT <<NULLABLE>>
+}
+
+' ============================================================
+' TABLE DE JOINTURE RESTAURANT_CATEGORY (ManyToMany)
+' ============================================================
+
+entity "restaurant_category" as rest_cat {
+  * **restaurant_id** : INT <<PK>> <<FK>> → Restaurant.id
+  * **category_id** : INT <<PK>> <<FK>> → Category.id
+}
+
+' ============================================================
+' ENTITE IMAGE
+' ============================================================
+
+entity "Image" as image {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * filename : VARCHAR(255) <<NOT NULL>>
+  * position : INT <<NOT NULL>> <<DEFAULT 0>>
+  --
+  * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE TICKET
+' ============================================================
+
+entity "Ticket" as ticket {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * qr_code : VARCHAR(255) <<UNIQUE>> <<NOT NULL>>
+  * status : VARCHAR(10) <<NOT NULL>> <<DEFAULT 'valide'>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
+  * **order_id** : INT <<FK>> → Order.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE CART
+' ============================================================
+
+entity "Cart" as cart {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * created_at : TIMESTAMP <<NOT NULL>>
+  updated_at : TIMESTAMP <<NULLABLE>>
+  --
+  * **user_id** : INT <<FK>> <<UNIQUE>> → User.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE CART_ITEM
+' ============================================================
+
+entity "CartItem" as cart_item {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * quantity : INT <<NOT NULL>> <<DEFAULT 1>>
+  --
+  * **cart_id** : INT <<FK>> → Cart.id <<NOT NULL>>
+  * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE ORDER
+' ============================================================
+
+entity "Order" as order {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * reference : VARCHAR(50) <<UNIQUE>> <<NOT NULL>>
+  * total_amount : DECIMAL(10,2) <<NOT NULL>>
+  stripe_session_id : VARCHAR(255) <<NULLABLE>>
+  stripe_payment_intent_id : VARCHAR(255) <<NULLABLE>>
+  * status : VARCHAR(25) <<NOT NULL>> <<DEFAULT 'en_attente'>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **buyer_id** : INT <<FK>> → User.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE REFUND
+' ============================================================
+
+entity "Refund" as refund {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * amount : DECIMAL(10,2) <<NOT NULL>>
+  * reason : TEXT <<NOT NULL>>
+  stripe_refund_id : VARCHAR(255) <<NULLABLE>>
+  * status : VARCHAR(15) <<NOT NULL>> <<DEFAULT 'en_attente'>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **order_id** : INT <<FK>> → Order.id <<NOT NULL>>
+  * **requested_by_id** : INT <<FK>> → User.id <<NOT NULL>>
+  **processed_by_id** : INT <<FK>> → User.id <<NULLABLE>>
+}
+
+' ============================================================
+' ENTITE FAVORITE
+' ============================================================
+
+entity "Favorite" as favorite {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **user_id** : INT <<FK>> → User.id <<NOT NULL>>
+  * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
+  .. UNIQUE(user_id, restaurant_id) ..
+}
+
+' ============================================================
+' ENTITE AI_LOG
+' ============================================================
+
+entity "AiLog" as ailog {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * prompt : TEXT <<NOT NULL>>
+  * response : TEXT <<NOT NULL>>
+  * model : VARCHAR(50) <<NOT NULL>>
+  * type : VARCHAR(25) <<NOT NULL>>
+  tokens : INT <<NULLABLE>>
+  duration : DECIMAL(8,3) <<NULLABLE>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  **restaurant_id** : INT <<FK>> → Restaurant.id <<NULLABLE>>
+  **user_id** : INT <<FK>> → User.id <<NULLABLE>>
+}
+
+' ============================================================
+' RELATIONS
+' ============================================================
+
+' User (1) ──── (N) Restaurant
+user ||--o{ restaurant : "owner_id"
+
+' Restaurant (N) ── (N) Category via table de jointure
+restaurant ||--o{ rest_cat
+category ||--o{ rest_cat
+
+' Restaurant (1) ── (N) Image
+restaurant ||--o{ image : "restaurant_id"
+
+' Restaurant (1) ── (N) Ticket
+restaurant ||--o{ ticket : "restaurant_id"
+
+' User (1) ── (N) Ticket (buyer)
+user ||--o{ ticket : "buyer_id"
+
+' Order (1) ── (N) Ticket
+order ||--o{ ticket : "order_id"
+
+' User (1) ── (0..1) Cart
+user ||--o| cart : "user_id"
+
+' Cart (1) ── (N) CartItem
+cart ||--o{ cart_item : "cart_id"
+
+' CartItem (N) ── (1) Restaurant
+cart_item }o--|| restaurant : "restaurant_id"
+
+' User (1) ── (N) Order (buyer)
+user ||--o{ order : "buyer_id"
+
+' Order (1) ── (N) Refund
+order ||--o{ refund : "order_id"
+
+' Refund (N) ── (1) User (requestedBy)
+refund }o--|| user : "requested_by_id"
+
+' Refund (N) ── (0..1) User (processedBy)
+refund }o--o| user : "processed_by_id"
+
+' User (1) ── (N) Favorite
+user ||--o{ favorite : "user_id"
+
+' Favorite (N) ── (1) Restaurant
+favorite }o--|| restaurant : "restaurant_id"
+
+' AiLog (N) ── (0..1) Restaurant
+ailog }o--o| restaurant : "restaurant_id"
+
+' AiLog (N) ── (0..1) User
+ailog }o--o| user : "user_id"
+
+' ============================================================
+' NOTES METIER
+' ============================================================
+
+note bottom of restaurant
+  **Status possibles :**
+  brouillon | en_moderation | publiee
+  en_pause | programmee | en_cours
+  terminee | vendue | annulee
+
+  **Ticket price (auto) :**
+  asking_price < 100k → 50€
+  100k - 300k → 100€
+  300k - 500k → 200€
+  > 500k → 350€
+
+  **Ticket status :**
+  valide | utilise | expire
+
+  **Order status :**
+  en_attente | payee
+  remboursement_partiel
+  remboursee | echouee
+
+  **Refund status :**
+  en_attente | approuve
+  refuse | traite
+
+  **AiLog type :**
+  description | recommendation
+  chatbot | email_personalization
+
+  **AiLog model :**
+  mistral:7b | llama3.1:8b
+end note
+
+@enduml
