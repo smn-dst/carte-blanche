@@ -112,7 +112,6 @@ entity "Ticket" as ticket {
   * status : VARCHAR(10) <<NOT NULL>> <<DEFAULT 'valide'>>
   * created_at : TIMESTAMP <<NOT NULL>>
   --
-  * **buyer_id** : INT <<FK>> → User.id <<NOT NULL>>
   * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
   * **order_id** : INT <<FK>> → Order.id <<NOT NULL>>
 }
