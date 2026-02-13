@@ -36,7 +36,7 @@ class Order
     #[ORM\Column(enumType: StatusOrderEnum::class, options: ['default' => 'en_attente'])]
     private StatusOrderEnum $status = StatusOrderEnum::EN_ATTENTE;
 
-    #[ORM\ManyToOne(inversedBy: 'orders')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'buyer_id', referencedColumnName: 'id', nullable: false)]
     private ?User $buyer = null;
 

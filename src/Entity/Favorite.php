@@ -22,11 +22,11 @@ class Favorite
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'favorites')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
     private ?User $user = null;
 
-    #[ORM\ManyToOne(inversedBy: 'favorites')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 

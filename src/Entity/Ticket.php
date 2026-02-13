@@ -23,11 +23,11 @@ class Ticket
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne(inversedBy: 'tickets')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\ManyToOne(inversedBy: 'tickets')]
+    #[ORM\ManyToOne]
     #[ORM\JoinColumn(name: 'order_id', referencedColumnName: 'id', nullable: false)]
     private ?Order $order = null;
 
