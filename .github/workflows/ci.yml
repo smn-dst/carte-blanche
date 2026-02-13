@@ -207,7 +207,7 @@ jobs:
 
       - name: Demarrer le serveur
         run: |
-          php -S 127.0.0.1:8000 -t public > /dev/null 2>&1 &
+          php -S 127.0.0.1:8888 -t public > /dev/null 2>&1 &
           sleep 3
 
       - name: Cypress
