@@ -26,7 +26,8 @@ final class AppFixtures extends Fixture
 {
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
-    ) {}
+    ) {
+    }
 
     public function load(ObjectManager $manager): void
     {
@@ -159,9 +160,9 @@ final class AppFixtures extends Fixture
             };
 
             $r = new Restaurant();
-            $r->setName($faker->company() . ' - ' . $faker->words(2, true));
+            $r->setName($faker->company().' - '.$faker->words(2, true));
             $r->setDescription($faker->optional(0.85)->paragraphs(3, true));
-            $r->setAddress($faker->streetAddress() . ', ' . $city);
+            $r->setAddress($faker->streetAddress().', '.$city);
             $r->setLatitude($lat);
             $r->setLongitude($lng);
             $r->setCapacity($faker->numberBetween(20, 180));
@@ -197,7 +198,7 @@ final class AppFixtures extends Fixture
                 $auctionDT = $faker->dateTimeBetween('+3 days', '+90 days');
                 $r->setAuctionDate($auctionDT);
                 $r->setAuctionTime($auctionDT);
-                $r->setAuctionLocation($faker->optional(0.8)->streetAddress() . ', ' . $city);
+                $r->setAuctionLocation($faker->optional(0.8)->streetAddress().', '.$city);
                 $r->setAuctionLocationLat($lat0 + $faker->randomFloat(6, -0.03, 0.03));
                 $r->setAuctionLocationLng($lng0 + $faker->randomFloat(6, -0.05, 0.05));
                 $r->setMaxCapacity($faker->numberBetween(30, 120));
@@ -223,7 +224,7 @@ final class AppFixtures extends Fixture
             $imgCount = $faker->numberBetween(1, 6);
             for ($p = 0; $p < $imgCount; ++$p) {
                 $img = new Image();
-                $img->setFilename($faker->uuid() . '.jpg');
+                $img->setFilename($faker->uuid().'.jpg');
                 $img->setPosition($p);
                 $img->setRestaurant($r);
                 $manager->persist($img);
@@ -301,7 +302,7 @@ final class AppFixtures extends Fixture
 
             $order = new Order();
             $order->setBuyer($buyer);
-            $order->setReference('CB-' . $faker->unique()->bothify('##########'));
+            $order->setReference('CB-'.$faker->unique()->bothify('##########'));
             $order->setTotalAmount(number_format($unit * $qty, 2, '.', ''));
             $order->setStripeSessionId($faker->optional(0.6)->uuid());
             $order->setStripePaymentIntentId($faker->optional(0.6)->uuid());
@@ -334,7 +335,7 @@ final class AppFixtures extends Fixture
             $u = $faker->randomElement($buyers);
             $r = $faker->randomElement($restaurants);
 
-            $key = spl_object_id($u) . '-' . spl_object_id($r);
+            $key = spl_object_id($u).'-'.spl_object_id($r);
             if (isset($favoritePairs[$key])) {
                 continue;
             }
@@ -399,7 +400,7 @@ final class AppFixtures extends Fixture
 
             $log->setType($type);
             $log->setModel($model);
-            $log->setPrompt($prompt . ' Contexte: ' . $faker->sentence(18));
+            $log->setPrompt($prompt.' Contexte: '.$faker->sentence(18));
             $log->setResponse($faker->paragraphs(2, true));
             $log->setToken($faker->optional(0.8)->numberBetween(120, 2200));
             if ($faker->boolean(80)) {
