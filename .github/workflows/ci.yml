@@ -128,7 +128,7 @@ jobs:
 
   unit-tests:
     name: "Tests unitaires"
-    needs: [setup]
+    needs: [lint-php, lint-js, lint-twig]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -148,7 +148,7 @@ jobs:
 
   functional-tests:
     name: "Tests fonctionnels"
-    needs: [setup]
+    needs: [lint-php, lint-js, lint-twig]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -176,7 +176,7 @@ jobs:
 
   e2e:
     name: "Tests E2E (Cypress)"
-    needs: [setup]
+    needs: [lint-php, lint-js, lint-twig]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -230,7 +230,7 @@ jobs:
   build:
     name: "Build production"
     if: github.ref == 'refs/heads/main'
-    needs: [lint-php, lint-js, lint-twig, unit-tests, functional-tests, e2e]
+    needs: [unit-tests, functional-tests, e2e]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
