@@ -62,6 +62,13 @@ jobs:
           path: assets/vendor/
           retention-days: 1
 
+      - name: Upload node_modules
+        uses: actions/upload-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
+          retention-days: 1
+
   # ─── QUALITY ──────────────
 
   lint-php:
@@ -98,9 +105,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
 
-      - run: npm ci
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
+
       - run: npm run lint
 
   lint-twig:
@@ -129,7 +139,7 @@ jobs:
 
   unit-tests:
     name: "Tests unitaires"
-    needs: [lint-php]
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -149,7 +159,7 @@ jobs:
 
   functional-tests:
     name: "Tests fonctionnels"
-    needs: [lint-php]
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -177,7 +187,7 @@ jobs:
 
   e2e:
     name: "Tests E2E (Cypress)"
-    needs: [unit-tests, functional-tests, lint-js]
+    needs: [setup]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -190,7 +200,12 @@ jobs:
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ env.NODE_VERSION }}
-          cache: npm
+
+      - name: Cache Cypress
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/Cypress
+          key: cypress-${{ hashFiles('package-lock.json') }}
 
       - uses: actions/download-artifact@v4
         with:
@@ -202,8 +217,13 @@ jobs:
           name: assets-vendor
           path: assets/vendor/
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: node-modules
+          path: node_modules/
+
       - run: cp .env.test .env
-      - run: npm ci
+      - run: npx cypress install
 
       - name: Demarrer le serveur
         run: |
@@ -225,7 +245,7 @@ jobs:
   build:
     name: "Build production"
     if: github.ref == 'refs/heads/main'
-    needs: [e2e, lint-twig]
+    needs: [lint-php, lint-js, lint-twig, unit-tests, functional-tests, e2e]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
