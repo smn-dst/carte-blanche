@@ -7,7 +7,7 @@ use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: FavoriteRepository::class)]
 #[ORM\Table(uniqueConstraints: [
-    new ORM\UniqueConstraint(name: 'UNIQ_FAVORITE_USER_RESTAURANT', columns: ['user_id', 'restaurant_id'])
+    new ORM\UniqueConstraint(name: 'UNIQ_FAVORITE_USER_RESTAURANT', columns: ['user_id', 'restaurant_id']),
 ])]
 class Favorite
 {
