@@ -19,7 +19,7 @@ class Image
     #[ORM\Column(options: ['default' => 0])]
     private int $position = 0;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'images')]
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
 

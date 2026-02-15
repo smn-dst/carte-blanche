@@ -35,11 +35,11 @@ class AiLog
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'aiLogs')]
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: true)]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\ManyToOne]
+    #[ORM\ManyToOne(inversedBy: 'aiLogs')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: true)]
     private ?User $user = null;
 
