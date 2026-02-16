@@ -104,6 +104,15 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
+    #[ORM\Column(length: 64, nullable: true)]
+    private ?string $token = null;
+
+    /**
+     * @var Collection<int, PasswordResetToken>
+     */
+    #[ORM\OneToMany(targetEntity: PasswordResetToken::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $passwordResetTokens;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -114,6 +123,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->refundsProcessed = new ArrayCollection();
         $this->favorites = new ArrayCollection();
         $this->aiLogs = new ArrayCollection();
+        $this->passwordResetTokens = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -475,6 +485,48 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PasswordResetToken>
+     */
+    public function getPasswordResetTokens(): Collection
+    {
+        return $this->passwordResetTokens;
+    }
+
+    public function addPasswordResetToken(PasswordResetToken $passwordResetToken): static
+    {
+        if (!$this->passwordResetTokens->contains($passwordResetToken)) {
+            $this->passwordResetTokens->add($passwordResetToken);
+            $passwordResetToken->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removePasswordResetToken(PasswordResetToken $passwordResetToken): static
+    {
+        if ($this->passwordResetTokens->removeElement($passwordResetToken)) {
+            // set the owning side to null (unless already changed)
+            if ($passwordResetToken->getOwner() === $this) {
+                $passwordResetToken->setOwner(null);
+            }
+        }
 
         return $this;
     }

@@ -22,22 +22,18 @@ readonly class RegistrationManagerService
      */
     public function register(RegistrationInputDto $registrationInputDto): void
     {
-        // Here you would typically create a new User entity, hash the password, and save it to the database.
-        // For demonstration purposes, we'll skip those steps.
         $user = new User();
         $user->setEmail($registrationInputDto->email);
         $user->setFirstName($registrationInputDto->firstName);
         $user->setLastName($registrationInputDto->lastName);
         $user->setPhoneNumber($registrationInputDto->phoneNumber);
-        $user->setRoles($registrationInputDto->roles);
+        $user->setRoles(['ROLE_USER']);
         $plainPassword = $registrationInputDto->plainPassword;
-        // Here you would hash the password and set it on the user entity.
         $hashedPassword = $this->passwordHasher->hashPassword($user, $plainPassword);
         $user->setPassword($hashedPassword);
         $this->entityManager->persist($user);
         $this->entityManager->flush();
 
-        // After saving the user, send a verification email.
         $this->sendMailService->sendVerificationEmail($user);
     }
 }
