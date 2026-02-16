@@ -5,3 +5,7 @@ parameters:
         - tests/
     excludePaths:
         - .php-cs-fixer.dist.php
+    ignoreErrors:
+        # Doctrine assigne l'id après persist()
+        - identifier: property.unusedType
+          path: src/Entity/*.php

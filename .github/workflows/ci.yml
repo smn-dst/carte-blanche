@@ -43,24 +43,17 @@ jobs:
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
+      - name: Cache assets vendor (importmap)
+        uses: actions/cache@v4
+        with:
+          path: assets/vendor
+          key: assets-vendor-${{ hashFiles('composer.lock') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: assets-vendor-
+
       - run: cp .env.test .env
       - run: composer install --no-progress --no-interaction --no-scripts
       - run: npm ci
       - run: php bin/console importmap:install
-
-      - name: Upload vendor
-        uses: actions/upload-artifact@v4
-        with:
-          name: vendor
-          path: vendor/
-          retention-days: 1
-
-      - name: Upload assets vendor
-        uses: actions/upload-artifact@v4
-        with:
-          name: assets-vendor
-          path: assets/vendor/
-          retention-days: 1
 
   # ─── QUALITY ──────────────
 
@@ -77,14 +70,17 @@ jobs:
           extensions: amqp, intl, pdo_pgsql
           tools: composer:v2, php-cs-fixer
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
-
-      - run: chmod +x vendor/bin/*
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
+      - run: chmod +x vendor/bin/*
+
       - run: composer run cs-check
       - run: composer run phpstan
 
@@ -114,12 +110,15 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
       - run: php bin/console lint:twig templates/
       - run: php bin/console lint:yaml config/
       - run: php bin/console lint:container
@@ -138,12 +137,15 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
       - run: composer run phpunit:unit
 
   functional-tests:
@@ -158,18 +160,24 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
-      - uses: actions/download-artifact@v4
+      - name: Cache assets vendor (importmap)
+        uses: actions/cache@v4
         with:
-          name: assets-vendor
-          path: assets/vendor/
+          path: assets/vendor
+          key: assets-vendor-${{ hashFiles('composer.lock') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: assets-vendor-
 
-      - run: chmod +x vendor/bin/*
       - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
+      - run: php bin/console importmap:install
+      - run: chmod +x vendor/bin/*
       - run: composer run phpunit:functional
 
   # ─── E2E ─────────────────────
@@ -197,18 +205,24 @@ jobs:
           path: ~/.cache/Cypress
           key: cypress-${{ hashFiles('package-lock.json') }}
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
-      - uses: actions/download-artifact@v4
+      - name: Cache assets vendor (importmap)
+        uses: actions/cache@v4
         with:
-          name: assets-vendor
-          path: assets/vendor/
+          path: assets/vendor
+          key: assets-vendor-${{ hashFiles('composer.lock') }}-${{ hashFiles('package-lock.json') }}
+          restore-keys: assets-vendor-
 
       - run: npm ci
       - run: cp .env.test .env
+      - run: composer install --no-progress --no-interaction --no-scripts
+      - run: php bin/console importmap:install
 
       - name: Demarrer le serveur
         run: |
@@ -241,13 +255,15 @@ jobs:
           extensions: amqp, intl, pdo_pgsql
           tools: composer:v2
 
-      - uses: actions/download-artifact@v4
+      - name: Cache Composer
+        uses: actions/cache@v4
         with:
-          name: vendor
-          path: vendor/
+          path: vendor
+          key: composer-${{ hashFiles('composer.lock') }}
+          restore-keys: composer-
 
       - run: cp .env.test .env
-      - run: composer install --no-progress --no-dev --optimize-autoloader --no-scripts
+      - run: composer install --no-progress --no-interaction --no-dev --optimize-autoloader --no-scripts
       - run: php bin/console cache:warmup --env=prod --no-debug
 
       - run: echo "Build prod OK"
