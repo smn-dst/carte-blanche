@@ -13,6 +13,7 @@ use Symfony\Component\Security\Core\User\UserInterface;
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+
 /**
  * #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
  * Géré par le Dto et le formulaire, pas besoin de cette contrainte au niveau de l'entité
@@ -96,6 +97,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: AiLog::class)]
     private Collection $aiLogs;
+
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserPreferenceEmbedding::class)]
+    private ?UserPreferenceEmbedding $userPreferenceEmbedding = null;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
@@ -444,6 +448,21 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $aiLog->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserPreferenceEmbedding(): ?UserPreferenceEmbedding
+    {
+        return $this->userPreferenceEmbedding;
+    }
+
+    public function setUserPreferenceEmbedding(?UserPreferenceEmbedding $userPreferenceEmbedding): static
+    {
+        if (null !== $userPreferenceEmbedding && $userPreferenceEmbedding->getUser() !== $this) {
+            $userPreferenceEmbedding->setUser($this);
+        }
+        $this->userPreferenceEmbedding = $userPreferenceEmbedding;
 
         return $this;
     }

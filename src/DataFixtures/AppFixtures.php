@@ -24,6 +24,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
 final class AppFixtures extends Fixture
 {
+    private const FIXTURE_PASSWORD = 'password';
+
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
     ) {
@@ -35,206 +37,366 @@ final class AppFixtures extends Fixture
         $faker->seed(42);
 
         // -------------------------
-        // USERS
+        // USERS: 3 admins, 10 acheteurs, 5 vendeurs
         // -------------------------
+        $admins = $this->createAdmins($manager, $faker);
+        $buyers = $this->createBuyers($manager, $faker);
+        $vendors = $this->createVendors($manager, $faker);
+
+        // -------------------------
+        // CATEGORIES: 5 cuisines
+        // -------------------------
+        $categories = $this->createCategories($manager, $faker);
+
+        // -------------------------
+        // RESTAURANTS: 30 (10 enchère passée, 15 à venir, 5 en cours)
+        // -------------------------
+        $restaurants = $this->createRestaurants($manager, $faker, $vendors, $categories);
+
+        // -------------------------
+        // CART + CART ITEMS (acheteurs)
+        // -------------------------
+        $this->createCartsAndCartItems($manager, $faker, $buyers, $restaurants);
+
+        // -------------------------
+        // ORDERS + TICKETS (acheteurs)
+        // -------------------------
+        $orders = $this->createOrdersAndTickets($manager, $faker, $buyers, $restaurants);
+
+        // -------------------------
+        // FAVORIS (acheteurs)
+        // -------------------------
+        $this->createFavorites($manager, $faker, $buyers, $restaurants);
+
+        // -------------------------
+        // REFUNDS
+        // -------------------------
+        $this->createRefunds($manager, $faker, $orders, $admins);
+
+        // -------------------------
+        // AI LOGS
+        // -------------------------
+        $this->createAiLogs($manager, $faker, $restaurants, $buyers, $vendors, $admins);
+
+        $manager->flush();
+    }
+
+    /**
+     * @return list<User>
+     */
+    private function createAdmins(ObjectManager $manager, \Faker\Generator $faker): array
+    {
         $admins = [];
-        $owners = [];
-        $buyers = [];
+        $emails = ['admin@carte-blanche.fr', $faker->unique()->safeEmail(), $faker->unique()->safeEmail()];
 
-        // Admin
-        $admin = new User();
-        $admin->setEmail('admin@test.com');
-        $admin->setFirstName('Admin');
-        $admin->setLastName('CarteBlanche');
-        $admin->setPhoneNumber($faker->phoneNumber());
-        $admin->setRoles(['ROLE_ADMIN']);
-        $admin->setCreatedAt(new \DateTimeImmutable('now'));
-        $admin->setIsVerified(true);
-        $admin->setIsSuspended(false);
-        $admin->setPassword($this->passwordHasher->hashPassword($admin, 'admin1234'));
-        $manager->persist($admin);
-        $admins[] = $admin;
-
-        // Owners (ROLE_SELLER)
-        for ($i = 0; $i < 20; ++$i) {
+        foreach ($emails as $i => $email) {
             $u = new User();
-            $u->setEmail($faker->unique()->safeEmail());
-            $u->setFirstName($faker->firstName());
-            $u->setLastName($faker->lastName());
-            $u->setPhoneNumber($faker->optional(0.75)->phoneNumber());
-            $u->setRoles(['ROLE_SELLER']);
-            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-18 months', 'now')));
-            $u->setIsVerified($faker->boolean(80));
-            $u->setIsSuspended($faker->boolean(5));
-            $u->setPassword($this->passwordHasher->hashPassword($u, 'password'));
+            $u->setEmail($email);
+            $u->setFirstName(0 === $i ? 'Admin' : $faker->firstName());
+            $u->setLastName(0 === $i ? 'CarteBlanche' : $faker->lastName());
+            $u->setPhoneNumber($faker->optional(0.6)->phoneNumber());
+            $u->setRoles(['ROLE_ADMIN']);
+            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
+            $u->setUpdatedAt($u->getCreatedAt());
+            $u->setIsVerified(true);
+            $u->setIsSuspended(false);
+            $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
             $manager->persist($u);
-            $owners[] = $u;
+            $admins[] = $u;
         }
 
-        // Buyers (ROLE_BUYER)
-        for ($i = 0; $i < 80; ++$i) {
+        return $admins;
+    }
+
+    /**
+     * @return list<User>
+     */
+    private function createBuyers(ObjectManager $manager, \Faker\Generator $faker): array
+    {
+        $buyers = [];
+        $emails = ['buyer@carte-blanche.fr'];
+        for ($i = 0; $i < 9; ++$i) {
+            $emails[] = $faker->unique()->safeEmail();
+        }
+
+        foreach ($emails as $i => $email) {
             $u = new User();
-            $u->setEmail($faker->unique()->safeEmail());
+            $u->setEmail($email);
             $u->setFirstName($faker->firstName());
             $u->setLastName($faker->lastName());
-            $u->setPhoneNumber($faker->optional(0.85)->phoneNumber());
-            $u->setRoles(['ROLE_BUYER']);
-            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-18 months', 'now')));
-            $u->setIsVerified($faker->boolean(85));
-            $u->setIsSuspended($faker->boolean(3));
-            $u->setPassword($this->passwordHasher->hashPassword($u, 'password'));
+            $u->setPhoneNumber($faker->optional(0.8)->phoneNumber());
+            $u->setRoles(['ROLE_USER']);
+            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
+            $u->setUpdatedAt($u->getCreatedAt());
+            $u->setIsVerified($faker->boolean(90));
+            $u->setIsSuspended($faker->boolean(5));
+            $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
             $manager->persist($u);
             $buyers[] = $u;
         }
 
-        // -------------------------
-        // CATEGORIES
-        // -------------------------
-        $categoryNames = [
-            'Bistrot',
-            'Brasserie',
-            'Gastronomique',
-            'Italien',
-            'Japonais',
-            'Libanais',
-            'Crêperie',
-            'Pizzeria',
-            'Street-food',
-            'Vegan',
-            'Bar à vin',
-            'Café',
-            'Restaurant de quartier',
-        ];
+        return $buyers;
+    }
 
+    /**
+     * @return list<User>
+     */
+    private function createVendors(ObjectManager $manager, \Faker\Generator $faker): array
+    {
+        $vendors = [];
+        $emails = ['vendor@carte-blanche.fr'];
+        for ($i = 0; $i < 4; ++$i) {
+            $emails[] = $faker->unique()->safeEmail();
+        }
+
+        foreach ($emails as $i => $email) {
+            $u = new User();
+            $u->setEmail($email);
+            $u->setFirstName($faker->firstName());
+            $u->setLastName($faker->lastName());
+            $u->setPhoneNumber($faker->optional(0.8)->phoneNumber());
+            $u->setRoles(['ROLE_VENDOR']);
+            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
+            $u->setUpdatedAt($u->getCreatedAt());
+            $u->setIsVerified($faker->boolean(85));
+            $u->setIsSuspended(false);
+            $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
+            $manager->persist($u);
+            $vendors[] = $u;
+        }
+
+        return $vendors;
+    }
+
+    /**
+     * @return list<Category>
+     */
+    private function createCategories(ObjectManager $manager, \Faker\Generator $faker): array
+    {
+        $names = [
+            'Français' => 'francais',
+            'Italien' => 'italien',
+            'Japonais' => 'japonais',
+            'Mexicain' => 'mexicain',
+            'Indien' => 'indien',
+        ];
         $categories = [];
-        foreach ($categoryNames as $name) {
+        foreach ($names as $name => $slug) {
             $c = new Category();
             $c->setName($name);
-            $c->setSlug($this->slugify($name));
-            $c->setDescription($faker->optional(0.6)->sentence(12));
+            $c->setSlug($slug);
+            $c->setDescription($faker->optional(0.7)->sentence(10));
             $manager->persist($c);
             $categories[] = $c;
         }
 
-        // -------------------------
-        // RESTAURANTS (Annonce + Enchère)
-        // -------------------------
-        $restaurantStatuses = [
-            StatusRestaurantEnum::BROUILLON,
-            StatusRestaurantEnum::EN_MODERATION,
-            StatusRestaurantEnum::PUBLIE,
-            StatusRestaurantEnum::EN_PAUSE,
-            StatusRestaurantEnum::PROGRAMME,
-            StatusRestaurantEnum::EN_COURS,
-            StatusRestaurantEnum::TERMINEE,
-            StatusRestaurantEnum::VENDU,
-            StatusRestaurantEnum::ANNULE,
-        ];
+        return $categories;
+    }
 
+    /**
+     * @param list<User>     $vendors
+     * @param list<Category> $categories
+     *
+     * @return list<Restaurant>
+     */
+    private function createRestaurants(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $vendors,
+        array $categories,
+    ): array {
         $cities = [
             ['Paris', 48.8566, 2.3522],
             ['Lyon', 45.7640, 4.8357],
             ['Marseille', 43.2965, 5.3698],
             ['Bordeaux', 44.8378, -0.5792],
-            ['Lille', 50.6292, 3.0573],
-            ['Nantes', 47.2184, -1.5536],
             ['Toulouse', 43.6047, 1.4442],
-            ['Nice', 43.7102, 7.2620],
         ];
 
         $restaurants = [];
-        for ($i = 0; $i < 120; ++$i) {
-            $owner = $faker->randomElement($owners);
-            [$city, $lat0, $lng0] = $faker->randomElement($cities);
+        $now = new \DateTimeImmutable();
 
-            $lat = $lat0 + $faker->randomFloat(6, -0.05, 0.05);
-            $lng = $lng0 + $faker->randomFloat(6, -0.08, 0.08);
-
-            $askingPrice = $faker->numberBetween(80_000, 2_500_000);
-
-            $ticketPrice = match (true) {
-                $askingPrice < 100_000 => 50,
-                $askingPrice < 300_000 => 100,
-                $askingPrice < 500_000 => 200,
-                default => 350,
-            };
-
-            $r = new Restaurant();
-            $r->setName($faker->company().' - '.$faker->words(2, true));
-            $r->setDescription($faker->optional(0.85)->paragraphs(3, true));
-            $r->setAddress($faker->streetAddress().', '.$city);
-            $r->setLatitude($lat);
-            $r->setLongitude($lng);
-            $r->setCapacity($faker->numberBetween(20, 180));
-            if ($faker->boolean(70)) {
-                $annualRevenue = $faker->randomFloat(2, 150_000, 4_000_000);
-                $r->setAnnualRevenue(number_format($annualRevenue, 2, '.', ''));
-            } else {
-                $r->setAnnualRevenue(null);
-            }
-
-            if ($faker->boolean(75)) {
-                $rent = $faker->randomFloat(2, 800, 25_000);
-                $r->setRent(number_format($rent, 2, '.', ''));
-            } else {
-                $r->setRent(null);
-            }
-            $r->setAskingPrice(number_format((float) $askingPrice, 2, '.', ''));
-            $r->setTicketPrice($faker->boolean(70) ? number_format((float) $ticketPrice, 2, '.', '') : null);
-            $r->setPappersUrl($faker->optional(0.4)->url());
-            $r->setViewCount($faker->numberBetween(0, 12_000));
-            $r->setFavoriteCount(0);
-            $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-10 months', 'now'));
-            $r->setCreatedAt($createdAt);
-
-            if ($faker->boolean(35)) {
-                $updatedMutable = $faker->dateTimeBetween($createdAt->format('Y-m-d H:i:s'), 'now');
-                $r->setUpdatedAt(\DateTimeImmutable::createFromMutable($updatedMutable));
-            } else {
-                $r->setUpdatedAt(null);
-            }
-
-            if ($faker->boolean(70)) {
-                $auctionDT = $faker->dateTimeBetween('+3 days', '+90 days');
-                $r->setAuctionDate($auctionDT);
-                $r->setAuctionTime($auctionDT);
-                $r->setAuctionLocation($faker->optional(0.8)->streetAddress().', '.$city);
-                $r->setAuctionLocationLat($lat0 + $faker->randomFloat(6, -0.03, 0.03));
-                $r->setAuctionLocationLng($lng0 + $faker->randomFloat(6, -0.05, 0.05));
-                $r->setMaxCapacity($faker->numberBetween(30, 120));
-                $r->setTicketsSold(0);
-            } else {
-                $r->setMaxCapacity(50);
-                $r->setTicketsSold(0);
-            }
-
-            $r->setStatus($faker->randomElement($restaurantStatuses));
-            $r->setOwner($owner);
-
-            // ManyToMany Categories
-            $picked = $faker->randomElements($categories, $faker->numberBetween(1, 3));
-            foreach ($picked as $cat) {
-                $r->addCategory($cat);
-            }
-
-            $manager->persist($r);
-            $restaurants[] = $r;
-
-            // Images
-            $imgCount = $faker->numberBetween(1, 6);
-            for ($p = 0; $p < $imgCount; ++$p) {
-                $img = new Image();
-                $img->setFilename($faker->uuid().'.jpg');
-                $img->setPosition($p);
-                $img->setRestaurant($r);
-                $manager->persist($img);
-            }
+        // 10 avec enchère passée (TERMINEE ou VENDU)
+        for ($i = 0; $i < 10; ++$i) {
+            $restaurants[] = $this->createOneRestaurant(
+                $manager,
+                $faker,
+                $vendors[$i % 5],
+                $categories,
+                $cities,
+                $faker->randomElement([StatusRestaurantEnum::TERMINEE, StatusRestaurantEnum::VENDU]),
+                $faker->dateTimeBetween('-6 months', '-1 week'),
+            );
         }
 
-        // -------------------------
-        // CART (0..1 par user) + CART ITEMS
-        // -------------------------
-        $carts = [];
+        // 15 avec enchère à venir (PROGRAMME)
+        for ($i = 0; $i < 15; ++$i) {
+            $restaurants[] = $this->createOneRestaurant(
+                $manager,
+                $faker,
+                $vendors[$i % 5],
+                $categories,
+                $cities,
+                StatusRestaurantEnum::PROGRAMME,
+                $faker->dateTimeBetween('+1 week', '+6 months'),
+            );
+        }
+
+        // 5 en cours (EN_COURS)
+        for ($i = 0; $i < 5; ++$i) {
+            $restaurants[] = $this->createOneRestaurant(
+                $manager,
+                $faker,
+                $vendors[$i % 5],
+                $categories,
+                $cities,
+                StatusRestaurantEnum::EN_COURS,
+                $faker->dateTimeBetween('-1 week', '+3 days'),
+            );
+        }
+
+        return $restaurants;
+    }
+
+    /**
+     * @param list<Category>                                   $categories
+     * @param array<int, array{0: string, 1: float, 2: float}> $cities
+     */
+    private function createOneRestaurant(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        User $owner,
+        array $categories,
+        array $cities,
+        StatusRestaurantEnum $status,
+        \DateTimeInterface $auctionDate,
+    ): Restaurant {
+        [$city, $lat0, $lng0] = $faker->randomElement($cities);
+        $lat = $lat0 + $faker->randomFloat(6, -0.03, 0.03);
+        $lng = $lng0 + $faker->randomFloat(6, -0.05, 0.05);
+
+        $askingPrice = $faker->numberBetween(80_000, 1_500_000);
+        $ticketPrice = match (true) {
+            $askingPrice < 100_000 => 50,
+            $askingPrice < 300_000 => 100,
+            $askingPrice < 500_000 => 200,
+            default => 350,
+        };
+
+        $r = new Restaurant();
+        $r->setName($faker->company().' - '.$faker->words(2, true));
+        $r->setDescription($faker->optional(0.9)->paragraphs(2, true));
+        $r->setAddress($faker->streetAddress().', '.$city);
+        $r->setLatitude($lat);
+        $r->setLongitude($lng);
+        $r->setCapacity($faker->numberBetween(25, 120));
+        $r->setAskingPrice(number_format((float) $askingPrice, 2, '.', ''));
+        $r->setTicketPrice(number_format((float) $ticketPrice, 2, '.', ''));
+        $r->setMaxCapacity($faker->numberBetween(30, 80));
+        $r->setTicketsSold(0);
+        $r->setViewCount($faker->numberBetween(0, 5000));
+        $r->setFavoriteCount(0);
+        $r->setOwner($owner);
+        $r->setStatus($status);
+        $r->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-10 months', 'now')));
+
+        $auctionDt = $auctionDate instanceof \DateTime ? $auctionDate : \DateTime::createFromInterface($auctionDate);
+        $r->setAuctionDate($auctionDt);
+        $r->setAuctionTime(\DateTime::createFromFormat(
+            'H:i:s',
+            sprintf('%02d:%02d:00', $faker->numberBetween(9, 18), $faker->randomElement([0, 30])),
+        ) ?: new \DateTime('12:00:00'));
+        $r->setAuctionLocation($faker->streetAddress().', '.$city);
+        $r->setAuctionLocationLat($lat0 + $faker->randomFloat(6, -0.02, 0.02));
+        $r->setAuctionLocationLng($lng0 + $faker->randomFloat(6, -0.03, 0.03));
+
+        if ($faker->boolean(70)) {
+            $r->setAnnualRevenue(number_format($faker->randomFloat(2, 150_000, 2_000_000), 2, '.', ''));
+        }
+        if ($faker->boolean(60)) {
+            $r->setRent(number_format($faker->randomFloat(2, 1000, 15_000), 2, '.', ''));
+        }
+        $r->setPappersUrl($faker->optional(0.3)->url());
+
+        foreach ($faker->randomElements($categories, $faker->numberBetween(1, 3)) as $cat) {
+            $r->addCategory($cat);
+        }
+
+        $manager->persist($r);
+
+        // Images fictives (1 à 4 par restaurant)
+        $imgCount = $faker->numberBetween(1, 4);
+        for ($p = 0; $p < $imgCount; ++$p) {
+            $img = new Image();
+            $img->setFileName(sprintf('fixture-%s-%d.jpg', spl_object_id($r), $p));
+            $img->setPosition($p);
+            $img->setRestaurant($r);
+            $manager->persist($img);
+        }
+
+        return $r;
+    }
+
+    /**
+     * @param list<User>       $buyers
+     * @param list<Restaurant> $restaurants
+     *
+     * @return list<Order>
+     */
+    private function createOrdersAndTickets(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $buyers,
+        array $restaurants,
+    ): array {
+        $orders = [];
+        $restaurantsWithAuction = array_filter($restaurants, fn (Restaurant $r) => null !== $r->getAuctionDate());
+        if ([] === $restaurantsWithAuction) {
+            return $orders;
+        }
+
+        for ($i = 0; $i < 40; ++$i) {
+            $buyer = $faker->randomElement($buyers);
+            $restaurant = $faker->randomElement($restaurantsWithAuction);
+            $qty = $faker->numberBetween(1, 3);
+            $unitPrice = (float) ($restaurant->getTicketPrice() ?? 100);
+            $total = $unitPrice * $qty;
+
+            $order = new Order();
+            $order->setBuyer($buyer);
+            $order->setReference('CB-'.$faker->unique()->numerify('##########'));
+            $order->setTotalAmount(number_format($total, 2, '.', ''));
+            $order->setStatus($faker->randomElement([StatusOrderEnum::EN_ATTENTE, StatusOrderEnum::PAYEE]));
+            $order->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-4 months', 'now')));
+            $manager->persist($order);
+            $orders[] = $order;
+
+            for ($t = 0; $t < $qty; ++$t) {
+                $ticket = new Ticket();
+                $ticket->setQrCode($faker->unique()->uuid());
+                $ticket->setStatus($faker->randomElement([StatusTicketEnum::VALIDE, StatusTicketEnum::UTILISE]));
+                $ticket->setCreatedAt($order->getCreatedAt());
+                $ticket->setRestaurant($restaurant);
+                $ticket->setOrder($order);
+                $manager->persist($ticket);
+            }
+
+            $restaurant->setTicketsSold($restaurant->getTicketsSold() + $qty);
+        }
+
+        return $orders;
+    }
+
+    /**
+     * @param list<User>       $buyers
+     * @param list<Restaurant> $restaurants
+     */
+    private function createCartsAndCartItems(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $buyers,
+        array $restaurants,
+    ): void {
         foreach ($buyers as $buyer) {
             if (!$faker->boolean(70)) {
                 continue;
@@ -244,17 +406,14 @@ final class AppFixtures extends Fixture
             $cart->setUser($buyer);
             $cart->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-3 months', 'now')));
             if ($faker->boolean(50)) {
-                $updated = $faker->dateTimeBetween('-1 month', 'now');
-                $cart->setUpdatedAt(\DateTimeImmutable::createFromMutable($updated));
+                $cart->setUpdatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 month', 'now')));
             } else {
                 $cart->setUpdatedAt(null);
             }
-
             $manager->persist($cart);
-            $carts[] = $cart;
 
             $itemsCount = $faker->numberBetween(1, 3);
-            $pickedRestaurants = $faker->randomElements($restaurants, $itemsCount);
+            $pickedRestaurants = $faker->randomElements($restaurants, min($itemsCount, count($restaurants)));
 
             foreach ($pickedRestaurants as $rest) {
                 $item = new CartItem();
@@ -264,97 +423,22 @@ final class AppFixtures extends Fixture
                 $manager->persist($item);
             }
         }
+    }
 
-        // -------------------------
-        // ORDERS + TICKETS
-        // -------------------------
-        $orders = [];
-        $orderStatuses = [
-            StatusOrderEnum::EN_ATTENTE,
-            StatusOrderEnum::PAYEE,
-            StatusOrderEnum::REMBOURSEMENT_PARTIEL,
-            StatusOrderEnum::REMBOURSEE,
-            StatusOrderEnum::ECHOUEE,
-        ];
-
-        $ticketStatuses = [
-            StatusTicketEnum::VALIDE,
-            StatusTicketEnum::UTILISE,
-            StatusTicketEnum::EXPIRE,
-        ];
-
-        for ($i = 0; $i < 160; ++$i) {
-            $buyer = $faker->randomElement($buyers);
-            $restaurant = $faker->randomElement($restaurants);
-
-            $qty = $faker->numberBetween(1, 4);
-
-            // ticket price: si restaurant null, fallback règle métier
-            $asking = (int) $restaurant->getAskingPrice();
-            $fallbackTicketPrice = match (true) {
-                $asking < 100_000 => 50,
-                $asking < 300_000 => 100,
-                $asking < 500_000 => 200,
-                default => 350,
-            };
-
-            $unit = (float) ($restaurant->getTicketPrice() ?? $fallbackTicketPrice);
-
-            $order = new Order();
-            $order->setBuyer($buyer);
-            $order->setReference('CB-'.$faker->unique()->bothify('##########'));
-            $order->setTotalAmount(number_format($unit * $qty, 2, '.', ''));
-            $order->setStripeSessionId($faker->optional(0.6)->uuid());
-            $order->setStripePaymentIntentId($faker->optional(0.6)->uuid());
-            $order->setStatus($faker->randomElement($orderStatuses));
-            $order->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now')));
-
-            $manager->persist($order);
-            $orders[] = $order;
-
-            for ($t = 0; $t < $qty; ++$t) {
-                $ticket = new Ticket();
-                $ticket->setQrCode($faker->unique()->uuid());
-                $ticket->setStatus($faker->randomElement($ticketStatuses));
-                $ticket->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now')));
-                $ticket->setRestaurant($restaurant);
-                $ticket->setOrder($order);
-                $manager->persist($ticket);
-            }
-
-            // MAJ tickets_sold
-            $restaurant->setTicketsSold($restaurant->getTicketsSold() + $qty);
+    /**
+     * @param list<Order> $orders
+     * @param list<User>  $admins
+     */
+    private function createRefunds(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $orders,
+        array $admins,
+    ): void {
+        if ([] === $orders) {
+            return;
         }
 
-        // -------------------------
-        // FAVORITES (unique user+restaurant)
-        // -------------------------
-        $favoritePairs = [];
-
-        for ($i = 0; $i < 600; ++$i) {
-            $u = $faker->randomElement($buyers);
-            $r = $faker->randomElement($restaurants);
-
-            $key = spl_object_id($u).'-'.spl_object_id($r);
-            if (isset($favoritePairs[$key])) {
-                continue;
-            }
-            $favoritePairs[$key] = true;
-
-            $fav = new Favorite();
-            $fav->setUser($u);
-            $fav->setRestaurant($r);
-            $dt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-10 months', 'now'));
-            $fav->setCreatedAt($dt);
-            $fav->setUpdatedAt($dt);
-            $manager->persist($fav);
-
-            $r->setFavoriteCount($r->getFavoriteCount() + 1);
-        }
-
-        // -------------------------
-        // REFUNDS
-        // -------------------------
         $refundStatuses = [
             StatusRefundEnum::EN_ATTENTE,
             StatusRefundEnum::APPROUVE,
@@ -362,27 +446,39 @@ final class AppFixtures extends Fixture
             StatusRefundEnum::TRAITE,
         ];
 
-        for ($i = 0; $i < 30; ++$i) {
+        for ($i = 0; $i < min(30, (int) (count($orders) * 0.8)); ++$i) {
             $order = $faker->randomElement($orders);
 
             $refund = new Refund();
             $refund->setOrder($order);
             $refund->setRequestedBy($order->getBuyer());
-            $refund->setProcessedBy($faker->optional(0.6)->randomElement($admins)); // nullable
-            $amount = $faker->randomFloat(2, 20, 500);
-            $refund->setAmount(number_format($amount, 2, '.', ''));
+            $refund->setProcessedBy($faker->optional(0.6)->randomElement($admins));
+            $refund->setAmount(number_format($faker->randomFloat(2, 20, 500), 2, '.', ''));
             $refund->setReasonRefund($faker->sentence(14));
             $refund->setStripeRefundId($faker->optional(0.6)->uuid());
             $refund->setStatus($faker->randomElement($refundStatuses));
             $refund->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-4 months', 'now')));
             $manager->persist($refund);
         }
+    }
 
-        // -------------------------
-        // AI LOGS
-        // -------------------------
+    /**
+     * @param list<Restaurant> $restaurants
+     * @param list<User>       $buyers
+     * @param list<User>       $vendors
+     * @param list<User>       $admins
+     */
+    private function createAiLogs(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $restaurants,
+        array $buyers,
+        array $vendors,
+        array $admins,
+    ): void {
         $aiTypes = ['description', 'recommendation', 'chatbot', 'email_personalization'];
         $aiModels = ['mistral:7b', 'llama3.1:8b'];
+        $allUsers = array_merge($buyers, $vendors, $admins);
 
         for ($i = 0; $i < 200; ++$i) {
             $log = new AiLog();
@@ -392,9 +488,9 @@ final class AppFixtures extends Fixture
 
             $prompt = match ($type) {
                 'description' => 'Rédige une description attractive et réaliste pour ce restaurant.',
-                'recommendation' => 'Recommande 3 axes d’amélioration pour augmenter la valeur perçue avant l’enchère.',
-                'chatbot' => 'Réponds à une question d’investisseur sur le bail et le CA.',
-                'email_personalization' => 'Personnalise un email de relance suite à une visite d’annonce.',
+                'recommendation' => 'Recommande 3 axes d\'amélioration pour augmenter la valeur perçue avant l\'enchère.',
+                'chatbot' => 'Réponds à une question d\'investisseur sur le bail et le CA.',
+                'email_personalization' => 'Personnalise un email de relance suite à une visite d\'annonce.',
                 default => 'Instruction IA générique.',
             };
 
@@ -404,32 +500,48 @@ final class AppFixtures extends Fixture
             $log->setResponse($faker->paragraphs(2, true));
             $log->setToken($faker->optional(0.8)->numberBetween(120, 2200));
             if ($faker->boolean(80)) {
-                $duration = $faker->randomFloat(3, 0.12, 8.5);
-                $log->setDuration(number_format($duration, 3, '.', ''));
+                $log->setDuration(number_format($faker->randomFloat(3, 0.12, 8.5), 3, '.', ''));
             } else {
                 $log->setDuration(null);
             }
-
             $log->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-6 months', 'now')));
-
-            $log->setRestaurant($faker->optional(0.7)->randomElement($restaurants)); // nullable
-            $log->setUser($faker->optional(0.6)->randomElement(array_merge($buyers, $owners, $admins))); // nullable
+            $log->setRestaurant($faker->optional(0.7)->randomElement($restaurants));
+            $log->setUser($faker->optional(0.6)->randomElement($allUsers));
 
             $manager->persist($log);
         }
-
-        $manager->flush();
     }
 
-    private function slugify(string $s): string
-    {
-        $s = mb_strtolower(trim($s));
-        $s = preg_replace('~[^\pL\d]+~u', '-', $s) ?? $s;
-        $s = trim($s, '-');
-        $s = iconv('utf-8', 'us-ascii//TRANSLIT', $s) ?: $s;
-        $s = preg_replace('~[^-\w]+~', '', $s) ?? $s;
-        $s = preg_replace('~-+~', '-', $s) ?? $s;
+    /**
+     * @param list<User>       $buyers
+     * @param list<Restaurant> $restaurants
+     */
+    private function createFavorites(
+        ObjectManager $manager,
+        \Faker\Generator $faker,
+        array $buyers,
+        array $restaurants,
+    ): void {
+        $pairs = [];
+        $maxFavorites = min(80, count($buyers) * count($restaurants) / 2);
 
-        return $s ?: 'n-a';
+        for ($i = 0; $i < $maxFavorites; ++$i) {
+            $user = $faker->randomElement($buyers);
+            $restaurant = $faker->randomElement($restaurants);
+            $key = spl_object_id($user).'-'.spl_object_id($restaurant);
+            if (isset($pairs[$key])) {
+                continue;
+            }
+            $pairs[$key] = true;
+
+            $fav = new Favorite();
+            $fav->setUser($user);
+            $fav->setRestaurant($restaurant);
+            $dt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-8 months', 'now'));
+            $fav->setCreatedAt($dt);
+            $fav->setUpdatedAt($dt);
+            $manager->persist($fav);
+            $restaurant->setFavoriteCount($restaurant->getFavoriteCount() + 1);
+        }
     }
 }
