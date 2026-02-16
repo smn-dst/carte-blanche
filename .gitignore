@@ -32,3 +32,5 @@ php-cs-fixer.phar
 ###> symfony/flex ###
 compose.override.yaml
 ###< symfony/flex ###
+
+.DS_Store
