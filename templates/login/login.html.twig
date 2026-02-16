@@ -8,6 +8,12 @@
             <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
         {% endif %}
 
+        {% for type, message in app.flashes %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message | join(', ') }}
+            </div>
+        {% endfor %}
+
         {% if app.user %}
             <div class="mb-3">
                 You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
@@ -34,5 +40,6 @@
         <button class="btn btn-lg btn-primary" type="submit">
             Sign in
         </button>
+        <a href="{{ path('app_forgot_password') }}">Forgot your password?</a>
     </form>
 {% endblock %}

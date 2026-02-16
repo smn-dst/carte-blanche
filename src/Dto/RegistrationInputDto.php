@@ -50,8 +50,7 @@ final class RegistrationInputDto
         public string $phoneNumber = '',
         #[Assert\IsTrue(message: 'You should agree to our terms.')]
         public bool $agreeTerms = false,
-        #[Assert\NotBlank]
-        public array $roles = [],
+        public array $roles = ['ROLE_USER'],
     ) {
     }
 }
