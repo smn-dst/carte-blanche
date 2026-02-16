@@ -211,6 +211,60 @@ entity "AiLog" as ailog {
 }
 
 ' ============================================================
+' ENTITE FAQ_ENTRY (IA)
+' ============================================================
+
+entity "FaqEntry" as faq_entry {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * question : TEXT <<NOT NULL>>
+  * answer : TEXT <<NOT NULL>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE FAQ_EMBEDDING (IA)
+' ============================================================
+
+entity "FaqEmbedding" as faq_embedding {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * content : TEXT <<NOT NULL>>
+  * embedding : VECTOR(768) <<NOT NULL>>
+  * created_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **faq_entry_id** : INT <<FK>> → FaqEntry.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE RESTAURANT_EMBEDDING (IA)
+' ============================================================
+
+entity "RestaurantEmbedding" as restaurant_embedding {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * content : TEXT <<NOT NULL>>
+  * embedding : VECTOR(768) <<NOT NULL>>
+  * updated_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **restaurant_id** : INT <<FK>> → Restaurant.id <<NOT NULL>>
+}
+
+' ============================================================
+' ENTITE USER_PREFERENCE_EMBEDDING (IA)
+' ============================================================
+
+entity "UserPreferenceEmbedding" as user_preference_embedding {
+  * **id** : INT <<PK>> <<AUTO_INCREMENT>>
+  --
+  * preferences_text : TEXT <<NOT NULL>>
+  * embedding : VECTOR(768) <<NOT NULL>>
+  * updated_at : TIMESTAMP <<NOT NULL>>
+  --
+  * **user_id** : INT <<FK>> <<UNIQUE>> → User.id <<NOT NULL>>
+}
+
+' ============================================================
 ' RELATIONS
 ' ============================================================
 
@@ -265,6 +319,15 @@ ailog }o--o| restaurant : "restaurant_id"
 
 ' AiLog (N) ── (0..1) User
 ailog }o--o| user : "user_id"
+
+' FaqEntry (1) ── (N) FaqEmbedding
+faq_entry ||--o{ faq_embedding : "faq_entry_id"
+
+' Restaurant (1) ── (N) RestaurantEmbedding
+restaurant ||--o{ restaurant_embedding : "restaurant_id"
+
+' User (1) ── (0..1) UserPreferenceEmbedding
+user ||--o| user_preference_embedding : "user_id"
 
 ' ============================================================
 ' NOTES METIER
