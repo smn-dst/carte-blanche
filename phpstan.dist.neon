@@ -9,3 +9,8 @@ parameters:
         # Doctrine assigne l'id après persist()
         - identifier: property.unusedType
           path: src/Entity/*.php
+        # Bundle SymfonyCasts VerifyEmail (classes dans vendor)
+        - identifier: class.notFound
+          message: '#SymfonyCasts\\Bundle\\VerifyEmail#'
+        - identifier: throws.notThrowable
+          message: '#SymfonyCasts\\Bundle\\VerifyEmail#'
