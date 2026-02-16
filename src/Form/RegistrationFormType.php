@@ -22,6 +22,7 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('email')
             ->add('plainPassword')
+            ->add('confirmPassword')
             ->add('firstName')
             ->add('lastName')
             ->add('phoneNumber')
@@ -41,15 +42,15 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => RegistrationInputDto::class,
-            'empty_data' => fn ($form) => new RegistrationInputDto(
-                email: $form->get('email')->getData() ?? '',
-                plainPassword: $form->get('plainPassword')->getData() ?? '',
-                firstName: $form->get('firstName')->getData() ?? '',
-                lastName: $form->get('lastName')->getData() ?? '',
-                phoneNumber: $form->get('phoneNumber')->getData() ?? '',
-                agreeTerms: $form->get('agreeTerms')->getData() ?? false,
-                roles: $form->get('roles')->getData() ?? []
-            ),
+            //            'empty_data' => fn($form) => new RegistrationInputDto(
+            //                email: $form->get('email')->getData() ?? '',
+            //                plainPassword: $form->get('plainPassword')->getData() ?? '',
+            //                firstName: $form->get('firstName')->getData() ?? '',
+            //                lastName: $form->get('lastName')->getData() ?? '',
+            //                phoneNumber: $form->get('phoneNumber')->getData() ?? '',
+            //                agreeTerms: $form->get('agreeTerms')->getData() ?? false,
+            //                roles: $form->get('roles')->getData() ?? []
+            //            ),
         ]);
     }
 }
