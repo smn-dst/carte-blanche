@@ -1,3 +1,4 @@
+# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
@@ -25,7 +26,10 @@ security:
 
             # https://symfony.com/doc/current/security/impersonating_user.html
             # switch_user: true
-
+    role_hierarchy:
+        ROLE_VENDOR: ROLE_USER
+        ROLE_MODERATOR: ROLE_VENDOR
+        ROLE_ADMIN: ROLE_MODERATOR
     # Note: Only the *first* matching rule is applied
     access_control:
         # - { path: ^/admin, roles: ROLE_ADMIN }
