@@ -70,8 +70,8 @@ jobs:
           extensions: amqp, intl, pdo_pgsql
           tools: composer:v2, php-cs-fixer
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
@@ -110,8 +110,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
@@ -137,8 +137,8 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
@@ -160,15 +160,15 @@ jobs:
           php-version: ${{ env.PHP_VERSION }}
           extensions: amqp, intl, pdo_pgsql
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
-      - name: Cache assets vendor (importmap)
-        uses: actions/cache@v4
+      - name: Restore assets vendor cache (importmap)
+        uses: actions/cache/restore@v4
         with:
           path: assets/vendor
           key: assets-vendor-${{ hashFiles('composer.lock') }}-${{ hashFiles('package-lock.json') }}
@@ -199,21 +199,22 @@ jobs:
           node-version: ${{ env.NODE_VERSION }}
           cache: npm
 
-      - name: Cache Cypress
-        uses: actions/cache@v4
+      - name: Restore Cypress cache
+        uses: actions/cache/restore@v4
         with:
           path: ~/.cache/Cypress
           key: cypress-${{ hashFiles('package-lock.json') }}
+          restore-keys: cypress-
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
-      - name: Cache assets vendor (importmap)
-        uses: actions/cache@v4
+      - name: Restore assets vendor cache (importmap)
+        uses: actions/cache/restore@v4
         with:
           path: assets/vendor
           key: assets-vendor-${{ hashFiles('composer.lock') }}-${{ hashFiles('package-lock.json') }}
@@ -255,8 +256,8 @@ jobs:
           extensions: amqp, intl, pdo_pgsql
           tools: composer:v2
 
-      - name: Cache Composer
-        uses: actions/cache@v4
+      - name: Restore Composer cache
+        uses: actions/cache/restore@v4
         with:
           path: vendor
           key: composer-${{ hashFiles('composer.lock') }}
