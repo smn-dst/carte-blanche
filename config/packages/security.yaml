@@ -20,6 +20,16 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            form_login:
+                login_path: app_login
+                check_path: app_login
+                enable_csrf: true
+                # la rédirection après connexion est gérée dans le contrôleur Login
+                default_target_path: app_home # à titre d'exemple, à adapter
+            logout:
+                path: app_logout
+                # where to redirect after logout
+                # target: app_any_route
 
             # Activate different ways to authenticate:
             # https://symfony.com/doc/current/security.html#the-firewall
@@ -28,7 +38,6 @@ security:
             # switch_user: true
     role_hierarchy:
         ROLE_VENDOR: ROLE_USER
-        ROLE_MODERATOR: ROLE_VENDOR
         ROLE_ADMIN: ROLE_MODERATOR
     # Note: Only the *first* matching rule is applied
     access_control:
