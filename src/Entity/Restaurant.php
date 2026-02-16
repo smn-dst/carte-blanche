@@ -135,6 +135,12 @@ class Restaurant
     #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: AiLog::class)]
     private Collection $aiLogs;
 
+    /**
+     * @var Collection<int, RestaurantEmbedding>
+     */
+    #[ORM\OneToMany(mappedBy: 'restaurant', targetEntity: RestaurantEmbedding::class)]
+    private Collection $restaurantEmbeddings;
+
     public function __construct()
     {
         $this->categories = new ArrayCollection();
@@ -143,6 +149,7 @@ class Restaurant
         $this->cartItems = new ArrayCollection();
         $this->favorites = new ArrayCollection();
         $this->aiLogs = new ArrayCollection();
+        $this->restaurantEmbeddings = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -613,6 +620,35 @@ class Restaurant
         if ($this->aiLogs->removeElement($aiLog)) {
             if ($aiLog->getRestaurant() === $this) {
                 $aiLog->setRestaurant(null);
+            }
+        }
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, RestaurantEmbedding>
+     */
+    public function getRestaurantEmbeddings(): Collection
+    {
+        return $this->restaurantEmbeddings;
+    }
+
+    public function addRestaurantEmbedding(RestaurantEmbedding $restaurantEmbedding): static
+    {
+        if (!$this->restaurantEmbeddings->contains($restaurantEmbedding)) {
+            $this->restaurantEmbeddings->add($restaurantEmbedding);
+            $restaurantEmbedding->setRestaurant($this);
+        }
+
+        return $this;
+    }
+
+    public function removeRestaurantEmbedding(RestaurantEmbedding $restaurantEmbedding): static
+    {
+        if ($this->restaurantEmbeddings->removeElement($restaurantEmbedding)) {
+            if ($restaurantEmbedding->getRestaurant() === $this) {
+                $restaurantEmbedding->setRestaurant(null);
             }
         }
 
