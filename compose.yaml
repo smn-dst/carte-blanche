@@ -1,8 +1,8 @@
 # compose.yaml
 services:
-  # --- PostgreSQL 16 ---
+  # --- PostgreSQL ---
   database:
-    image: postgres:${POSTGRES_VERSION:-16}-alpine
+    image: pgvector/pgvector:pg16
     environment:
       POSTGRES_DB: carte_blanche
       POSTGRES_PASSWORD: carte_blanche
@@ -27,7 +27,7 @@ services:
     depends_on:
       - database
 
-  # --- PHP (serveur integre Symfony) ---
+  # --- PHP ---
   php:
     build:
       context: .
@@ -50,7 +50,7 @@ services:
       - "8888:8000"
     command: php -S 0.0.0.0:8000 -t public
 
-  # --- Messenger Worker (traitement asynchrone) ---
+  # --- Messenger Worker ---
   messenger-worker:
     build:
       context: .
@@ -70,7 +70,7 @@ services:
       - redis
     command: php bin/console messenger:consume async -vv --time-limit=3600
 
-  # --- Nginx (reverse proxy) ---
+  # --- Nginx ---
   nginx:
     image: nginx:alpine
     ports:
@@ -81,7 +81,7 @@ services:
     depends_on:
       - php
 
-  # --- Mailpit (interception des emails en dev) ---
+  # --- Mailpit ---
   mailer:
     image: axllent/mailpit
     ports:
@@ -91,7 +91,7 @@ services:
       MP_SMTP_AUTH_ACCEPT_ANY: 1
       MP_SMTP_AUTH_ALLOW_INSECURE: 1
 
-  # --- RabbitMQ (file de messages pour Symfony Messenger) ---
+  # --- RabbitMQ ---
   rabbitmq:
     image: rabbitmq:3-management-alpine
     ports:
@@ -108,7 +108,7 @@ services:
       timeout: 10s
       retries: 5
 
-  # --- Redis (cache) ---
+  # --- Redis ---
   redis:
     image: redis:7-alpine
     ports:

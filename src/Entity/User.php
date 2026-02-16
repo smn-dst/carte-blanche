@@ -6,12 +6,19 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+// use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[ORM\Table(name: '`user`')]
 #[ORM\UniqueConstraint(name: 'UNIQ_IDENTIFIER_EMAIL', fields: ['email'])]
+
+/**
+ * #[UniqueEntity(fields: ['email'], message: 'There is already an account with this email')]
+ * Géré par le Dto et le formulaire, pas besoin de cette contrainte au niveau de l'entité
+ * qui pourrait causer des problèmes lors de la validation de l'entité dans d'autres contextes (ex: mise à jour du profil sans changer l'email).
+ */
 class User implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
@@ -46,10 +53,10 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $isVerified = null;
 
-    #[ORM\Column]
+    #[ORM\Column(nullable: true)]
     private ?bool $isSuspended = null;
 
     /**
@@ -91,8 +98,16 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(mappedBy: 'user', targetEntity: AiLog::class)]
     private Collection $aiLogs;
 
+    #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserPreferenceEmbedding::class)]
+    private ?UserPreferenceEmbedding $userPreferenceEmbedding = null;
+
+    #[ORM\Column]
+    private ?\DateTimeImmutable $updatedAt = null;
+
     public function __construct()
     {
+        $this->createdAt = new \DateTimeImmutable();
+        $this->updatedAt = new \DateTimeImmutable();
         $this->orders = new ArrayCollection();
         $this->restaurants = new ArrayCollection();
         $this->refundsRequested = new ArrayCollection();
@@ -433,6 +448,33 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $aiLog->setUser(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getUserPreferenceEmbedding(): ?UserPreferenceEmbedding
+    {
+        return $this->userPreferenceEmbedding;
+    }
+
+    public function setUserPreferenceEmbedding(?UserPreferenceEmbedding $userPreferenceEmbedding): static
+    {
+        if (null !== $userPreferenceEmbedding && $userPreferenceEmbedding->getUser() !== $this) {
+            $userPreferenceEmbedding->setUser($this);
+        }
+        $this->userPreferenceEmbedding = $userPreferenceEmbedding;
+
+        return $this;
+    }
+
+    public function getUpdatedAt(): ?\DateTimeImmutable
+    {
+        return $this->updatedAt;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
+    {
+        $this->updatedAt = $updatedAt;
 
         return $this;
     }

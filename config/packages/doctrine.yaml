@@ -2,12 +2,31 @@ doctrine:
     dbal:
         url: '%env(resolve:DATABASE_URL)%'
 
+        types:
+            vector: Pgvector\Doctrine\VectorType
+            halfvec: Pgvector\Doctrine\HalfVectorType
+            bit: Pgvector\Doctrine\BitType
+            sparsevec: Pgvector\Doctrine\SparseVectorType
+        mapping_types:
+            vector: vector
+            halfvec: halfvec
+            bit: bit
+            sparsevec: sparsevec
+
         # IMPORTANT: You MUST configure your server version,
         # either here or in the DATABASE_URL env var (see .env file)
         #server_version: '16'
 
         profiling_collect_backtrace: '%kernel.debug%'
     orm:
+        dql:
+            numeric_functions:
+                l2_distance: Pgvector\Doctrine\L2Distance
+                max_inner_product: Pgvector\Doctrine\MaxInnerProduct
+                cosine_distance: Pgvector\Doctrine\CosineDistance
+                l1_distance: Pgvector\Doctrine\L1Distance
+                hamming_distance: Pgvector\Doctrine\HammingDistance
+                jaccard_distance: Pgvector\Doctrine\JaccardDistance
         validate_xml_mapping: true
         naming_strategy: doctrine.orm.naming_strategy.underscore_number_aware
         identity_generation_preferences:
