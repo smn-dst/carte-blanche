@@ -104,9 +104,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
 
-    #[ORM\Column(length: 64, nullable: true)]
-    private ?string $token = null;
-
     /**
      * @var Collection<int, PasswordResetToken>
      */
@@ -485,18 +482,6 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
-
-        return $this;
-    }
-
-    public function getToken(): ?string
-    {
-        return $this->token;
-    }
-
-    public function setToken(?string $token): static
-    {
-        $this->token = $token;
 
         return $this;
     }
