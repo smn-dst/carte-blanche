@@ -1,0 +1,68 @@
+{# Sidebar.html.twig #}
+
+{% set nav_items = [
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/calendrier', label: 'Calendrier des enchères' },
+    { path: '/encheres', label: 'Les enchères' },
+    { path: '/profil', label: 'Profil' }
+] %}
+
+{# Desktop Side Panel - Always visible #}
+<aside class="hidden lg:flex flex-col w-72 border-r border-sidebar-border bg-sidebar fixed h-full">
+    <div class="p-6 flex-1 overflow-y-auto">
+        <a href="/" class="block mb-12">
+            <div class="flex items-baseline gap-2">
+                <span class="text-3xl font-bold">BID</span>
+                <div class="w-2 h-2 rounded-full bg-primary"></div>
+            </div>
+        </a>
+
+        <nav class="space-y-1">
+            {% for item in nav_items %}
+                <a href="{{ item.path }}" 
+                   class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all relative overflow-hidden group text-muted-foreground hover:text-foreground hover:bg-secondary">
+                    <span class="text-sm">{{ item.label }}</span>
+                </a>
+            {% endfor %}
+        </nav>
+
+        <div class="mt-8 pt-6 border-t border-sidebar-border">
+            <a href="/panier">
+                <button class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all">
+                    <span class="text-sm">Panier</span>
+                </button>
+            </a>
+        </div>
+    </div>
+
+    <div class="p-6 border-t border-sidebar-border">
+        <div class="text-xs text-muted-foreground space-y-1">
+            <p>© 2026 BID Platform</p>
+            <p>Premium Auctions</p>
+        </div>
+    </div>
+</aside>
+
+{# Mobile Header #}
+<header class="lg:hidden sticky top-0 z-30 bg-background/80 backdrop-blur-xl border-b border-border">
+    <div class="flex items-center justify-between p-4">
+        <button class="text-foreground hover:text-primary hover:bg-transparent p-2">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+            </svg>
+        </button>
+        
+        <a href="/" class="flex items-baseline gap-2">
+            <span class="text-xl font-bold">BID</span>
+            <div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+        </a>
+
+        <a href="/panier">
+            <button class="relative text-foreground hover:text-primary hover:bg-transparent p-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                </svg>
+            </button>
+        </a>
+    </div>
+</header>
