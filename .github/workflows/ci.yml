@@ -225,6 +225,12 @@ jobs:
       - run: composer install --no-progress --no-interaction --no-scripts
       - run: php bin/console importmap:install
 
+      - name: Tailwind build
+        run: php bin/console tailwind:build
+
+      - name: Compile asset map
+        run: php bin/console asset-map:compile
+
       - name: Demarrer le serveur
         run: |
           php -S 127.0.0.1:8888 -t public > /dev/null 2>&1 &
