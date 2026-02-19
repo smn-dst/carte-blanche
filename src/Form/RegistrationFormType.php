@@ -10,18 +10,18 @@ use Symfony\Component\OptionsResolver\OptionsResolver;
 
 class RegistrationFormType extends AbstractType
 {
-    public function buildForm(FormBuilderInterface $builder, array $options): void
-    {
-        $builder
-            ->add('email')
-            ->add('plainPassword')
-            ->add('confirmPassword')
-            ->add('firstName')
-            ->add('lastName')
-            ->add('phoneNumber')
-            ->add('agreeTerms', CheckboxType::class)
-        ;
-    }
+    // public function buildForm(FormBuilderInterface $builder, array $options): void
+    // {
+    //     $builder
+    //         ->add('email')
+    //         ->add('plainPassword')
+    //         ->add('confirmPassword')
+    //         ->add('firstName')
+    //         ->add('lastName')
+    //         ->add('phoneNumber')
+    //         ->add('agreeTerms', CheckboxType::class)
+    //     ;
+    // }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
