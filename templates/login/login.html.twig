@@ -1,45 +1,117 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Log in!{% endblock %}
+{% block title %}Connexion
+{% endblock %}
 
 {% block body %}
-    <form method="post">
-        {% if error %}
-            <div class="alert alert-danger">{{ error.messageKey|trans(error.messageData, 'security') }}</div>
-        {% endif %}
+	<div class="min-h-screen flex items-center justify-center relative overflow-hidden py-12">
 
-        {% for type, message in app.flashes %}
-            <div class="alert alert-{{ type }}" role="alert">
-                {{ message | join(', ') }}
-            </div>
-        {% endfor %}
+		<div class="absolute inset-0 from-primary/10 via-background to-background">
+			<div class="absolute inset-0 opacity-30">
+				<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+				<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+			</div>
+		</div>
 
-        {% if app.user %}
-            <div class="mb-3">
-                You are logged in as {{ app.user.userIdentifier }}, <a href="{{ logout_path() }}">Logout</a>
-            </div>
-        {% endif %}
+		<div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+			<div class="max-w-md mx-auto">
 
-        <h1 class="h3 mb-3 font-weight-normal">Please sign in</h1>
-        <label for="username">Email</label>
-        <input type="email" value="{{ last_username }}" name="_username" id="username" class="form-control" autocomplete="email" required autofocus>
-        <label for="password">Password</label>
-        <input type="password" name="_password" id="password" class="form-control" autocomplete="current-password" required>
-        <input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+				<div class="text-center mb-8">
+					<a href="{{ path('app_home') }}" class="inline-flex items-baseline gap-2 mb-8">
+						<span class="text-4xl font-bold">Carte blanche.</span>
+						<div class="w-2 h-2 rounded-full bg-primary"></div>
+					</a>
+					<h1 class="text-4xl font-bold mb-2">Bon retour</h1>
+					<p class="text-muted-foreground">Connectez-vous à votre compte</p>
+				</div>
 
-        {#
-            Uncomment this section and add a remember_me option below your firewall to activate remember me functionality.
-            See https://symfony.com/doc/current/security/remember_me.html
+				{% if error %}
+					<div class="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+						{{ error.messageKey|trans(error.messageData, 'security') }}
+					</div>
+				{% endif %}
 
-            <div class="checkbox mb-3">
-                <input type="checkbox" name="_remember_me" id="_remember_me">
-                <label for="_remember_me">Remember me</label>
-            </div>
-        #}
+				{% for type, message in app.flashes %}
+					<div class="mb-4 p-4 bg-{{ type == 'error' ? 'red' : 'green' }}-500/10 border border-{{ type == 'error' ? 'red' : 'green' }}-500/30 rounded-lg text-sm">
+						{{ message|join(', ') }}
+					</div>
+				{% endfor %}
 
-        <button class="btn btn-lg btn-primary" type="submit">
-            Sign in
-        </button>
-        <a href="{{ path('app_forgot_password') }}">Forgot your password?</a>
-    </form>
+				<div class="p-8 bg-card border border-border rounded-xl shadow-lg">
+
+					<form method="post" class="space-y-6">
+
+						<div>
+							<label for="username" class="block text-sm mb-2 font-medium">Email</label>
+							<div class="relative">
+								<input type="email" value="{{ last_username }}" name="_username" id="username" autocomplete="email" required autofocus placeholder="votre@email.fr" class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"/>
+							</div>
+						</div>
+
+						<div>
+							<div class="flex items-center justify-between mb-2">
+								<label for="password" class="block text-sm font-medium">Mot de passe</label>
+								<a href="{{ path('app_forgot_password') }}" class="text-xs text-primary hover:underline">
+									Mot de passe oublié ?
+								</a>
+							</div>
+
+							<div class="relative">
+								<input type="password" name="_password" id="password" autocomplete="current-password" required placeholder="••••••••" class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"/>
+							</div>
+						</div>
+
+						<input type="hidden" name="_csrf_token" data-controller="csrf-protection" value="{{ csrf_token('authenticate') }}">
+						
+                        <div class="flex items-center">
+							{% include 'Components/buttons/buttons-primary.html.twig' with {
+                                as: 'button',
+                                label: 'Se connecter',
+                                variant: 'primary',
+                                with_arrow: true,
+                                extra_classes: 'flex w-full group-hover:bg-white group-hover:text-primary [&_svg]:transition-transform [&_svg]:duration-300 [&_svg]:group-hover:translate-x-1 hover:cursor-pointer'
+                            } %}
+						</div>
+
+					</form>
+
+					<div class="relative my-6">
+						<div class="absolute inset-0 flex items-center">
+							<div class="w-full border-t border-border"></div>
+						</div>
+						<div class="relative flex justify-center">
+							<span class="px-4 bg-card text-xs text-muted-foreground">OU</span>
+						</div>
+					</div>
+
+					<div class="space-y-3">
+						<button class="w-full flex items-center justify-center gap-3 px-6 py-3 border border-border rounded-lg hover:bg-secondary transition-colors text-sm font-medium">
+							Continuer avec Google
+						</button>
+
+						<button class="w-full flex items-center justify-center gap-3 px-6 py-3 border border-border rounded-lg hover:bg-secondary transition-colors text-sm font-medium">
+							Continuer avec GitHub
+						</button>
+					</div>
+
+					<div class="mt-8 text-center">
+						<p class="text-sm text-muted-foreground">
+							Pas encore de compte ?
+							<a href="{{ path('app_register') }}" class="text-primary hover:underline font-semibold ml-1">
+								Créer un compte
+							</a>
+						</p>
+					</div>
+
+				</div>
+
+				<div class="mt-6 text-center">
+					<a href="{{ path('app_home') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+						← Retour à l'accueil
+					</a>
+				</div>
+
+			</div>
+		</div>
+	</div>
 {% endblock %}
