@@ -8,9 +8,9 @@ use App\Enum\StatusRestaurantEnum;
 use App\Repository\RestaurantRepository;
 use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
-class HomePageTest extends WebTestCase
+class RestaurantControllerTest extends WebTestCase
 {
-    private function createMockRestaurant(int $id, string $name): Restaurant
+    private function createMockRestaurant(int $id, string $name, StatusRestaurantEnum $status = StatusRestaurantEnum::PUBLIE): Restaurant
     {
         $owner = new User();
         $owner->setEmail('owner@test.com');
@@ -20,12 +20,12 @@ class HomePageTest extends WebTestCase
 
         $restaurant = new Restaurant();
         $restaurant->setName($name);
-        $restaurant->setAddress('123 Test Street');
+        $restaurant->setAddress('123 Test Street, Paris');
         $restaurant->setLatitude(48.8566);
         $restaurant->setLongitude(2.3522);
         $restaurant->setCapacity(50);
-        $restaurant->setAskingPrice('100000.00');
-        $restaurant->setStatus(StatusRestaurantEnum::PUBLIE);
+        $restaurant->setAskingPrice('250000.00');
+        $restaurant->setStatus($status);
         $restaurant->setOwner($owner);
         $restaurant->setCreatedAt(new \DateTimeImmutable());
 
@@ -36,78 +36,78 @@ class HomePageTest extends WebTestCase
         return $restaurant;
     }
 
-    public function testHomePageIsSuccessful(): void
+    public function testShowRestaurantPageIsSuccessful(): void
     {
         $client = static::createClient();
 
+        $restaurant = $this->createMockRestaurant(42, 'Le Test Restaurant');
+
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
-            ->method('findFeaturedForHome')
-            ->willReturn([
-                $this->createMockRestaurant(1, 'Restaurant Test 1'),
-                $this->createMockRestaurant(2, 'Restaurant Test 2'),
-            ]);
+            ->method('find')
+            ->with(42)
+            ->willReturn($restaurant);
 
         static::getContainer()->set(RestaurantRepository::class, $mockRepository);
 
-        $client->request('GET', '/');
+        $client->request('GET', '/restaurant/42');
 
         $this->assertResponseIsSuccessful();
     }
 
-    public function testHomePageContainsExpectedContent(): void
+    public function testShowRestaurantReturns404WhenNotFound(): void
     {
         $client = static::createClient();
 
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
-            ->method('findFeaturedForHome')
-            ->willReturn([]);
+            ->method('find')
+            ->with(999)
+            ->willReturn(null);
 
         static::getContainer()->set(RestaurantRepository::class, $mockRepository);
 
-        $crawler = $client->request('GET', '/');
+        $client->request('GET', '/restaurant/999');
+
+        $this->assertResponseStatusCodeSame(404);
+    }
+
+    public function testShowRestaurantDisplaysCorrectContent(): void
+    {
+        $client = static::createClient();
+
+        $restaurant = $this->createMockRestaurant(1, 'Le Gourmet Français');
+        $restaurant->setDescription('Un excellent restaurant gastronomique');
+
+        $mockRepository = $this->createMock(RestaurantRepository::class);
+        $mockRepository
+            ->method('find')
+            ->with(1)
+            ->willReturn($restaurant);
+
+        static::getContainer()->set(RestaurantRepository::class, $mockRepository);
+
+        $crawler = $client->request('GET', '/restaurant/1');
 
         $this->assertResponseIsSuccessful();
         $this->assertSelectorExists('body');
     }
 
-    public function testHomePageDisplaysRestaurants(): void
+    public function testShowRestaurantWithInvalidIdFormat(): void
     {
         $client = static::createClient();
 
-        $restaurants = [
-            $this->createMockRestaurant(1, 'Le Gourmet Parisien'),
-            $this->createMockRestaurant(2, 'La Belle Époque'),
-            $this->createMockRestaurant(3, 'Chez Marcel'),
-        ];
+        $client->request('GET', '/restaurant/invalid');
 
-        $mockRepository = $this->createMock(RestaurantRepository::class);
-        $mockRepository
-            ->method('findFeaturedForHome')
-            ->with(5)
-            ->willReturn($restaurants);
-
-        static::getContainer()->set(RestaurantRepository::class, $mockRepository);
-
-        $crawler = $client->request('GET', '/');
-
-        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(404);
     }
 
-    public function testHomePageWithNoRestaurants(): void
+    public function testShowRestaurantWithNegativeId(): void
     {
         $client = static::createClient();
 
-        $mockRepository = $this->createMock(RestaurantRepository::class);
-        $mockRepository
-            ->method('findFeaturedForHome')
-            ->willReturn([]);
+        $client->request('GET', '/restaurant/-1');
 
-        static::getContainer()->set(RestaurantRepository::class, $mockRepository);
-
-        $client->request('GET', '/');
-
-        $this->assertResponseIsSuccessful();
+        $this->assertResponseStatusCodeSame(404);
     }
 }
