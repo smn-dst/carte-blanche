@@ -2,24 +2,42 @@
 {% set tag = as|default('a') %}
 {% set base_class = variant == 'secondary' ? 'secondary-btn' : 'primary-btn' %}
 {% set extra = extra_classes|default('') %}
+{% set type = type|default('submit') %}
 
-{% if tag == 'span' %}
-	<span class="{{ (base_class ~ ' ' ~ extra)|trim }}">
-	{% else %}
-		<a href="{{ href }}" class="{{ (base_class ~ ' ' ~ extra)|trim }}">
-		{% endif %}
-
-		{{ label }}
-
-		{% if with_arrow|default(false) %}
-			<svg class="size-5" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-				<path d="M5 12h14"/>
-				<path d="m12 5 7 7-7 7"/>
-			</svg>
-		{% endif %}
-
-		{% if tag == 'span' %}
-		</span>
+{% if tag == 'button' %}
+    <button
+        type="{{ type }}"
+        class="{{ (base_class ~ ' ' ~ extra)|trim }}"
+    >
+{% elseif tag == 'span' %}
+    <span class="{{ (base_class ~ ' ' ~ extra)|trim }}">
 {% else %}
-	</a>
+    <a
+        href="{{ href|default('#') }}"
+        class="{{ (base_class ~ ' ' ~ extra)|trim }}"
+    >
+{% endif %}
+
+        {{ label }}
+
+        {% if with_arrow|default(false) %}
+            <svg class="size-5 transition-transform duration-300"
+                 xmlns="http://www.w3.org/2000/svg"
+                 viewBox="0 0 24 24"
+                 fill="none"
+                 stroke="currentColor"
+                 stroke-width="2"
+                 stroke-linecap="round"
+                 stroke-linejoin="round">
+                <path d="M5 12h14"/>
+                <path d="m12 5 7 7-7 7"/>
+            </svg>
+        {% endif %}
+
+{% if tag == 'button' %}
+    </button>
+{% elseif tag == 'span' %}
+    </span>
+{% else %}
+    </a>
 {% endif %}
