@@ -1,5 +1,5 @@
 @import "tailwindcss";
 
-body {
-    background-color: skyblue;
-}
+@import "./theme.css";
+@import "./components/buttons.css";
+@import "./components/sections.css";
