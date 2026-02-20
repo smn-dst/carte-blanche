@@ -489,6 +489,18 @@ class Restaurant
         return $this->images;
     }
 
+    public function getFirstImage(): ?Image
+    {
+        if ($this->images->isEmpty()) {
+            return null;
+        }
+
+        $sorted = $this->images->toArray();
+        usort($sorted, fn (Image $a, Image $b) => $a->getPosition() <=> $b->getPosition());
+
+        return $sorted[0];
+    }
+
     public function addImage(Image $image): static
     {
         if (!$this->images->contains($image)) {

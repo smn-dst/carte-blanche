@@ -8,6 +8,7 @@
   },
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
+    "build:icons": "node scripts/build-sprite.cjs",
     "tailwind:build": "npx @tailwindcss/cli -i assets/styles/app.css -o var/tailwind/app.built.css",
     "tailwind:watch": "npx @tailwindcss/cli -i assets/styles/app.css -o var/tailwind/app.built.css --watch",
     "lint": "eslint .",
@@ -32,6 +33,7 @@
     "cypress": "^15.10.0",
     "eslint": "^10.0.0",
     "eslint-plugin-cypress": "^5.3.0",
-    "globals": "^17.3.0"
+    "globals": "^17.3.0",
+    "svg-sprite": "^2.0.4"
   }
 }
