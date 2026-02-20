@@ -1,0 +1,108 @@
+{% extends 'base.html.twig' %}
+
+{% block body %}
+    <div class="sticky top-0 body z-10 pb-4">
+        <h1>Page des enchères</h1>
+
+        <form method="GET" action="{{ path('app_encheres') }}" id="search-form" class="mb-4 flex gap-2 items-center">
+        <input 
+            type="text" 
+            name="search" 
+            value="{{ search|lower }}" 
+            placeholder="Rechercher un restaurant..."
+            class="border border-gray-300 rounded px-4 py-2"
+            autocomplete="off"
+            onchange="this.form.submit()"
+        >
+        <select 
+            name="category" 
+            class="border border-gray-300 rounded px-4 py-2"
+            onchange="this.form.submit()"
+        >
+            <option value="">Toutes les catégories</option>
+            {% for category in categories %}
+                <option value="{{ category.id }}" {{ categoryId == category.id ? 'selected' : '' }}>
+                    {{ category.name }}
+                </option>
+            {% endfor %}
+        </select>
+        <select 
+            name="sort" 
+            class="border border-gray-300 rounded px-4 py-2"
+            onchange="this.form.submit()"
+        >
+            <option value="">Toutes les dates</option>
+            <option value="recent" {{ sortBy == 'recent' ? 'selected' : '' }}>Date plus récent à ancienne</option>
+            <option value="old" {{ sortBy == 'old' ? 'selected' : '' }}>Date plus ancienne à récente</option>
+        </select>
+        <div class="flex flex-col gap-1">
+            <div class="flex justify-between items-center gap-2">
+                <span class="text-sm">{{ currentMinPrice|number_format(0, '', ' ') }} €</span>
+                <div class="flex gap-2 items-center">
+                    <input 
+                        type="range" 
+                        name="minPrice" 
+                        min="{{ priceRange.min }}" 
+                        max="{{ priceRange.max }}" 
+                        value="{{ currentMinPrice }}"
+                        step="1000"
+                        onchange="this.form.submit()"
+                        class="w-32"
+                    >
+                    <input 
+                        type="range" 
+                        name="maxPrice" 
+                        min="{{ priceRange.min }}" 
+                        max="{{ priceRange.max }}" 
+                        value="{{ currentMaxPrice }}"
+                        step="1000"
+                        onchange="this.form.submit()"
+                        class="w-32"
+                    >
+                </div>
+                <span class="text-sm">{{ currentMaxPrice|number_format(0, '', ' ') }} €</span>
+                <select 
+                    name="priceSort" 
+                    class="border border-gray-300 rounded px-4 py-2"
+                    onchange="this.form.submit()"
+                >
+                    <option value="">Tous les prix</option>
+                    <option value="asc" {{ priceSort == 'asc' ? 'selected' : '' }}>Tri prix croissant</option>
+                    <option value="desc" {{ priceSort == 'desc' ? 'selected' : '' }}>Tri prix décroissant</option>
+                </select>
+            </div>
+        </div>
+        {% if search or categoryId or sortBy or minPrice or maxPrice or priceSort %}
+            <a 
+                href="{{ path('app_encheres') }}" 
+                class="text-gray-600 hover:text-gray-800 underline"
+            >
+                Effacer
+            </a>
+        {% endif %}
+        </form>
+    </div>
+
+    <ul class="flex flex-col gap-2">
+        {% for restaurant in restaurants %}
+            <li class="border border-black p-2">
+                <p>Places : {{ restaurant.maxCapacity }}</p>
+
+                {% for category in restaurant.categories %}
+                    <p>{{ category.name }}</p>
+                {% endfor %}
+                <strong>{{ restaurant.name }}</strong>
+                {{ restaurant.address }}
+
+                <p>Date d'enchère : {{ restaurant.auctionDate|date('d/m/Y') }}{% if restaurant.auctionTime %} - {{ restaurant.auctionTime|date('H:i') }}{% endif %}</p>
+                <h3 class="font-bold">Statut : {{ restaurant.status.value }}</h3>
+                <p>Prix de départ</p>
+                {{ restaurant.askingPrice|number_format(0, '', ' ') }} €
+
+                <p>Prix ticket : {{ restaurant.ticketPrice|number_format(0, '', ' ') }} €</p>
+            </li>
+        {% else %}
+            <li>Aucun restaurant.</li>
+        {% endfor %}
+    </ul>   
+{% endblock %}
