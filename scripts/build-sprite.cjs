@@ -44,7 +44,6 @@ try {
   }
   for (const file of files) {
     const filePath = path.join(ICONS_DIR, file);
-    const name = path.basename(file, '.svg');
     spriter.add(path.resolve(filePath), file, fs.readFileSync(filePath, 'utf8'));
   }
 
