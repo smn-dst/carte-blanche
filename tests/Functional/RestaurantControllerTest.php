@@ -44,6 +44,7 @@ class RestaurantControllerTest extends WebTestCase
 
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
+            ->expects($this->once())
             ->method('find')
             ->with(42)
             ->willReturn($restaurant);
@@ -61,6 +62,7 @@ class RestaurantControllerTest extends WebTestCase
 
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
+            ->expects($this->once())
             ->method('find')
             ->with(999)
             ->willReturn(null);
@@ -81,6 +83,7 @@ class RestaurantControllerTest extends WebTestCase
 
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
+            ->expects($this->once())
             ->method('find')
             ->with(1)
             ->willReturn($restaurant);

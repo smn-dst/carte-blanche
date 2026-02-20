@@ -84,6 +84,7 @@ class HomePageTest extends WebTestCase
 
         $mockRepository = $this->createMock(RestaurantRepository::class);
         $mockRepository
+            ->expects($this->once())
             ->method('findFeaturedForHome')
             ->with(5)
             ->willReturn($restaurants);
