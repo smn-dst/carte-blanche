@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Restaurant;
+use App\Enum\StatusRestaurantEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
 
@@ -51,14 +52,12 @@ class RestaurantRepository extends ServiceEntityRepository
             $qb->where(implode(' AND ', $conditions));
         }
 
-        // Tri par date
         if ('recent' === $sortBy) {
             $qb->orderBy('r.createdAt', 'DESC');
         } elseif ('old' === $sortBy) {
             $qb->orderBy('r.createdAt', 'ASC');
         }
 
-        // Tri par prix (priorité sur le tri par date si défini)
         if ('asc' === $priceSort) {
             $qb->orderBy('r.askingPrice', 'ASC');
         } elseif ('desc' === $priceSort) {
@@ -84,5 +83,43 @@ class RestaurantRepository extends ServiceEntityRepository
             'min' => (float) ($result['minPrice'] ?? 0),
             'max' => (float) ($result['maxPrice'] ?? 0),
         ];
+    }
+
+    /**
+     * Restaurants pour la section « Enchères exclusives » de la home.
+     * Statuts PUBLIE et PROGRAMME : achetable ou à venir.
+     *
+     * @return Restaurant[]
+     */
+    public function findFeaturedForHome(int $maxResults = 5): array
+    {
+        $ids = $this->createQueryBuilder('r')
+            ->select('r.id')
+            ->where('r.status IN (:statuses)')
+            ->setParameter('statuses', [
+                StatusRestaurantEnum::PUBLIE,
+                StatusRestaurantEnum::PROGRAMME,
+            ])
+            ->orderBy('r.updatedAt', 'DESC')
+            ->addOrderBy('r.createdAt', 'DESC')
+            ->setMaxResults($maxResults)
+            ->getQuery()
+            ->getSingleColumnResult();
+
+        if ([] === $ids) {
+            return [];
+        }
+
+        $restaurants = $this->createQueryBuilder('r')
+            ->leftJoin('r.categories', 'c')->addSelect('c')
+            ->leftJoin('r.images', 'i')->addSelect('i')
+            ->where('r.id IN (:ids)')
+            ->setParameter('ids', $ids)
+            ->getQuery()
+            ->getResult();
+
+        usort($restaurants, fn (Restaurant $a, Restaurant $b): int => array_search($a->getId(), $ids, true) <=> array_search($b->getId(), $ids, true));
+
+        return $restaurants;
     }
 }

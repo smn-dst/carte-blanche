@@ -1,0 +1,18 @@
+@layer components {
+  .article-style {
+    @apply rounded-xl p-6 border border-border hover:border-primary/50 cursor-pointer transition-all duration-200;
+  }
+
+  .icon-article-style {
+    @apply size-12 rounded-xl bg-primary/10 flex items-center justify-center group-hover:bg-primary/20 transition-colors duration-200 p-3 text-primary;
+  }
+
+  .text-description {
+    @apply text-xl sm:text-2xl text-muted-foreground mb-12 max-w-3xl mx-auto leading-relaxed px-4;
+  }
+
+  .text-gradient {
+    @apply bg-linear-to-r from-primary to-primary/60 bg-clip-text text-transparent;
+  }
+}
+

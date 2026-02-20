@@ -1,0 +1,13 @@
+@layer components {
+  .primary-btn {
+    @apply bg-primary px-4 py-2 rounded flex items-center justify-center gap-4 w-fit text-lg font-medium text-white hover:bg-primary/90 transition-all duration-200;
+  }
+
+  .secondary-btn {
+    @apply bg-transparent px-6 py-2 rounded flex items-center justify-center gap-4 w-fit text-lg font-medium text-white hover:bg-primary/90 transition-all border-2 border-border hover:border-border-hover;
+  }
+
+  .primary-comment {
+    @apply flex items-center justify-center gap-2 border p-2 px-4 rounded-3xl bg-primary/10 text-primary text-sm font-semibold;
+  }
+}
