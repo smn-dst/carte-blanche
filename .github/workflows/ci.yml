@@ -186,6 +186,20 @@ jobs:
     name: "Tests E2E (Cypress)"
     needs: [lint-php, lint-js, lint-twig]
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: carte_blanche
+          POSTGRES_PASSWORD: carte_blanche
+          POSTGRES_DB: carte_blanche_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - uses: actions/checkout@v4
 
@@ -230,6 +244,9 @@ jobs:
 
       - name: Compile asset map
         run: php bin/console asset-map:compile
+
+      - name: Setup database
+        run: php bin/console doctrine:migrations:migrate --no-interaction
 
       - name: Demarrer le serveur
         run: |

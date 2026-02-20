@@ -1,0 +1,49 @@
+{% set nav_items = [
+	{ path: '/dashboard', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
+	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
+	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
+	{ path: '/admin-refund', label: 'Les remboursements', icon: 'ticket-x', role: 'ROLE_ADMIN' },
+	{ path: '/admin-logs', label: 'Logs IA', icon: 'bot', role: 'ROLE_ADMIN' },
+	{ path: '/reservations', label: 'Mes réservations', icon: 'tickets', role: 'ROLE_USER' },
+	{ path: '/encheres/:id', label: 'Mes annonces', icon: 'megaphone', role: 'ROLE_VENDOR' },
+	{ path: '/calendrier', label: 'Calendrier des enchères', icon: 'calendar-range', role: '' },
+	{ path: '/favorites', label: 'Favoris', icon: 'heart', role: 'ROLE_USER' },
+	{ path: '/profil', label: 'Profil', icon: 'user', role: '' }
+] %}
+
+<aside class="flex-col w-72 min-w-72 max-w-72 border-r border-sidebar-border bg-sidebar sticky h-full flex">
+	<div class="p-6 flex-1 overflow-y-auto">
+		<a href="{{ path('app_home') }}" class="block mb-12">
+			<div class="flex items-baseline gap-2">
+				<svg class="h-24 w-48" viewBox="0 0 2956 1007" aria-hidden="true"><use href="#icon-logo-white"/></svg>
+			</div>
+		</a>
+
+		<nav class="flex flex-col gap-1" aria-label="Navigation principale">
+			{% for item in nav_items %}
+				{% set show = item.role == '' or (item.role == 'ROLE_USER' and is_granted('IS_AUTHENTICATED_FULLY')) or (item.role != '' and item.role != 'ROLE_USER' and is_granted(item.role)) %}
+				{% if show %}
+					<a href="{{ item.path }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-secondary" aria-label="{{ item.label }}">
+						<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+						<span class="text-sm">{{ item.label }}</span>
+					</a>
+				{% endif %}
+			{% endfor %}
+		</nav>
+
+		<div class="mt-8 pt-6 border-t border-sidebar-border">
+			<a href="/panier" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Panier">
+				<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-shopping-cart"/></svg>
+				<span class="text-sm">Panier</span>
+			</a>
+		</div>
+	</div>
+
+	<div class="p-6 border-t border-sidebar-border">
+		<div class="text-xs text-muted-foreground space-y-1">
+			<p>© 2026 Carte Blanche Platform</p>
+			<p>Carte Blanche</p>
+		</div>
+	</div>
+</aside>

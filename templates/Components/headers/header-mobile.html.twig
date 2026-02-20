@@ -1,0 +1,19 @@
+<div class="fixed w-full h-18 bg-background/50 backdrop-blur-xl flex items-center box-border justify-between px-4 border-b border-border z-50 text-white">
+	<button type="button" class="p-2" aria-label="Ouvrir le menu">
+		<svg class="size-4" aria-hidden="true"><use href="#icon-menu"/></svg>
+	</button>
+
+	<a href="{{ path('app_home') }}" class="flex items-baseline gap-2" aria-label="Carte blanche accueil">
+		<span class="text-xl font-bold">Carte blanche</span>
+		<div class="w-1.5 h-1.5 rounded-full bg-primary"></div>
+	</a>
+
+	<nav class="flex items-center gap-2" aria-label="Actions rapides">
+		<a href="/panier" class="p-2" aria-label="Panier">
+			<svg class="size-4" aria-hidden="true"><use href="#icon-shopping-cart"/></svg>
+		</a>
+		<a href="{{ path('app_login') }}" class="p-2" aria-label="Connexion">
+			<svg class="size-4" aria-hidden="true"><use href="#icon-log-in"/></svg>
+		</a>
+	</nav>
+</div>

@@ -1,0 +1,15 @@
+@theme {
+  --color-background: oklch(0.145 0 0);
+  --color-border: oklch(0.269 0 0);
+  --color-border-hover: #6f72f2;
+
+  --color-foreground: oklch(0.985 0 0);
+
+  --color-muted-foreground: #A1A1A1;
+
+  --color-primary: #6366F9;
+
+  --color-secondary: oklch(0.269 0 0);
+  --color-sidebar-border: oklch(0.269 0 0);
+}
+

@@ -1,6 +1,7 @@
 symfonycasts_tailwind:
-    # Specify the EXACT version of Tailwind CSS you want to use
-    binary_version: 'v4.1.11'
+    # Binaire local (npm) pour éviter "Accès refusé" sur Windows avec le binaire téléchargé.
+    # Si php bin/console tailwind:build échoue encore, utiliser: npm run tailwind:build
+    # (ou npm run tailwind:watch en dev).
+    binary: '%kernel.project_dir%/node_modules/.bin/tailwindcss'
 
-    # Alternatively, you can specify the path to the binary that you manage yourself
-    #binary: 'node_modules/.bin/tailwindcss'
+    # binary_version: null car on utilise le binaire npm (@tailwindcss/cli)

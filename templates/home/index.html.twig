@@ -4,9 +4,15 @@
 {% endblock %}
 
 {% block body %}
-    {% for type, message in app.flashes %}
-        <div class="alert alert-{{ type }}" role="alert">
-            {{ message | join(', ') }}
-        </div>
-    {% endfor %}
+	{% for type, message in app.flashes %}
+		<div class="alert alert-{{ type }}" role="alert">
+			{{ message | join(', ') }}
+		</div>
+	{% endfor %}
+
+	{{ include('home/_hero.html.twig') }}
+	{{ include('home/_stats.html.twig') }}
+	{{ include('home/_featured_auctions.html.twig') }}
+	{{ include('home/_cards.html.twig') }}
+	{{ include('home/_cta.html.twig') }}
 {% endblock %}

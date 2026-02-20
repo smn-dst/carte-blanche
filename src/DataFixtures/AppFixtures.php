@@ -226,6 +226,7 @@ final class AppFixtures extends Fixture
                 $cities,
                 $faker->randomElement([StatusRestaurantEnum::TERMINEE, StatusRestaurantEnum::VENDU]),
                 $faker->dateTimeBetween('-6 months', '-1 week'),
+                $i,
             );
         }
 
@@ -239,6 +240,7 @@ final class AppFixtures extends Fixture
                 $cities,
                 StatusRestaurantEnum::PROGRAMME,
                 $faker->dateTimeBetween('+1 week', '+6 months'),
+                10 + $i,
             );
         }
 
@@ -252,6 +254,7 @@ final class AppFixtures extends Fixture
                 $cities,
                 StatusRestaurantEnum::EN_COURS,
                 $faker->dateTimeBetween('-1 week', '+3 days'),
+                25 + $i,
             );
         }
 
@@ -270,6 +273,7 @@ final class AppFixtures extends Fixture
         array $cities,
         StatusRestaurantEnum $status,
         \DateTimeInterface $auctionDate,
+        int $index = 0,
     ): Restaurant {
         [$city, $lat0, $lng0] = $faker->randomElement($cities);
         $lat = $lat0 + $faker->randomFloat(6, -0.03, 0.03);
@@ -324,11 +328,12 @@ final class AppFixtures extends Fixture
 
         $manager->persist($r);
 
-        // Images fictives (1 à 4 par restaurant)
+        // Images fictives
+        $placeholders = ['restaurant-1.jpg', 'restaurant-2.jpg', 'restaurant-3.jpg', 'restaurant-4.jpg', 'restaurant-5.jpg'];
         $imgCount = $faker->numberBetween(1, 4);
         for ($p = 0; $p < $imgCount; ++$p) {
             $img = new Image();
-            $img->setFileName(sprintf('fixture-%s-%d.jpg', spl_object_id($r), $p));
+            $img->setFileName($placeholders[($index + $p) % count($placeholders)]);
             $img->setPosition($p);
             $img->setRestaurant($r);
             $manager->persist($img);

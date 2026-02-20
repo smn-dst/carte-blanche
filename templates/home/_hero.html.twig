@@ -1,0 +1,36 @@
+<section class="w-full flex flex-col items-center justify-center text-center h-screen bg-linear-to-br from-primary/5 via-background to-background">
+	<div class="primary-comment">
+		<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+			<path d="M20 2v4"/>
+			<path d="M22 4h-4"/>
+			<circle cx="4" cy="20" r="2"/>
+		</svg>
+		Plateforme Premium d'Enchères
+	</div>
+
+	<h1 class="text-6xl sm:text-7xl lg:text-8xl font-bold mb-6 tracking-tight leading-none max-w-200 mt-8">
+		Investissez dans
+		<span class="text-gradient">l'Excellence</span>
+	</h1>
+
+	<p class="text-description">
+		Découvrez et participez aux enchères des restaurants les plus prestigieux de France
+	</p>
+
+	<ul class="flex flex-col sm:flex-row gap-4 text-lg font-medium text-white items-center justify-center">
+		{% include 'Components/buttons/buttons-primary.html.twig' with {
+			href: '/encheres',
+			label: 'Explorer les enchères',
+			variant: 'primary',
+			with_arrow: true
+		} %}
+
+		{% include 'Components/buttons/buttons-primary.html.twig' with {
+			href: '/dashboard',
+			label: 'Dashboard',
+			variant: 'secondary',
+			with_arrow: false
+		} %}
+	</ul>
+</section>

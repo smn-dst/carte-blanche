@@ -1,0 +1,76 @@
+<section class="flex flex-col items-center justify-center my-24">
+	<div class="primary-comment">
+		<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+			<path d="M4 14a1 1 0 0 1-.78-1.63l9.9-10.2a.5.5 0 0 1 .86.46l-1.92 6.02A1 1 0 0 0 13 10h7a1 1 0 0 1 .78 1.63l-9.9 10.2a.5.5 0 0 1-.86-.46l1.92-6.02A1 1 0 0 0 11 14z"/>
+		</svg>
+		Sélection Premium
+	</div>
+
+	<h1 class="text-4xl md:text-6xl font-bold my-4">Enchères Exclusives</h1>
+	<p class="text-description">Les établissements les plus prestigieux</p>
+
+	<div
+		class="flex flex-col gap-6 w-full px-6 lg:px-8 mt-12">
+		{# === Ligne 1 : grande carte + 2 petites empilées === #}
+		<div
+			class="flex flex-col lg:flex-row gap-6">
+			{# Grande carte gauche #}
+			{% set r = featuredRestaurants[0] ?? null %}
+			{% if r %}
+				{% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+				name: r.name,
+				city: r.address ?? '',
+				seats: r.capacity ~ ' places',
+				category: r.categories|length > 0 ? r.categories.first.name : 'Restaurant',
+				price_label: 'Prix de départ',
+				price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
+				href: path('app_restaurant_show', { id: r.id }),
+                image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+				variant: 'first'
+			} %}
+			{% endif %}
+
+			{# 2 cartes empilées à droite #}
+			<div class="flex flex-col md:flex-row lg:flex-col gap-6 lg:w-2/5">
+				{% for r in featuredRestaurants|slice(1, 2) %}
+					{% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+					name: r.name,
+					city: r.address ?? '',
+					seats: r.capacity ~ ' places',
+					category: r.categories|length > 0 ? r.categories.first.name : 'Restaurant',
+					price_label: 'Prix de départ',
+					price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
+					href: path('app_restaurant_show', { id: r.id }),
+                    image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+					variant: 'small'
+				} %}
+				{% endfor %}
+			</div>
+		</div>
+
+		{# === Ligne 2 : 2 cartes côte à côte === #}
+		<div class="flex flex-col md:flex-row gap-6">
+			{% for r in featuredRestaurants|slice(3, 2) %}
+				{% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+				name: r.name,
+				city: r.address ?? '',
+				seats: r.capacity ~ ' places',
+				category: r.categories|length > 0 ? r.categories.first.name : 'Restaurant',
+				price_label: 'Prix de départ',
+				price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
+				href: path('app_restaurant_show', { id: r.id }),
+                image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+				variant: 'bottom'
+			} %}
+			{% endfor %}
+		</div>
+	</div>
+
+	{% include 'Components/buttons/buttons-primary.html.twig' with {
+		href: '/encheres',
+		label: 'Voir toutes les enchères',
+		variant: 'secondary',
+		extra_classes: 'mt-8',
+		with_arrow: true
+	} %}
+</section>
