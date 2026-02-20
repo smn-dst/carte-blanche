@@ -1,0 +1,120 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mon profil{% endblock %}
+
+{% block body %}
+    <section class="p-6 md:p-10 space-y-6">
+        <header>
+            <h1 class="text-3xl font-bold">Profil</h1>
+            <p class="text-sm text-muted-foreground">Vue de test basee sur les donnees disponibles.</p>
+        </header>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        <div class="grid gap-6 xl:grid-cols-[280px,1fr]">
+            <aside class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                <div class="size-16 rounded-full bg-primary/20 text-primary font-semibold text-xl flex items-center justify-center">
+                    {{ profile.avatarInitials }}
+                </div>
+
+                <div>
+                    <h2 class="text-xl font-semibold">{{ profile.fullName }}</h2>
+                    <p class="text-sm text-muted-foreground">{{ profile.membershipLabel }}</p>
+                </div>
+
+                <div class="text-sm">
+                    <span class="inline-flex rounded-full px-3 py-1 {{ profile.isVerified ? 'bg-green-500/15 text-green-300' : 'bg-yellow-500/15 text-yellow-300' }}">
+                        {{ profile.isVerified ? 'Compte verifie' : 'Compte non verifie' }}
+                    </span>
+                </div>
+
+                <dl class="space-y-3 text-sm">
+                    <div>
+                        <dt class="text-muted-foreground">Email</dt>
+                        <dd>{{ profile.email }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-muted-foreground">Telephone</dt>
+                        <dd>{{ profile.phoneNumber }}</dd>
+                    </div>
+                    <div>
+                        <dt class="text-muted-foreground">Inscrit le</dt>
+                        <dd>{{ profile.createdAt ? profile.createdAt|date('d/m/Y') : '-' }}</dd>
+                    </div>
+                </dl>
+            </aside>
+
+            <div class="space-y-6">
+                <section class="rounded-xl border border-border bg-secondary/20 p-6">
+                    <div class="flex items-center justify-between mb-4">
+                        <h2 class="text-lg font-semibold">Informations personnelles</h2>
+                        <span class="text-xs text-muted-foreground">Maj: {{ profile.updatedAt ? profile.updatedAt|date('d/m/Y H:i') : '-' }}</span>
+                    </div>
+
+                    {{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
+                        <div class="grid gap-4 md:grid-cols-2">
+                            <div>
+                                {{ form_label(form.firstName, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                {{ form_widget(form.firstName, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                <div class="text-red-400 text-xs mt-1">{{ form_errors(form.firstName) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.lastName, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                {{ form_widget(form.lastName, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                <div class="text-red-400 text-xs mt-1">{{ form_errors(form.lastName) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.email, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                {{ form_widget(form.email, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                <div class="text-red-400 text-xs mt-1">{{ form_errors(form.email) }}</div>
+                            </div>
+                            <div>
+                                {{ form_label(form.phoneNumber, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                {{ form_widget(form.phoneNumber, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                <div class="text-red-400 text-xs mt-1">{{ form_errors(form.phoneNumber) }}</div>
+                            </div>
+                        </div>
+
+                        <button class="primary-btn" type="submit">Enregistrer</button>
+                    {{ form_end(form) }}
+                </section>
+
+                <section class="rounded-xl border border-border bg-secondary/20 p-6">
+                    <h2 class="text-lg font-semibold mb-4">Notifications</h2>
+                    <ul class="space-y-3">
+                        {% for item in profile.notifications %}
+                            <li class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
+                                <span>{{ item.label }}</span>
+                                <span class="{{ item.enabled ? 'text-green-300' : 'text-muted-foreground' }}">{{ item.enabled ? 'Active' : 'Inactive' }}</span>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </section>
+
+                <section class="rounded-xl border border-border bg-secondary/20 p-6">
+                    <h2 class="text-lg font-semibold mb-4">Paiement (test)</h2>
+                    <div class="rounded-lg border border-border bg-background/60 p-4 text-sm space-y-1">
+                        <p class="text-muted-foreground">{{ profile.payment.label }}</p>
+                        <p class="font-medium">{{ profile.payment.details }}</p>
+                    </div>
+                    <button class="secondary-btn mt-4" type="button">{{ profile.payment.buttonLabel }}</button>
+                </section>
+
+                <section class="rounded-xl border border-border bg-secondary/20 p-6">
+                    <h2 class="text-lg font-semibold mb-4">Securite</h2>
+                    <ul class="space-y-3 text-sm">
+                        {% for action in profile.securityActions %}
+                            <li class="rounded-lg border border-border bg-background/60 px-4 py-3">{{ action }}</li>
+                        {% endfor %}
+                    </ul>
+                </section>
+            </div>
+        </div>
+    </section>
+{% endblock %}

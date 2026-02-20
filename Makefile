@@ -64,6 +64,15 @@ down:
 build:
 	docker compose up -d --build
 
+crud:
+	docker compose exec -it php php bin/console make:crud
+
+entity:
+	docker compose exec -it php php bin/console make:entity
+
+migration:
+	docker compose exec -it php php bin/console make:migration
+
 reset-db:
 	docker compose exec -it php php bin/console doctrine:database:drop --force --if-exists
 	docker compose exec -it php php bin/console doctrine:database:create
