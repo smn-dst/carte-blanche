@@ -85,7 +85,8 @@
 
     <ul class="flex flex-col gap-2">
         {% for restaurant in restaurants %}
-            <li class="border border-black p-2">
+            <li class="border border-black p-2 cursor-pointer">
+            <a href="{{ path('app_enchere_detail', { id: restaurant.id }) }}">
                 <p>Places : {{ restaurant.maxCapacity }}</p>
 
                 {% for category in restaurant.categories %}
@@ -100,6 +101,8 @@
                 {{ restaurant.askingPrice|number_format(0, '', ' ') }} €
 
                 <p>Prix ticket : {{ restaurant.ticketPrice|number_format(0, '', ' ') }} €</p>
+                <p>Id : {{ restaurant.id }}</p>
+            </a>
             </li>
         {% else %}
             <li>Aucun restaurant.</li>
