@@ -1,0 +1,409 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ restaurant.name }}
+	— Carte Blanche
+{% endblock %}
+
+{% block body %}
+
+	<section class="relative h-[70vh] overflow-hidden">
+
+		{% if restaurant.images is not empty %}
+			<img src="{{ asset('uploads/restaurants/' ~ restaurant.images|first.filename) }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover">
+		{% else %}
+			<div class="w-full h-full bg-neutral-900"></div>
+		{% endif %}
+
+		<div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+
+		<div class="absolute bottom-0 left-0 right-0 pb-12">
+			<div class="container mx-auto px-4">
+
+				<a href="{{ path('app_encheres') }}" class="inline-flex items-center gap-2 mb-6 text-foreground hover:text-primary transition-colors text-sm">
+					← Retour
+				</a>
+
+				<div>
+					<div class="inline-block bg-primary text-primary-foreground px-4 py-1 text-xs tracking-widest mb-4 font-semibold">
+						{% for category in restaurant.categories %}
+							{{ category.name }}
+							{% if not loop.last %},
+							{% endif %}
+						{% endfor %}
+					</div>
+
+					<h1 class="text-5xl md:text-6xl font-bold mb-4 tracking-tight text-foreground">
+						{{ restaurant.name }}
+					</h1>
+
+					<div class="flex items-center gap-2 text-xl text-muted-foreground">
+						<span class="text-primary">📍</span>
+						{{ restaurant.address }}
+					</div>
+				</div>
+				{% if restaurant.owner %}
+					<div class="absolute top-6 right-6 z-20">
+						<div class="backdrop-blur-md bg-background/70 border border-border rounded-full px-5 py-3 shadow-lg flex items-center gap-4">
+
+							<div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+								{{ restaurant.owner.firstName|first|upper }}
+							</div>
+
+							<div class="hidden sm:block">
+								<p class="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">
+									Vendeur
+								</p>
+								<p class="text-sm font-semibold text-foreground leading-none">
+									{{ restaurant.owner.firstName }}
+									{{ restaurant.owner.lastName }}
+								</p>
+							</div>
+
+						</div>
+					</div>
+				{% endif %}
+
+			</div>
+		</div>
+	</section>
+
+	<section class="py-12">
+		<div class="container mx-auto px-4">
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+				<div class="lg:col-span-2 space-y-8">
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+						<div class="grid grid-cols-2 md:[grid-template-columns:repeat(auto-fit,minmax(0,1fr))] gap-6">
+
+							{% if restaurant.askingPrice %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ (restaurant.askingPrice / 1000)|number_format(0, ',', ' ') }}k€
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Prix de vente
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.maxCapacity %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ restaurant.maxCapacity }}
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Couverts
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.annualRevenue %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ (restaurant.annualRevenue / 1000)|number_format(0, ',', ' ') }}k€
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										CA annuel
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.maxCapacity and restaurant.ticketsSold %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ restaurant.maxCapacity - restaurant.ticketsSold }}
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Places restantes
+									</div>
+								</div>
+							{% endif %}
+
+						</div>
+					</div>
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+
+						<div class="flex items-center gap-3 mb-6">
+							<div class="h-px flex-1 bg-primary"></div>
+							<span class="text-primary text-lg">✦</span>
+							<div class="h-px flex-1 bg-primary"></div>
+						</div>
+
+						{% if restaurant.description %}
+							<h2 class="text-2xl font-bold mb-4 tracking-wide text-foreground">À PROPOS</h2>
+							<p class="text-muted-foreground leading-relaxed mb-8">
+								{{ restaurant.description }}
+							</p>
+						{% endif %}
+
+						{% if restaurant.rent or restaurant.leaseRemaining or restaurant.pappersUrl or restaurant.status %}
+							<h3 class="text-xl font-bold mb-4 tracking-wide text-foreground">CARACTÉRISTIQUES</h3>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+								{% if restaurant.rent %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<span class="text-primary group-hover:text-white text-xs">✓</span>
+										</div>
+										<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+											Loyer :
+											{{ restaurant.rent|number_format(0, ',', ' ') }}
+											€/mois
+										</span>
+									</div>
+								{% endif %}
+
+								{% if restaurant.leaseRemaining %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<span class="text-primary group-hover:text-white text-xs">✓</span>
+										</div>
+										<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+											Bail restant :
+											{{ restaurant.leaseRemaining }}
+											ans
+										</span>
+									</div>
+								{% endif %}
+
+								{% if restaurant.pappersUrl %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<span class="text-primary group-hover:text-white text-xs">✓</span>
+										</div>
+										<a href="{{ restaurant.pappersUrl }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline transition-colors">
+											Données légales Pappers →
+										</a>
+									</div>
+								{% endif %}
+
+								<div class="flex items-start gap-3 group">
+									<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+										<span class="text-primary group-hover:text-white text-xs">✓</span>
+									</div>
+									<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+										Statut :
+										{{ restaurant.status.value }}
+									</span>
+								</div>
+
+							</div>
+						</div>
+					{% endif %}
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+						<h2 class="text-2xl font-bold mb-6 tracking-wide text-foreground">DÉTAILS DE L'ENCHÈRE</h2>
+
+						<div class="grid gap-6 sm:grid-cols-2">
+
+							<div class="flex items-start gap-4">
+								<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<span class="text-primary text-lg">📅</span>
+								</div>
+								<div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+										Date & Heure
+									</div>
+									<div class="font-semibold text-foreground">
+										{{ restaurant.auctionDate|date('d/m/Y') }}
+										{% if restaurant.auctionTime %}
+											—
+											{{ restaurant.auctionTime|date('H:i') }}
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							{% if restaurant.auctionLocation %}
+								<div class="flex items-start gap-4">
+									<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<span class="text-primary text-lg">📍</span>
+									</div>
+									<div>
+										<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+											Lieu
+										</div>
+										<div class="font-semibold text-foreground">
+											{{ restaurant.auctionLocation }}
+										</div>
+									</div>
+								</div>
+							{% endif %}
+
+							<div class="flex items-start gap-4 sm:col-span-2">
+								<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<span class="text-primary text-lg">📈</span>
+								</div>
+								<div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+										Prix de départ
+									</div>
+									<div class="font-semibold text-xl text-primary">
+										{{ restaurant.askingPrice|number_format(0, ',', ' ') }}
+										€
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+						{% if restaurant.description %}
+							<div class="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-lg">
+								<p class="text-sm text-foreground/80 leading-relaxed">
+									{{ restaurant.description|slice(0, 300) }}
+									{% if restaurant.description|length > 300 %}…
+									{% endif %}
+								</p>
+							</div>
+						{% endif %}
+
+						{% if restaurant.auctionLocationLatitude is defined and restaurant.auctionLocationLatitude %}
+							<div id="map" class="w-full h-64 mt-8 rounded-lg overflow-hidden border border-border" data-lat="{{ restaurant.auctionLocationLatitude }}" data-lng="{{ restaurant.auctionLocationLongitude }}" data-name="{{ restaurant.auctionLocation }}"></div>
+						{% endif %}
+
+					</div>
+
+				</div>
+
+				<div class="lg:col-span-1">
+					<div class="sticky top-8">
+
+						<div class="p-8 bg-(--card) border border-primary/50 rounded-lg">
+
+							<div class="text-center mb-8">
+								<div class="text-xs text-muted-foreground uppercase tracking-widest mb-2">Prix par place</div>
+								<div class="text-5xl font-bold text-primary mb-2">
+									{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+									€
+								</div>
+								<div class="text-sm text-muted-foreground">Accès garanti à l'enchère</div>
+							</div>
+
+							<hr class="border-border mb-8">
+
+							<div class="space-y-6">
+
+								{% if restaurant.ticketsSold >= restaurant.maxCapacity %}
+
+									<div class="text-center py-4">
+										<span class="text-muted-foreground font-semibold">Complet</span>
+									</div>
+
+								{% elseif app.user %}
+
+									<div>
+										<label class="block text-xs font-semibold uppercase tracking-wider mb-4 text-foreground">
+											Nombre de places
+										</label>
+										<div class="flex items-center gap-4 justify-center">
+											<button type="button" onclick="decrementQty()" id="btn-minus" class="w-6 h-6 rounded border border-border hover:border-primary hover:text-primary text-foreground transition-colors flex items-center justify-center text-lg cursor-pointer font-bold" disabled>
+												−
+											</button>
+											<div id="qty-display" class="text-4xl font-bold w-16 text-center text-primary">1</div>
+											<button type="button" onclick="incrementQty()" id="btn-plus" class="w-6 h-6 rounded border border-border hover:border-primary hover:text-primary text-foreground transition-colors flex items-center justify-center text-lg cursor-pointer font-bold">
+												+
+											</button>
+										</div>
+										<p class="text-xs text-center text-muted-foreground mt-3">Maximum 10 places par commande</p>
+									</div>
+
+									<div class="p-6 bg-background rounded-lg border border-border">
+										<div class="space-y-3 text-sm">
+											<div class="flex items-center justify-between">
+												<span class="text-muted-foreground">Sous-total</span>
+												<span class="font-semibold text-foreground" id="subtotal">{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+													€</span>
+											</div>
+											<div class="flex items-center justify-between">
+												<span class="text-muted-foreground">Frais</span>
+												<span class="font-semibold text-primary">Inclus</span>
+											</div>
+											<hr class="border-border">
+											<div class="flex items-center justify-between text-lg">
+												<span class="font-bold text-foreground">Total</span>
+												<span class="font-bold text-primary" id="total">{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+													€</span>
+											</div>
+										</div>
+									</div>
+
+									<div class="flex flex-col gap-4">
+
+										{# TODO : Ajouter le chemin vers le panier avec la quantité choisie #}
+										{# <a
+																					href="{{ path('app_cart_add', { restaurantId: restaurant.id, quantity: qty }) }}"
+																					class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors text-sm"
+																				> #}
+											<div>
+											{# TODO : Ajuster le variant avec la PR #83 #}
+										{% include 'Components/buttons/buttons-primary.html.twig' with {
+                                                href: '/encheres',
+                                                label: 'Réserver maintenant',
+                                                variant: 'primary',
+                                                with_arrow: false
+                                            } %}
+										</div>
+
+										{# </a> #}
+											<button type="button" class="w-full py-3 border border-border hover:border-primary hover:text-primary text-foreground font-semibold rounded-lg transition-colors text-sm"> Ajouter au panier
+										</button>
+									</div>
+
+								{% else %}
+
+									<a href="{{ path('app_login') }}" class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors text-sm">
+										Se connecter pour participer
+									</a>
+
+								{% endif %}
+
+								<div class="pt-6 border-t border-border space-y-2">
+									{% for item in ['Paiement sécurisé', 'Confirmation immédiate', 'Places garanties'] %}
+										<div class="flex items-center gap-2 text-sm">
+											<span class="text-primary">✓</span>
+											<span class="text-muted-foreground">{{ item }}</span>
+										</div>
+									{% endfor %}
+								</div>
+
+							</div>
+						</div>
+
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</section>
+
+	<script>
+		const TICKET_PRICE = {{ restaurant.ticketPrice }};
+let qty = 1;
+
+function updateDisplay() {
+document.getElementById('qty-display').textContent = qty;
+const formatted = (TICKET_PRICE * qty).toLocaleString('fr-FR');
+document.getElementById('subtotal').textContent = formatted + ' €';
+document.getElementById('total').textContent = formatted + ' €';
+document.getElementById('btn-minus').disabled = qty<= 1;
+        document.getElementById('btn-plus').disabled  = qty> = 10;
+}
+
+function incrementQty() {
+if (qty < 10) {
+qty++;
+updateDisplay();
+}
+}
+function decrementQty() {
+if (qty > 1) {
+qty--;
+updateDisplay();
+}
+}
+	</script>
+
+{% endblock %}

@@ -59,4 +59,18 @@ class EncheresController extends AbstractController
             'maxPrice' => $maxPrice,
         ]);
     }
+
+    #[Route('/encheres/{id}', name: 'app_enchere_detail', methods: ['GET'])]
+    public function detail(int $id, RestaurantRepository $restaurantRepository): Response
+    {
+        $restaurant = $restaurantRepository->find($id);
+
+        if (!$restaurant) {
+            return $this->render('encheres/404.html.twig');
+        }
+
+        return $this->render('encheres/detail.html.twig', [
+            'restaurant' => $restaurant,
+        ]);
+    }
 }
