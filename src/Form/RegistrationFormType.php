@@ -31,14 +31,14 @@ class RegistrationFormType extends AbstractType
                 'label' => 'Mot de passe',
                 'attr' => [
                     'placeholder' => 'Entrez votre mot de passe',
-                ]
+                ],
             ])
             ->add('confirmPassword', PasswordType::class, [
                 'required' => true,
                 'label' => 'Confirmez votre mot de passe',
                 'attr' => [
                     'placeholder' => 'Entrez à nouveau votre mot de passe',
-                ]
+                ],
             ])
             ->add('phoneNumber', TelType::class, [
                 'required' => false,
