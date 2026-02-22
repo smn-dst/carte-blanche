@@ -1,5 +1,10 @@
+{% set profilLabel = app.user 
+    ? app.user.firstname|capitalize ~ ' ' ~ app.user.lastname|capitalize 
+    : 'Profil' 
+%}
+
 {% set nav_items = [
-	{ path: '/dashboard', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '' },
 	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
 	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
 	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
@@ -9,14 +14,14 @@
 	{ path: '/encheres/:id', label: 'Mes annonces', icon: 'megaphone', role: 'ROLE_VENDOR' },
 	{ path: '/calendrier', label: 'Calendrier des enchères', icon: 'calendar-range', role: '' },
 	{ path: '/favorites', label: 'Favoris', icon: 'heart', role: 'ROLE_USER' },
-	{ path: '/profil', label: 'Profil', icon: 'user', role: '' }
+	{ path: '/profil', label: profilLabel, icon: 'user', role: '' }
 ] %}
 
 <aside class="flex-col w-72 min-w-72 max-w-72 border-r border-sidebar-border bg-sidebar sticky h-full flex">
 	<div class="p-6 flex-1 overflow-y-auto">
 		<a href="{{ path('app_home') }}" class="block mb-12">
 			<div class="flex items-baseline gap-2">
-				<svg class="h-24 w-48" viewBox="0 0 2956 1007" aria-hidden="true"><use href="#icon-logo-white"/></svg>
+				<svg class="h-24 w-48" viewbox="0 0 2956 1007" aria-hidden="true"><use href="#icon-logo-white"/></svg>
 			</div>
 		</a>
 
@@ -40,7 +45,20 @@
 		</div>
 	</div>
 
-	<div class="p-6 border-t border-sidebar-border">
+	<div class="flex flex-col gap-6 p-6 border-t border-sidebar-border">
+		<div>
+				{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+			<a href="/logout" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Déconnexion">
+					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-out"/></svg>
+					<span class="text-sm">Déconnexion</span>
+			</a>
+				{% else %}
+			<a href="/login" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Connexion">
+					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-in"/></svg>
+					<span class="text-sm">Connexion</span>
+			</a>
+				{% endif %}
+		</div>
 		<div class="text-xs text-muted-foreground space-y-1">
 			<p>© 2026 Carte Blanche Platform</p>
 			<p>Carte Blanche</p>
