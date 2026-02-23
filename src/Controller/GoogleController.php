@@ -25,7 +25,8 @@ class GoogleController extends AbstractController
 
     #[Route('/connect/github', name: 'connect_github')]
     public function connectGithub(ClientRegistry $clientRegistry): Response
-    {        return $clientRegistry
+    {
+        return $clientRegistry
             ->getClient('github')
             ->redirect(['user:email'], []);
     }
