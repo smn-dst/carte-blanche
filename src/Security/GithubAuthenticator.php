@@ -24,7 +24,6 @@ class GithubAuthenticator extends OAuth2Authenticator
         private EntityManagerInterface $entityManager,
         private RouterInterface $router,
     ) {
-        
     }
 
     public function supports(Request $request): ?bool
