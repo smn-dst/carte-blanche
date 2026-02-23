@@ -1,0 +1,10 @@
+{% set _query = query_params|default(app.request.query.all) %}
+{% if pagination.total_pages > 1 %}
+    <nav class="mx-8 mb-8 flex items-center justify-center gap-2 flex-wrap" aria-label="Pagination">
+        <a href="{{ path(route, _query|merge({ page: 1 })) }}" class="px-3 py-2 rounded border border-border text-sm {{ pagination.current_page == 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-container' }}" {{ pagination.current_page == 1 ? 'aria-disabled="true"' : '' }}>Première</a>
+        <a href="{{ path(route, _query|merge({ page: pagination.current_page - 1 })) }}" class="px-3 py-2 rounded border border-border text-sm {{ pagination.current_page == 1 ? 'opacity-50 pointer-events-none' : 'hover:bg-container' }}" {{ pagination.current_page == 1 ? 'aria-disabled="true"' : '' }}>Précédent</a>
+        <span class="px-3 py-2 text-sm text-muted-foreground">Page {{ pagination.current_page }} / {{ pagination.total_pages }}</span>
+        <a href="{{ path(route, _query|merge({ page: pagination.current_page + 1 })) }}" class="px-3 py-2 rounded border border-border text-sm {{ pagination.current_page == pagination.total_pages ? 'opacity-50 pointer-events-none' : 'hover:bg-container' }}" {{ pagination.current_page == pagination.total_pages ? 'aria-disabled="true"' : '' }}>Suivant</a>
+        <a href="{{ path(route, _query|merge({ page: pagination.total_pages })) }}" class="px-3 py-2 rounded border border-border text-sm {{ pagination.current_page == pagination.total_pages ? 'opacity-50 pointer-events-none' : 'hover:bg-container' }}" {{ pagination.current_page == pagination.total_pages ? 'aria-disabled="true"' : '' }}>Dernière</a>
+    </nav>
+{% endif %}
