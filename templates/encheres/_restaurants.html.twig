@@ -1,0 +1,31 @@
+<div class="flex flex-col {{ restaurants|length == 0 ? 'min-h-full' : '' }}">
+    <ul class="flex flex-col gap-8 mx-8 mb-8 {{ restaurants|length == 0 ? 'flex-1 min-h-0' : '' }}">
+
+        {% for restaurant in restaurants %}
+            <li>
+            {% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+                variant: loop.first ? 'first' : (loop.index <= 3 ? 'small' : 'bottom'),
+                href: path('app_restaurant_show', { id: restaurant.id }),
+                image: restaurant.firstImage ? '/uploads/restaurants/' ~ restaurant.firstImage.fileName : null,
+                name: restaurant.name,
+                seats: restaurant.maxCapacity ~ ' places',
+                category: restaurant.categories|map(c => c.name)|join(', '),
+                city: restaurant.address,
+                price_label: 'Prix de départ · Enchère le ' ~ restaurant.auctionDate|date('d/m/Y') ~ (restaurant.auctionTime ? ' à ' ~ restaurant.auctionTime|date('H:i') : ''),
+                price: restaurant.askingPrice|number_format(0, '', ' ') ~ ' €',
+
+            } %}
+        </li>
+        {% else %}
+
+            <li class="flex-1 min-h-0 flex">
+                <div class="w-full min-h-full flex flex-col items-center justify-center">
+                    <svg class="size-24" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-x-icon lucide-search-x"><path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>
+                    <p class="text-2xl font-bold mt-4">Aucun restaurant</p>
+                    <p>Nous ne trouvons pas de résultats pour votre recherche</p>
+                </div>
+            </li>
+            
+        {% endfor %}
+    </ul>
+</div>
