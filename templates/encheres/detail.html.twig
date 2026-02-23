@@ -334,9 +334,9 @@
 
 										{# TODO : Ajouter le chemin vers le panier avec la quantité choisie #}
 										{# <a
-																					href="{{ path('app_cart_add', { restaurantId: restaurant.id, quantity: qty }) }}"
-																					class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors text-sm"
-																				> #}
+											href="{{ path('app_cart_add', { restaurantId: restaurant.id, quantity: qty }) }}"
+											class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors text-sm"
+										> #}
 											<div>
 											{# TODO : Ajuster le variant avec la PR #83 #}
 										{% include 'Components/buttons/buttons-primary.html.twig' with {
@@ -381,29 +381,32 @@
 
 	<script>
 		const TICKET_PRICE = {{ restaurant.ticketPrice }};
-let qty = 1;
+		const MAX_CAPACITY = {{ restaurant.maxCapacity }};
+		const TICKETS_SOLD = {{ restaurant.ticketsSold }};
+		const REMAINING = MAX_CAPACITY - TICKETS_SOLD;
+		let qty = 1;
 
-function updateDisplay() {
-document.getElementById('qty-display').textContent = qty;
-const formatted = (TICKET_PRICE * qty).toLocaleString('fr-FR');
-document.getElementById('subtotal').textContent = formatted + ' €';
-document.getElementById('total').textContent = formatted + ' €';
-document.getElementById('btn-minus').disabled = qty<= 1;
-        document.getElementById('btn-plus').disabled  = qty> = 10;
-}
+		function updateDisplay() {
+			document.getElementById('qty-display').textContent = qty;
+			const formatted = (TICKET_PRICE * qty).toLocaleString('fr-FR');
+			document.getElementById('subtotal').textContent = formatted + ' €';
+			document.getElementById('total').textContent = formatted + ' €';
+			document.getElementById('btn-minus').disabled = qty<= 1;
+			document.getElementById('btn-plus').disabled  = qty >= restaurant.maxCapacity;
+		}
 
-function incrementQty() {
-if (qty < 10) {
-qty++;
-updateDisplay();
-}
-}
-function decrementQty() {
-if (qty > 1) {
-qty--;
-updateDisplay();
-}
-}
+		function incrementQty() {
+			if (qty < restaurant.maxCapacity) {
+				qty++;
+				updateDisplay();
+		}	
+		}
+		function decrementQty() {
+			if (qty > 1) {
+				qty--;
+				updateDisplay();
+			}
+	}
 	</script>
 
 {% endblock %}
