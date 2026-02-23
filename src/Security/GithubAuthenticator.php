@@ -23,8 +23,7 @@ class GithubAuthenticator extends OAuth2Authenticator
         private ClientRegistry $clientRegistry,
         private EntityManagerInterface $entityManager,
         private RouterInterface $router,
-    ) {
-    }
+    ) {}
 
     public function supports(Request $request): ?bool
     {
@@ -62,7 +61,7 @@ class GithubAuthenticator extends OAuth2Authenticator
 
                 $user = new User();
                 $user->setEmail($email);
-                $user->setFirstName($name[0] ?? $githubUser->getNickname() ?? '');
+                $user->setFirstName($name[0] !== '' ? $name[0] : ($githubUser->getNickname() ?? ''));
                 $user->setLastName($name[1] ?? '');
                 $user->setRoles(['ROLE_USER']);
                 $user->setIsVerified(true);
