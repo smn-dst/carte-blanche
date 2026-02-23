@@ -35,7 +35,6 @@ final class ProfileUpdateInputDto
             message: 'Please enter a valid phone number.'
         )]
         public string $phoneNumber = '',
-    )
-    {
+    ) {
     }
 }

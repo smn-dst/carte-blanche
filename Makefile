@@ -20,10 +20,10 @@ phpstan:
 	docker compose exec php php vendor/bin/phpstan analyse --memory-limit=512M
 
 cs-fix:
-	./php-cs-fixer.phar fix
+	docker compose exec php php vendor/bin/php-cs-fixer fix
 
 cs-check:
-	./php-cs-fixer.phar fix --dry-run --diff
+	docker compose exec php php vendor/bin/php-cs-fixer fix --dry-run --diff
 
 quality: cs-check phpstan
 
