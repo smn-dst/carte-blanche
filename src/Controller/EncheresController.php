@@ -25,25 +25,47 @@ class EncheresController extends AbstractController
         $minPrice = '' !== $minPriceParam ? (float) $minPriceParam : null;
         $maxPrice = '' !== $maxPriceParam ? (float) $maxPriceParam : null;
 
-        $categories = $categoryRepository->findAll();
-        $priceRange = $restaurantRepository->getPriceRange();
+        $revenueSort = $request->query->get('revenueSort', '');
 
-        // Utilise les valeurs par défaut si aucun filtre de prix n'est défini
+        // 1. Filtre : données pour les filtres (catégories)
+        $categories = $categoryRepository->findAll();
+
+        $perPage = 25;
+        $page = max(1, (int) $request->query->get('page', 1));
+
+        // 2. Pagination : total + fourchette de prix (une requête)
+        $paginationData = $restaurantRepository->getPaginationAndPriceRange(
+            $search ?: null,
+            $categoryId ?: null,
+            $minPrice,
+            $maxPrice
+        );
+        $priceRange = ['min' => $paginationData['minPrice'], 'max' => $paginationData['maxPrice']];
         $currentMinPrice = $minPrice ?? $priceRange['min'];
         $currentMaxPrice = $maxPrice ?? $priceRange['max'];
 
-        if ($search || $categoryId || $sortBy || null !== $minPrice || null !== $maxPrice || $priceSort) {
-            $restaurants = $restaurantRepository->searchByNameAndCategory(
-                $search,
-                $categoryId ?: null,
-                $sortBy ?: null,
-                $minPrice,
-                $maxPrice,
-                $priceSort ?: null
-            );
-        } else {
-            $restaurants = $restaurantRepository->findAll();
+        $totalRestaurants = $paginationData['total'];
+        $totalPages = (int) ceil($totalRestaurants / $perPage) ?: 1;
+        if ($page > $totalPages) {
+            $request->query->set('page', '1');
+
+            return $this->redirectToRoute('app_encheres', $request->query->all());
         }
+
+        $offset = ($page - 1) * $perPage;
+
+        // 3. Affichage : restaurants de la page (une requête)
+        $restaurants = $restaurantRepository->searchByNameAndCategory(
+            $search ?: null,
+            $categoryId ?: null,
+            $sortBy ?: null,
+            $minPrice,
+            $maxPrice,
+            $priceSort ?: null,
+            $revenueSort ?: null,
+            $perPage,
+            $offset
+        );
 
         return $this->render('encheres/index.html.twig', [
             'restaurants' => $restaurants,
@@ -57,6 +79,13 @@ class EncheresController extends AbstractController
             'currentMaxPrice' => $currentMaxPrice,
             'minPrice' => $minPrice,
             'maxPrice' => $maxPrice,
+            'revenueSort' => $revenueSort,
+            'pagination' => [
+                'current_page' => $page,
+                'total_pages' => $totalPages,
+                'total_count' => $totalRestaurants,
+                'per_page' => $perPage,
+            ],
         ]);
     }
 

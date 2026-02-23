@@ -1,0 +1,11 @@
+@layer components{
+  .input{
+    @apply w-full border-0 rounded px-4 py-2 pl-10 bg-background outline-none focus:outline-none focus:ring-0 focus:shadow-none
+  }
+  .select{
+    @apply w-full border-0 rounded px-4 py-2 pr-10 bg-background appearance-none outline-none focus:outline-none focus:ring-0 focus:shadow-none focus-visible:outline-none focus-visible:ring-0 [&:focus]:outline-none [&:focus]:ring-0
+  }
+  .input-range{
+    @apply flex-1 min-w-0 accent-primary cursor-pointer
+  }
+}

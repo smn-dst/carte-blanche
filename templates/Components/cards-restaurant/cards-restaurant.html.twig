@@ -6,7 +6,7 @@
 {% set variant = variant|default('default') %}
 
 {% if variant == 'first' %}
-	{% set size_classes = 'h-[500px] lg:h-[700px] lg:w-3/5' %}
+	{% set size_classes = 'h-[500px] lg:h-[700px] flex-1' %}
 {% elseif variant == 'small' %}
 	{% set size_classes = 'h-[250px] lg:h-[338px] flex-1' %}
 {% elseif variant == 'bottom' %}
