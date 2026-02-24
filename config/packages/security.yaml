@@ -1,4 +1,3 @@
-# yaml-language-server: $schema=../../vendor/symfony/dependency-injection/Loader/schema/services.schema.json
 security:
     # https://symfony.com/doc/current/security.html#registering-the-user-hashing-passwords
     password_hashers:
@@ -20,6 +19,9 @@ security:
         main:
             lazy: true
             provider: app_user_provider
+            custom_authenticators:
+                - App\Security\GoogleAuthenticator
+                - App\Security\GithubAuthenticator
             form_login:
                 login_path: app_login
                 check_path: app_login
