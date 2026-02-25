@@ -21,7 +21,7 @@ readonly class SendMailService
         $this->emailVerifier->sendEmailConfirmation('app_verify_email', $user,
             new TemplatedEmail()
                 ->from(new Address('no-reply@carte-blanche.test', 'Carte Blanche'))
-                ->to($user->getEmail())
+                ->to($user->getEmail() ?? throw new \InvalidArgumentException('User email is required for verification email.'))
                 ->subject('Veuillez confirmer votre adresse email')
                 ->htmlTemplate('emails/confirmation_email.html.twig')
         );

@@ -96,8 +96,9 @@ final class AppFixtures extends Fixture
             $u->setLastName(0 === $i ? 'CarteBlanche' : $faker->lastName());
             $u->setPhoneNumber($faker->optional(0.6)->phoneNumber());
             $u->setRoles(['ROLE_ADMIN']);
-            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
-            $u->setUpdatedAt($u->getCreatedAt());
+            $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now'));
+            $u->setCreatedAt($createdAt);
+            $u->setUpdatedAt($createdAt);
             $u->setIsVerified(true);
             $u->setIsSuspended(false);
             $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
@@ -126,8 +127,9 @@ final class AppFixtures extends Fixture
             $u->setLastName($faker->lastName());
             $u->setPhoneNumber($faker->optional(0.8)->phoneNumber());
             $u->setRoles(['ROLE_USER']);
-            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
-            $u->setUpdatedAt($u->getCreatedAt());
+            $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now'));
+            $u->setCreatedAt($createdAt);
+            $u->setUpdatedAt($createdAt);
             $u->setIsVerified($faker->boolean(90));
             $u->setIsSuspended($faker->boolean(5));
             $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
@@ -156,8 +158,9 @@ final class AppFixtures extends Fixture
             $u->setLastName($faker->lastName());
             $u->setPhoneNumber($faker->optional(0.8)->phoneNumber());
             $u->setRoles(['ROLE_VENDOR']);
-            $u->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now')));
-            $u->setUpdatedAt($u->getCreatedAt());
+            $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now'));
+            $u->setCreatedAt($createdAt);
+            $u->setUpdatedAt($createdAt);
             $u->setIsVerified($faker->boolean(85));
             $u->setIsSuspended(false);
             $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
@@ -288,8 +291,11 @@ final class AppFixtures extends Fixture
         };
 
         $r = new Restaurant();
-        $r->setName($faker->company().' - '.$faker->words(2, true));
-        $r->setDescription($faker->optional(0.9)->paragraphs(2, true));
+        $words = $faker->words(2, true);
+        $r->setName($faker->company().' - '.(is_string($words) ? $words : implode(' ', $words)));
+        /** @var list<string>|string|null $description */
+        $description = $faker->optional(0.9)->paragraphs(2, true);
+        $r->setDescription(null === $description ? null : (is_string($description) ? $description : implode("\n", $description)));
         $r->setAddress($faker->streetAddress().', '.$city);
         $r->setLatitude($lat);
         $r->setLongitude($lng);
@@ -372,7 +378,8 @@ final class AppFixtures extends Fixture
             $order->setReference('CB-'.$faker->unique()->numerify('##########'));
             $order->setTotalAmount(number_format($total, 2, '.', ''));
             $order->setStatus($faker->randomElement([StatusOrderEnum::EN_ATTENTE, StatusOrderEnum::PAYEE]));
-            $order->setCreatedAt(\DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-4 months', 'now')));
+            $orderCreatedAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-4 months', 'now'));
+            $order->setCreatedAt($orderCreatedAt);
             $manager->persist($order);
             $orders[] = $order;
 
@@ -380,7 +387,7 @@ final class AppFixtures extends Fixture
                 $ticket = new Ticket();
                 $ticket->setQrCode($faker->unique()->uuid());
                 $ticket->setStatus($faker->randomElement([StatusTicketEnum::VALIDE, StatusTicketEnum::UTILISE]));
-                $ticket->setCreatedAt($order->getCreatedAt());
+                $ticket->setCreatedAt($orderCreatedAt);
                 $ticket->setRestaurant($restaurant);
                 $ticket->setOrder($order);
                 $manager->persist($ticket);
@@ -502,7 +509,8 @@ final class AppFixtures extends Fixture
             $log->setType($type);
             $log->setModel($model);
             $log->setPrompt($prompt.' Contexte: '.$faker->sentence(18));
-            $log->setResponse($faker->paragraphs(2, true));
+            $response = $faker->paragraphs(2, true);
+            $log->setResponse(is_string($response) ? $response : implode("\n", $response));
             $log->setToken($faker->optional(0.8)->numberBetween(120, 2200));
             if ($faker->boolean(80)) {
                 $log->setDuration(number_format($faker->randomFloat(3, 0.12, 8.5), 3, '.', ''));
