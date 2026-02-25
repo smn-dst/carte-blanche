@@ -42,6 +42,9 @@ class GoogleAuthenticator extends OAuth2Authenticator
                 $googleUser = $client->fetchUserFromToken($accessToken);
 
                 $email = $googleUser->getEmail();
+                if (null === $email || '' === $email) {
+                    throw new AuthenticationException('Google n\'a pas fourni d\'adresse email.');
+                }
 
                 // 1. L'utilisateur existe déjà → on le connecte
                 $existingUser = $this->entityManager
