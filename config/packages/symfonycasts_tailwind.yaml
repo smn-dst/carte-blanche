@@ -1,7 +1,4 @@
 symfonycasts_tailwind:
-    # Binaire local (npm) pour éviter "Accès refusé" sur Windows avec le binaire téléchargé.
-    # Si php bin/console tailwind:build échoue encore, utiliser: npm run tailwind:build
-    # (ou npm run tailwind:watch en dev).
-    binary: '%kernel.project_dir%/node_modules/.bin/tailwindcss'
-
-    # binary_version: null car on utilise le binaire npm (@tailwindcss/cli)
+    # Utilise le binaire standalone téléchargé par le bundle.
+    # Cela évite de dépendre de Node.js dans le conteneur PHP.
+    binary_version: 'v4.1.18'

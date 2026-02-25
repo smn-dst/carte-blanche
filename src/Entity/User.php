@@ -110,6 +110,9 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: PasswordResetToken::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $passwordResetTokens;
 
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $picture = null;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -517,6 +520,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
                 $passwordResetToken->setOwner(null);
             }
         }
+
+        return $this;
+    }
+
+    public function getPicture(): ?string
+    {
+        return $this->picture;
+    }
+
+    public function setPicture(?string $picture): static
+    {
+        $this->picture = $picture;
 
         return $this;
     }
