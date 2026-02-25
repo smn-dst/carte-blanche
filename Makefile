@@ -4,6 +4,12 @@
 sh:
 	docker compose exec -it php sh
 
+tailwind-watch:
+	docker compose exec -it php php bin/console tailwind:build --watch
+
+tailwind-install:
+	docker compose exec -it php composer require symfony/ux-tailwind
+
 cache:
 	docker compose exec -it php php bin/console cache:clear
 
