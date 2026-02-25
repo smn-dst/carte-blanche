@@ -18,6 +18,29 @@ class RestaurantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Restaurants affichables sur la carte (publiés et programmés).
+     * Eager load categories + images pour éviter les requêtes N+1.
+     *
+     * @return Restaurant[]
+     */
+    public function findForMap(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.categories', 'c')->addSelect('c')
+            ->leftJoin('r.images', 'i')->addSelect('i')
+            ->where('r.status IN (:statuses)')
+            ->setParameter('statuses', [
+                StatusRestaurantEnum::PUBLIE,
+                StatusRestaurantEnum::PROGRAMME,
+            ])
+            ->andWhere('r.latitude IS NOT NULL')
+            ->andWhere('r.longitude IS NOT NULL')
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
      * Recherche les restaurants par nom et/ou catégorie avec tri optionnel et filtre de prix.
      * Avec limit/offset, une seule requête (sous-requête IN) pour éviter N+1 tout en gardant le bon ordre.
      *
