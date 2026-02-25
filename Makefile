@@ -26,10 +26,10 @@ phpstan:
 	docker compose exec php php vendor/bin/phpstan analyse --memory-limit=512M
 
 cs-fix:
-	./php-cs-fixer.phar fix
+	docker compose exec php php vendor/bin/php-cs-fixer fix
 
 cs-check:
-	./php-cs-fixer.phar fix --dry-run --diff
+	docker compose exec php php vendor/bin/php-cs-fixer fix --dry-run --diff
 
 quality: cs-check phpstan
 
@@ -69,6 +69,15 @@ down:
 
 build:
 	docker compose up -d --build
+
+crud:
+	docker compose exec -it php php bin/console make:crud
+
+entity:
+	docker compose exec -it php php bin/console make:entity
+
+migration:
+	docker compose exec -it php php bin/console make:migration
 
 reset-db:
 	docker compose exec -it php php bin/console doctrine:database:drop --force --if-exists
