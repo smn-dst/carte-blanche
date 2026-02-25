@@ -49,7 +49,11 @@ readonly class PasswordResetService
             UrlGeneratorInterface::ABSOLUTE_URL
         );
 
-        $this->sendMailService->sendPasswordResetEmail($user->getEmail(), $resetUrl);
+        $email = $user->getEmail();
+        if (null === $email) {
+            throw new \LogicException('User must have an email for password reset.');
+        }
+        $this->sendMailService->sendPasswordResetEmail($email, $resetUrl);
     }
 
     public function tokenExists(string $token): PasswordResetToken

@@ -145,6 +145,7 @@ class RestaurantTest extends TestCase
         $restaurant->addImage($image2);
 
         $firstImage = $restaurant->getFirstImage();
+        $this->assertNotNull($firstImage);
         $this->assertSame('first.jpg', $firstImage->getFileName());
     }
 
