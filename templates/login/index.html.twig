@@ -1,0 +1,11 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Carte des restaurants
+{% endblock %}
+
+{% block body %}
+	<div id="map" style="width: 100%; height: 80vh;"></div>
+
+	{# Le token et l'URL API sont passés au JS via des data attributes #}
+	<div id="map-config" data-token="{{ mapboxToken }}" data-api-url="{{ path('app_api_map_restaurants') }}" style="display: none;"></div>
+{% endblock %}

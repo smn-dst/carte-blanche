@@ -44,7 +44,7 @@ final class RegistrationInputDto
         public string $lastName = '',
         #[Assert\NotBlank]
         #[Assert\Regex(
-            pattern: '/^\+?[1-9]\d{1,14}$/',
+            pattern: '/^0[0-9]{8,9}$/',
             message: 'Please enter a valid phone number.'
         )]
         public string $phoneNumber = '',
