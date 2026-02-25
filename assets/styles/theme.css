@@ -3,6 +3,8 @@
   --color-border: oklch(0.269 0 0);
   --color-border-hover: #6f72f2;
 
+  --color-container: #1a1a1a;
+
   --color-foreground: oklch(0.985 0 0);
 
   --color-muted-foreground: #A1A1A1;
