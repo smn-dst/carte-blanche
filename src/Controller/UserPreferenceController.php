@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\User;
 use App\Entity\UserPreferenceEmbedding;
 use App\Form\UserPreferenceType;
 use Doctrine\ORM\EntityManagerInterface;
@@ -21,6 +22,10 @@ class UserPreferenceController extends AbstractController
         EntityManagerInterface $em,
     ): Response {
         $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
 
         $form = $this->createForm(UserPreferenceType::class);
         $form->handleRequest($request);
@@ -56,6 +61,11 @@ class UserPreferenceController extends AbstractController
         EntityManagerInterface $em,
     ): JsonResponse {
         $user = $this->getUser();
+
+        if (!$user instanceof User) {
+            throw $this->createAccessDeniedException();
+        }
+
         $data = json_decode($request->getContent(), true);
 
         if (!$data) {
