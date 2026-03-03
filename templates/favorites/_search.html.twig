@@ -1,0 +1,35 @@
+<div class="sticky lg:top-8 top-10 z-50 mx-8 mt-8 mb-8 p-6 border border-border rounded-xl bg-container/50 backdrop-blur-xl shrink-0">
+
+	<form method="GET" action="{{ path('app_favorites') }}" id="favorites-sort-form" class="flex flex-col gap-4 w-full">
+		<div class="flex gap-4 items-center w-full">
+
+			<div class="relative flex-1 shrink-0 flex items-center">
+                <svg class="size-4 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-funnel-icon lucide-funnel"><path d="M10 20a1 1 0 0 0 .553.895l2 1A1 1 0 0 0 14 21v-7a2 2 0 0 1 .517-1.341L21.74 4.67A1 1 0 0 0 21 3H3a1 1 0 0 0-.742 1.67l7.225 7.989A2 2 0 0 1 10 14z"/></svg>
+                <p class="text-sm text-muted-foreground ml-2">Trier par :</p>
+            </div>
+
+			<div class="relative w-2/7 min-w-0">
+				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+					<path d="m6 9 6 6 6-6"/>
+				</svg>
+
+				{% include 'Components/inputs/select.html.twig' with {
+					name: 'sort',
+					selected: sort|default('date'),
+					options: [
+						{ value: 'date', label: 'Date (proche)' },
+						{ value: 'price_asc', label: 'Prix (croissant)' },
+						{ value: 'price_desc', label: 'Prix (décroissant)' }
+					],
+					class: 'select',
+				} %}
+			</div>
+		</div>
+
+		{% if sort|default('') != 'date' %}
+			<a href="{{ path('app_favorites') }}" class="text-primary hover:text-border no-decoration border-2 border-primary hover:border-border transition-all duration-200 w-fit rounded-md px-2">
+				Effacer
+			</a>
+		{% endif %}
+	</form>
+</div>

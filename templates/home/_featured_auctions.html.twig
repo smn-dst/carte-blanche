@@ -25,8 +25,9 @@
 				price_label: 'Prix de départ',
 				price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
 				href: path('app_restaurant_show', { id: r.id }),
-                image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
-				variant: 'first'
+				image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+				variant: 'first',
+				isFavorite: r.id in favoriteRestaurantIds|default([])
 			} %}
 			{% endif %}
 
@@ -41,8 +42,9 @@
 					price_label: 'Prix de départ',
 					price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
 					href: path('app_restaurant_show', { id: r.id }),
-                    image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
-					variant: 'small'
+					image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+					variant: 'small',
+					isFavorite: r.id in favoriteRestaurantIds|default([])
 				} %}
 				{% endfor %}
 			</div>
@@ -59,8 +61,9 @@
 				price_label: 'Prix de départ',
 				price: r.askingPrice ? (r.askingPrice|number_format(0, ',', ' ') ~ ' €') : '—',
 				href: path('app_restaurant_show', { id: r.id }),
-                image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
-				variant: 'bottom'
+				image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
+				variant: 'bottom',
+				isFavorite: r.id in favoriteRestaurantIds|default([])
 			} %}
 			{% endfor %}
 		</div>

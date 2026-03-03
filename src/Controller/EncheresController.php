@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CategoryRepository;
+use App\Repository\FavoriteRepository;
 use App\Repository\RestaurantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -12,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class EncheresController extends AbstractController
 {
     #[Route('/encheres', name: 'app_encheres', methods: ['GET'])]
-    public function index(Request $request, RestaurantRepository $restaurantRepository, CategoryRepository $categoryRepository): Response
+    public function index(Request $request, RestaurantRepository $restaurantRepository, CategoryRepository $categoryRepository, FavoriteRepository $favoriteRepository): Response
     {
         $search = $request->query->get('search', '');
         $categoryParam = $request->query->get('category', '');
@@ -67,8 +68,15 @@ class EncheresController extends AbstractController
             $offset
         );
 
+        $favoriteRestaurantIds = [];
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $favoriteRestaurantIds = $favoriteRepository->findRestaurantIdsByUser($user);
+        }
+
         return $this->render('encheres/index.html.twig', [
             'restaurants' => $restaurants,
+            'favoriteRestaurantIds' => $favoriteRestaurantIds,
             'categories' => $categories,
             'search' => $search,
             'categoryId' => $categoryId,
