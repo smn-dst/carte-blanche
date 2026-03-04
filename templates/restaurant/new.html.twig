@@ -1,0 +1,190 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un restaurant{% endblock %}
+
+{% block body %}
+    <section class="p-6 md:p-10 space-y-6">
+        <header class="flex items-center gap-4">
+            <a href="{{ path('app_restaurant_index') }}" class="text-muted-foreground hover:text-white transition-colors text-sm">
+                ← Mes restaurants
+            </a>
+            <h1 class="text-3xl font-bold">Créer un restaurant</h1>
+        </header>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                <h2 class="text-lg font-semibold">Informations générales</h2>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div class="md:col-span-2">
+                        {{ form_label(form.name, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.name, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.name) }}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.description, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 min-h-[100px]'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.description) }}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.address, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': 'Commencez à saisir une adresse...'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div
+                    </div>
+                    <div class="hidden" aria-hidden="true">
+                        {{ form_widget(form.latitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'latitude'}}) }}
+                        {{ form_widget(form.longitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'longitude'}}) }}
+                    </div>
+                    <div class="md:col-span-2">
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.latitude) }}</div>
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.longitude) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.capacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.capacity) }}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        <div class="mt-2 flex flex-wrap gap-2 rounded-lg border border-border bg-background/40 p-3">
+                            {% for categoryField in form.categories %}
+                                <label class="cursor-pointer">
+                                    {{ form_widget(categoryField, {'attr': {'class': 'sr-only peer'}}) }}
+                                    <span class="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white hover:border-primary/60 hover:text-white">
+                                        {{ categoryField.vars.label }}
+                                    </span>
+                                </label>
+                            {% endfor %}
+                        </div>
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.categories) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                <h2 class="text-lg font-semibold">Informations financières</h2>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        {{ form_label(form.askingPrice, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.askingPrice, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.askingPrice) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.annualRevenue, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.annualRevenue, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.annualRevenue) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.rent, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.rent, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.rent) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.leaseRemaining, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.leaseRemaining, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.leaseRemaining) }}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_label(form.pappersUrl, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.pappersUrl, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.pappersUrl) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                <h2 class="text-lg font-semibold">Enchère</h2>
+                <div class="grid gap-4 md:grid-cols-2">
+                    <div>
+                        {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionTime) }}</div>
+                    </div>
+                    <div class="md:col-span-2">
+                        {{ form_label(form.auctionLocation, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.auctionLocation, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': "Commencez à saisir un lieu d'enchère..."}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionLocation) }}</div>
+                    </div>
+                    <div class="hidden" aria-hidden="true">
+                        {{ form_widget(form.auctionLocationLat) }}
+                        {{ form_widget(form.auctionLocationLng) }}
+                    </div>
+                    <div>
+                        {{ form_label(form.ticketPrice, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.ticketPrice, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.ticketPrice) }}</div>
+                    </div>
+                    <div>
+                        {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_widget(form.maxCapacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.maxCapacity) }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                <h2 class="text-lg font-semibold">Images</h2>
+                <p class="text-sm text-muted-foreground">Formats acceptés : JPEG, PNG, WebP — 5 Mo max par image.</p>
+                <div data-image-upload-wrapper class="space-y-3">
+                    {{ form_label(form.uploadedImages, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+
+                    <div data-image-upload-group
+                         data-input-name="{{ form.vars.name }}[uploadedImages][]"
+                         data-input-id-prefix="{{ form.uploadedImages.vars.id }}"
+                         class="space-y-3">
+                        <div data-image-upload-row class="rounded-lg border border-border/70 bg-background/30 p-3">
+                            <div class="flex flex-col gap-2 md:flex-row md:items-center">
+                                <input type="file"
+                                       id="{{ form.uploadedImages.vars.id }}_0"
+                                       name="{{ form.vars.name }}[uploadedImages][]"
+                                       accept="image/jpeg,image/png,image/webp"
+                                       class="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer">
+                                <button type="button"
+                                        data-remove-image-input
+                                        class="hidden rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300 hover:bg-red-500/20 transition-colors">
+                                    Supprimer
+                                </button>
+                            </div>
+                            <p data-file-name class="mt-2 text-xs text-muted-foreground">Aucun fichier sélectionné</p>
+                        </div>
+                    </div>
+
+                    <button type="button"
+                            data-add-image-input
+                            class="inline-flex items-center rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary hover:bg-primary hover:text-white transition-colors">
+                        + Ajouter une autre image
+                    </button>
+
+                    {% do form.uploadedImages.setRendered %}
+                    <div class="text-red-400 text-xs mt-1">{{ form_errors(form.uploadedImages) }}</div>
+                    <p class="text-xs text-muted-foreground">Ajoutez les images une par une avec le bouton, ou utilisez Ctrl/Cmd dans le sélecteur.</p>
+                </div>
+            </div>
+
+            <div class="flex gap-4">
+                <button type="submit" class="primary-btn">Créer le restaurant</button>
+                <a href="{{ path('app_restaurant_index') }}" class="secondary-btn">Annuler</a>
+            </div>
+
+        {{ form_end(form) }}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {{ include('restaurant/_address_autocomplete_script.html.twig', { googleMapsApiKey: googleMapsApiKey }) }}
+    {{ include('restaurant/_image_upload_repeater_script.html.twig') }}
+{% endblock %}

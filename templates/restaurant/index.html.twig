@@ -1,0 +1,84 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes restaurants{% endblock %}
+
+{% block body %}
+    <section class="p-6 md:p-10 space-y-6">
+        <header class="flex items-center justify-between">
+            <div>
+                <h1 class="text-3xl font-bold">Mes restaurants</h1>
+                <p class="text-sm text-muted-foreground">Gérez vos annonces de restaurants.</p>
+            </div>
+            <a href="{{ path('app_restaurant_new') }}" class="primary-btn">
+                Créer un restaurant
+            </a>
+        </header>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {% if restaurants is empty %}
+            <div class="rounded-xl border border-border bg-secondary/20 p-10 text-center text-muted-foreground">
+                <p class="text-lg">Aucun restaurant pour le moment.</p>
+                <a href="{{ path('app_restaurant_new') }}" class="primary-btn mt-6 inline-block">
+                    Créer votre premier restaurant
+                </a>
+            </div>
+        {% else %}
+            <div class="rounded-xl border border-border bg-secondary/20 overflow-hidden">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-border text-muted-foreground text-left">
+                            <th class="px-6 py-4 font-medium">Nom</th>
+                            <th class="px-6 py-4 font-medium">Adresse</th>
+                            <th class="px-6 py-4 font-medium">Statut</th>
+                            <th class="px-6 py-4 font-medium">Créé le</th>
+                            <th class="px-6 py-4 font-medium text-right">Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for restaurant in restaurants %}
+                            <tr class="border-b border-border/50 last:border-0 hover:bg-white/5 transition-colors">
+                                <td class="px-6 py-4 font-medium">{{ restaurant.name }}</td>
+                                <td class="px-6 py-4 text-muted-foreground">{{ restaurant.address }}</td>
+                                <td class="px-6 py-4">
+                                    <span class="inline-flex rounded-full px-3 py-1 text-xs font-medium bg-primary/15 text-primary">
+                                        {{ restaurant.status.value }}
+                                    </span>
+                                </td>
+                                <td class="px-6 py-4 text-muted-foreground">
+                                    {{ restaurant.createdAt ? restaurant.createdAt|date('d/m/Y') : '-' }}
+                                </td>
+                                <td class="px-6 py-4">
+                                    <div class="flex items-center justify-end gap-3">
+                                        <a href="{{ path('app_restaurant_show', {id: restaurant.id}) }}"
+                                           class="text-sm text-muted-foreground hover:text-white transition-colors">
+                                            Voir
+                                        </a>
+                                        <a href="{{ path('app_restaurant_edit', {id: restaurant.id}) }}"
+                                           class="text-sm text-primary hover:text-primary/80 transition-colors">
+                                            Modifier
+                                        </a>
+                                        <form method="post"
+                                              action="{{ path('app_restaurant_delete', {id: restaurant.id}) }}"
+                                              onsubmit="return confirm('Supprimer ce restaurant ? Cette action est irréversible.')">
+                                            <input type="hidden" name="_token" value="{{ csrf_token('delete_restaurant_' ~ restaurant.id) }}">
+                                            <button type="submit" class="text-sm text-red-400 hover:text-red-300 transition-colors">
+                                                Supprimer
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+{% endblock %}
