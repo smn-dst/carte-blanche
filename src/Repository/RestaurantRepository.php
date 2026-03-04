@@ -3,6 +3,7 @@
 namespace App\Repository;
 
 use App\Entity\Restaurant;
+use App\Entity\User;
 use App\Enum\StatusRestaurantEnum;
 use Doctrine\Bundle\DoctrineBundle\Repository\ServiceEntityRepository;
 use Doctrine\Persistence\ManagerRegistry;
@@ -197,6 +198,23 @@ class RestaurantRepository extends ServiceEntityRepository
             'min' => (float) ($result['minPrice'] ?? 0),
             'max' => (float) ($result['maxPrice'] ?? 0),
         ];
+    }
+
+    /**
+     * Restaurants appartenant à un propriétaire donné.
+     *
+     * @return Restaurant[]
+     */
+    public function findByOwner(User $owner): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.categories', 'c')->addSelect('c')
+            ->leftJoin('r.images', 'i')->addSelect('i')
+            ->where('r.owner = :owner')
+            ->setParameter('owner', $owner)
+            ->orderBy('r.createdAt', 'DESC')
+            ->getQuery()
+            ->getResult();
     }
 
     /**
