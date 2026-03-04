@@ -178,8 +178,9 @@ class RestaurantCrudWithImagesTest extends WebTestCase
 
             // Delete inserted images first, then delete restaurant
             $tokenManager = static::getContainer()->get(CsrfTokenManagerInterface::class);
+            self::assertInstanceOf(CsrfTokenManagerInterface::class, $tokenManager);
             foreach ($restaurant->getImages()->toArray() as $image) {
-                if (!$image instanceof Image || null === $image->getId()) {
+                if (null === $image->getId()) {
                     continue;
                 }
 
@@ -341,10 +342,8 @@ class RestaurantCrudWithImagesTest extends WebTestCase
                 $restaurant = $entityManager->getRepository(Restaurant::class)->find($restaurantId);
                 if ($restaurant instanceof Restaurant) {
                     foreach ($restaurant->getImages()->toArray() as $image) {
-                        if ($image instanceof Image) {
-                            $restaurant->removeImage($image);
-                            $entityManager->remove($image);
-                        }
+                        $restaurant->removeImage($image);
+                        $entityManager->remove($image);
                     }
                     $entityManager->remove($restaurant);
                 }
@@ -380,7 +379,10 @@ class RestaurantCrudWithImagesTest extends WebTestCase
 
     private function getEntityManager(): EntityManagerInterface
     {
-        return static::getContainer()->get(EntityManagerInterface::class);
+        $entityManager = static::getContainer()->get(EntityManagerInterface::class);
+        self::assertInstanceOf(EntityManagerInterface::class, $entityManager);
+
+        return $entityManager;
     }
 
     private function hasGoogleMapsApiKey(): bool

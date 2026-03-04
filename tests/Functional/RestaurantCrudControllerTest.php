@@ -2,7 +2,6 @@
 
 namespace App\Tests\Functional;
 
-use App\Dto\RestaurantInputDto;
 use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Enum\StatusRestaurantEnum;
@@ -12,6 +11,9 @@ use Symfony\Bundle\FrameworkBundle\Test\WebTestCase;
 
 class RestaurantCrudControllerTest extends WebTestCase
 {
+    /**
+     * @param list<string> $roles
+     */
     private function createTestUser(int $id = 1, array $roles = ['ROLE_USER']): User
     {
         $user = new User();
@@ -57,7 +59,9 @@ class RestaurantCrudControllerTest extends WebTestCase
         $client->request('GET', '/mes-restaurants');
 
         $this->assertResponseRedirects();
-        $this->assertStringContainsString('/login', $client->getResponse()->headers->get('Location'));
+        $location = $client->getResponse()->headers->get('Location');
+        $this->assertNotNull($location);
+        $this->assertStringContainsString('/login', $location);
     }
 
     // --- GET /restaurant/nouveau ---
@@ -69,7 +73,9 @@ class RestaurantCrudControllerTest extends WebTestCase
         $client->request('GET', '/restaurant/nouveau');
 
         $this->assertResponseRedirects();
-        $this->assertStringContainsString('/login', $client->getResponse()->headers->get('Location'));
+        $location = $client->getResponse()->headers->get('Location');
+        $this->assertNotNull($location);
+        $this->assertStringContainsString('/login', $location);
     }
 
     // --- GET /restaurant/{id}/modifier ---
@@ -142,7 +148,6 @@ class RestaurantCrudControllerTest extends WebTestCase
         $mockService = $this->createMock(RestaurantService::class);
         $mockService
             ->method('findOrFail')
-            ->with(10)
             ->willReturn($restaurant);
 
         static::getContainer()->set(RestaurantService::class, $mockService);

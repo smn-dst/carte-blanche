@@ -88,10 +88,6 @@ readonly class RestaurantService
     public function delete(Restaurant $restaurant): void
     {
         foreach ($restaurant->getImages()->toArray() as $image) {
-            if (!$image instanceof Image) {
-                continue;
-            }
-
             $restaurant->removeImage($image);
             $this->entityManager->remove($image);
         }
@@ -113,15 +109,14 @@ readonly class RestaurantService
         $this->entityManager->flush();
     }
 
+    /**
+     * @param array<int, UploadedFile> $uploadedFiles
+     */
     private function saveImages(Restaurant $restaurant, array $uploadedFiles): void
     {
         $position = $restaurant->getImages()->count();
 
         foreach ($uploadedFiles as $uploadedFile) {
-            if (!$uploadedFile instanceof UploadedFile) {
-                continue;
-            }
-
             $image = new Image();
             $image->setImageFile($uploadedFile);
             $image->setPosition($position);
