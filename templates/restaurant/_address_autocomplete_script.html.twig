@@ -1,0 +1,100 @@
+{% if googleMapsApiKey is not empty %}
+    <script>
+        (function () {
+            const autocompleteScriptSelector = 'script[data-google-places-script="restaurant-address"]';
+
+            const bindAutocomplete = function (inputSelector, latitudeSelector, longitudeSelector, types) {
+                const input = document.querySelector(inputSelector);
+                const latitudeInput = document.querySelector(latitudeSelector);
+                const longitudeInput = document.querySelector(longitudeSelector);
+
+                if (!input || !latitudeInput || !longitudeInput) {
+                    return;
+                }
+
+                if (input.dataset.googleAutocompleteBound === '1') {
+                    return;
+                }
+
+                const autocomplete = new window.google.maps.places.Autocomplete(input, {
+                    fields: ['formatted_address', 'geometry'],
+                    types: types
+                });
+
+                autocomplete.addListener('place_changed', function () {
+                    const place = autocomplete.getPlace();
+                    const location = place.geometry && place.geometry.location ? place.geometry.location : null;
+
+                    if (!location) {
+                        return;
+                    }
+
+                    if (place.formatted_address) {
+                        input.value = place.formatted_address;
+                    }
+
+                    latitudeInput.value = String(location.lat());
+                    longitudeInput.value = String(location.lng());
+                });
+
+                input.addEventListener('input', function () {
+                    latitudeInput.value = '';
+                    longitudeInput.value = '';
+                });
+
+                input.dataset.googleAutocompleteBound = '1';
+            };
+
+            const initializeAutocomplete = function () {
+                if (!(window.google && window.google.maps && window.google.maps.places)) {
+                    return;
+                }
+
+                bindAutocomplete(
+                    'input[data-address-autocomplete-target="address"]',
+                    'input[data-address-autocomplete-target="latitude"]',
+                    'input[data-address-autocomplete-target="longitude"]',
+                    ['address']
+                );
+
+                bindAutocomplete(
+                    'input[data-auction-location-autocomplete-target="location"]',
+                    'input[data-auction-location-autocomplete-target="latitude"]',
+                    'input[data-auction-location-autocomplete-target="longitude"]',
+                    ['geocode']
+                );
+            };
+
+            const loadGooglePlaces = function () {
+                if (window.google && window.google.maps && window.google.maps.places) {
+                    initializeAutocomplete();
+                    return;
+                }
+
+                const existingScript = document.querySelector(autocompleteScriptSelector);
+                if (existingScript) {
+                    if (existingScript.dataset.loaded === '1') {
+                        initializeAutocomplete();
+                    }
+
+                    return;
+                }
+
+                const script = document.createElement('script');
+                script.src = 'https://maps.googleapis.com/maps/api/js?key={{ googleMapsApiKey|e('js') }}&libraries=places';
+                script.async = true;
+                script.defer = true;
+                script.dataset.googlePlacesScript = 'restaurant-address';
+                script.addEventListener('load', function () {
+                    script.dataset.loaded = '1';
+                    initializeAutocomplete();
+                });
+
+                document.head.appendChild(script);
+            };
+
+            document.addEventListener('DOMContentLoaded', loadGooglePlaces);
+            document.addEventListener('turbo:load', loadGooglePlaces);
+        })();
+    </script>
+{% endif %}

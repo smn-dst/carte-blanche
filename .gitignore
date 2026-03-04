@@ -35,4 +35,13 @@ php-cs-fixer.phar
 compose.override.yaml
 ###< symfony/flex ###
 
-.DS_Storetailwindcss-linux-arm64
+.DS_Store
+tailwindcss-linux-arm64
+
+###> jetbrains ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+###< jetbrains ###
