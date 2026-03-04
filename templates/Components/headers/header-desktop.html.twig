@@ -1,5 +1,6 @@
 {% set nav_items = [
-	{ path: '/dashboard', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/dashboard_vendeur', label: 'Dashboard', icon: 'dashboard', role: 'ROLE_VENDOR' },
 	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
 	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
 	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
@@ -40,7 +41,20 @@
 		</div>
 	</div>
 
-	<div class="p-6 border-t border-sidebar-border">
+	<div class="flex flex-col gap-6 p-6 border-t border-sidebar-border">
+		<div>
+				{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+			<a href="/logout" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Déconnexion">
+					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-out"/></svg>
+					<span class="text-sm">Déconnexion</span>
+			</a>
+				{% else %}
+			<a href="/login" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Connexion">
+					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-in"/></svg>
+					<span class="text-sm">Connexion</span>
+			</a>
+				{% endif %}
+		</div>
 		<div class="text-xs text-muted-foreground space-y-1">
 			<p>© 2026 Carte Blanche Platform</p>
 			<p>Carte Blanche</p>

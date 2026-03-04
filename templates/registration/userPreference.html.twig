@@ -1,0 +1,461 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vos préférences — Carte Blanche{% endblock %}
+
+{% block body %}
+<div class="min-h-screen flex items-center justify-center relative overflow-hidden py-12">
+
+    <div class="absolute inset-0 from-primary/10 via-background to-background">
+        <div class="absolute inset-0 opacity-30">
+            <div class="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+            <div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+        </div>
+    </div>
+
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        <div class="max-w-xl mx-auto">
+
+            <div class="text-center mb-8">
+                <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-primary/30 bg-primary/10 text-primary text-xs font-medium mb-4">
+                    <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                    </svg>
+                    Compte créé avec succès
+                </div>
+                <h1 class="text-4xl font-bold mb-2">Personnalisez votre expérience</h1>
+                <p class="text-muted-foreground">Quelques questions pour vous proposer les meilleures opportunités</p>
+            </div>
+
+            <div class="mb-8">
+                <div class="flex justify-between items-center mb-2">
+                    <span class="text-xs text-muted-foreground" id="step-label">Étape <span id="current-step-num">1</span> sur 4</span>
+                    <span class="text-xs text-muted-foreground" id="step-percent">0%</span>
+                </div>
+                <div class="h-1 w-full bg-border rounded-full overflow-hidden">
+                    <div id="progress-bar" class="h-full bg-primary rounded-full transition-all duration-500 ease-out" style="width: 0%"></div>
+                </div>
+                <div class="flex justify-between mt-3">
+                    {% for i in 1..4 %}
+                    <div class="step-dot flex flex-col items-center gap-1" data-step="{{ i }}">
+                        <div class="w-2 h-2 rounded-full transition-all duration-300
+                            {% if i == 1 %}bg-primary{% else %}bg-border{% endif %}"
+                            id="dot-{{ i }}">
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="p-8 bg-card border border-border rounded-xl shadow-lg relative overflow-hidden">
+
+                <div class="step-panel" id="step-1">
+                    <div class="mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-1">Quels types de cuisine vous intéressent ?</h2>
+                        <p class="text-sm text-muted-foreground">Sélectionnez un ou plusieurs types. Vous pourrez modifier ça plus tard.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="cuisine-grid">
+                        {% set cuisines = [
+                            { value: 'french',        label: 'Français',          icon: '🥐' },
+                            { value: 'italian',       label: 'Italien',           icon: '🍝' },
+                            { value: 'japanese',      label: 'Japonais',          icon: '🍱' },
+                            { value: 'asian',         label: 'Asiatique',         icon: '🥢' },
+                            { value: 'mediterranean', label: 'Méditerranéen',     icon: '🫒' },
+                            { value: 'fastfood',      label: 'Burger',            icon: '🍔' },
+                            { value: 'brasserie',     label: 'Brasserie',         icon: '🍺' },
+                            { value: 'gastronomic',   label: 'Gastronomique',     icon: '⭐' },
+                            { value: 'vegan',         label: 'Végétarien',        icon: '🥗' },
+                            { value: 'seafood',       label: 'Fruits de mer',     icon: '🦞' },
+                            { value: 'pizza',         label: 'Pizzeria',          icon: '🍕' },
+                            { value: 'cafe',          label: 'Café / Brunch',     icon: '☕' },
+                        ] %}
+                        {% for cuisine in cuisines %}
+                        <button type="button"
+                            class="cuisine-btn flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-sm text-left cursor-pointer"
+                            data-value="{{ cuisine.value }}">
+                            <span class="text-base leading-none">{{ cuisine.icon }}</span>
+                            <span>{{ cuisine.label }}</span>
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <p class="text-xs text-muted-foreground mt-4 text-center">
+                        <span id="cuisine-count">0</span> sélectionné(s)
+                    </p>
+                </div>
+
+                <div class="step-panel hidden" id="step-2">
+                    <div class="mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-1">Quelle est votre fourchette de budget ?</h2>
+                        <p class="text-sm text-muted-foreground">Pour l'achat d'un fonds de commerce.</p>
+                    </div>
+
+                    <div class="grid grid-cols-2 gap-2 mb-6" id="budget-presets">
+                        {% set budgetPresets = [
+                            { label: '< 100k€',          min: 0,      max: 100000 },
+                            { label: '100k – 300k€',     min: 100000, max: 300000 },
+                            { label: '300k – 500k€',     min: 300000, max: 500000 },
+                            { label: '500k – 1M€',       min: 500000, max: 1000000 },
+                            { label: '> 1M€',            min: 1000000, max: 2000000 },
+                            { label: 'Pas de limite',    min: 0,       max: 0 },
+                        ] %}
+                        {% for preset in budgetPresets %}
+                        <button type="button"
+                            class="budget-preset-btn px-4 py-3 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-sm font-medium text-center cursor-pointer"
+                            data-min="{{ preset.min }}" data-max="{{ preset.max }}">
+                            {{ preset.label }}
+                        </button>
+                        {% endfor %}
+                    </div>
+
+                    <div class="border-t border-border pt-4">
+                        <p class="text-xs text-muted-foreground mb-3">Ou saisissez une fourchette personnalisée :</p>
+                        <div class="grid grid-cols-2 gap-3">
+                            <div>
+                                <label class="block text-xs text-muted-foreground mb-1.5">Budget minimum</label>
+                                <input type="number" id="budget-min-input"
+                                    class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                                    placeholder="0 €" min="0" step="10000">
+                            </div>
+                            <div>
+                                <label class="block text-xs text-muted-foreground mb-1.5">Budget maximum</label>
+                                <input type="number" id="budget-max-input"
+                                    class="w-full px-3 py-2 rounded-lg border border-border bg-background text-foreground text-sm placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                                    placeholder="Illimité" min="0" step="10000">
+                            </div>
+                        </div>
+                        <p class="text-xs text-muted-foreground mt-2 text-center" id="budget-summary">Aucun budget sélectionné</p>
+                    </div>
+                </div>
+
+                <div class="step-panel hidden" id="step-3">
+                    <div class="mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-1">Où cherchez-vous ?</h2>
+                        <p class="text-sm text-muted-foreground">Ville ou région de prédilection pour votre acquisition.</p>
+                    </div>
+
+                    <div class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Ville préférée</label>
+                            <input type="text" id="city-input"
+                                class="w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors"
+                                placeholder="Ex : Paris, Lyon, Bordeaux...">
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium mb-2">Rayon de recherche</label>
+                            <div class="grid grid-cols-3 sm:grid-cols-5 gap-2" id="radius-grid">
+                                {% for radius in [10, 25, 50, 100, 0] %}
+                                <button type="button"
+                                    class="radius-btn px-3 py-2 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-sm text-center cursor-pointer"
+                                    data-value="{{ radius }}">
+                                    {% if radius == 0 %}France{% else %}{{ radius }} km{% endif %}
+                                </button>
+                                {% endfor %}
+                            </div>
+                        </div>
+
+                        <div class="p-3 bg-secondary/50 rounded-lg">
+                            <p class="text-xs text-muted-foreground text-center" id="location-summary">Aucune localisation sélectionnée</p>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="step-panel hidden" id="step-4">
+                    <div class="mb-6">
+                        <div class="w-10 h-10 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center mb-4">
+                            <svg class="w-5 h-5 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                            </svg>
+                        </div>
+                        <h2 class="text-xl font-semibold mb-1">Quelle capacité recherchez-vous ?</h2>
+                        <p class="text-sm text-muted-foreground">Nombre de couverts minimum pour votre futur restaurant.</p>
+                    </div>
+
+                    <div class="space-y-3" id="capacity-grid">
+                        {% set capacities = [
+                            { value: 20,  label: 'Petit établissement',  sub: 'Moins de 20 couverts',   icon: '🪑' },
+                            { value: 50,  label: 'Taille moyenne',       sub: 'Entre 20 et 50 couverts', icon: '🍽️' },
+                            { value: 100, label: 'Grand restaurant',     sub: 'Entre 50 et 100 couverts', icon: '🏛️' },
+                            { value: 101, label: 'Très grande capacité', sub: 'Plus de 100 couverts',    icon: '🎪' },
+                            { value: 0,   label: 'Peu importe',          sub: 'Toutes tailles',          icon: '✨' },
+                        ] %}
+                        {% for cap in capacities %}
+                        <button type="button"
+                            class="capacity-btn w-full flex items-center gap-4 px-4 py-3.5 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-left cursor-pointer"
+                            data-value="{{ cap.value }}">
+                            <span class="text-xl leading-none flex-shrink-0">{{ cap.icon }}</span>
+                            <div>
+                                <p class="text-sm font-medium">{{ cap.label }}</p>
+                                <p class="text-xs text-muted-foreground">{{ cap.sub }}</p>
+                            </div>
+                            <div class="ml-auto w-4 h-4 rounded-full border-2 border-border flex-shrink-0 capacity-radio"></div>
+                        </button>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-between mt-8 pt-6 border-t border-border">
+                    <button type="button" id="btn-prev"
+                        class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hidden">
+                        ← Précédent
+                    </button>
+                    <div class="flex-1"></div>
+
+                    <div class="flex items-center gap-3">
+                        <button type="button" id="btn-skip"
+                            class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors cursor-pointer">
+                            Passer cette étape
+                        </button>
+
+                        <button type="button" id="btn-next"
+                            class="inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors cursor-pointer">
+                            Suivant
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </button>
+
+                        <button type="button" id="btn-submit" class="hidden
+                            inline-flex items-center gap-2 px-6 py-2.5 bg-primary text-primary-foreground rounded-lg font-medium text-sm hover:bg-primary/90 transition-colors cursor-pointer">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                            </svg>
+                            Terminer
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+
+            <div class="mt-6 text-center">
+                <a href="{{ path('app_home') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
+                    ← Passer et accéder à l'accueil
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+(function () {
+    const state = {
+        currentStep: 1,
+        totalSteps: 4,
+        cuisineTypes: [],
+        budgetMin: null,
+        budgetMax: null,
+        preferredCity: '',
+        searchRadius: null,
+        capacityMin: null,
+    };
+
+    const progressBar   = document.getElementById('progress-bar');
+    const stepNum       = document.getElementById('current-step-num');
+    const stepPercent   = document.getElementById('step-percent');
+    const btnPrev       = document.getElementById('btn-prev');
+    const btnNext       = document.getElementById('btn-next');
+    const btnSkip       = document.getElementById('btn-skip');
+    const btnSubmit     = document.getElementById('btn-submit');
+
+    function updateProgress() {
+        const pct = Math.round(((state.currentStep - 1) / state.totalSteps) * 100);
+        progressBar.style.width = pct + '%';
+        stepNum.textContent = state.currentStep;
+        stepPercent.textContent = pct + '%';
+
+        for (let i = 1; i <= state.totalSteps; i++) {
+            const dot = document.getElementById('dot-' + i);
+            dot.classList.toggle('bg-primary', i <= state.currentStep);
+            dot.classList.toggle('bg-border',  i >  state.currentStep);
+            dot.classList.toggle('w-3',        i === state.currentStep);
+            dot.classList.toggle('h-3',        i === state.currentStep);
+            dot.classList.toggle('w-2',        i !== state.currentStep);
+            dot.classList.toggle('h-2',        i !== state.currentStep);
+        }
+
+        btnPrev.classList.toggle('hidden', state.currentStep === 1);
+        btnNext.classList.toggle('hidden', state.currentStep === 4);
+        btnSubmit.classList.toggle('hidden', state.currentStep !== 4);
+    }
+
+    function showStep(step) {
+        document.querySelectorAll('.step-panel').forEach((el, idx) => {
+            el.classList.toggle('hidden', idx + 1 !== step);
+        });
+        updateProgress();
+    }
+
+    function formatEuros(val) {
+        if (!val) return null;
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
+    }
+
+    document.querySelectorAll('.cuisine-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const val = btn.dataset.value;
+            const idx = state.cuisineTypes.indexOf(val);
+            if (idx === -1) {
+                state.cuisineTypes.push(val);
+                btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+            } else {
+                state.cuisineTypes.splice(idx, 1);
+                btn.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
+            }
+            document.getElementById('cuisine-count').textContent = state.cuisineTypes.length;
+        });
+    });
+
+    function updateBudgetSummary() {
+        const summary = document.getElementById('budget-summary');
+        if (!state.budgetMin && !state.budgetMax) {
+            summary.textContent = 'Aucun budget sélectionné';
+        } else if (!state.budgetMax || state.budgetMax === 0) {
+            summary.textContent = 'À partir de ' + (formatEuros(state.budgetMin) ?? '0 €');
+        } else {
+            summary.textContent = (formatEuros(state.budgetMin) ?? '0 €') + ' – ' + formatEuros(state.budgetMax);
+        }
+    }
+
+    document.querySelectorAll('.budget-preset-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.budget-preset-btn').forEach(b => {
+                b.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
+            });
+            btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+            state.budgetMin = parseInt(btn.dataset.min) || null;
+            state.budgetMax = parseInt(btn.dataset.max) || null;
+            document.getElementById('budget-min-input').value = state.budgetMin || '';
+            document.getElementById('budget-max-input').value = state.budgetMax || '';
+            updateBudgetSummary();
+        });
+    });
+
+    document.getElementById('budget-min-input').addEventListener('input', e => {
+        state.budgetMin = e.target.value ? parseInt(e.target.value) : null;
+        document.querySelectorAll('.budget-preset-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
+        updateBudgetSummary();
+    });
+
+    document.getElementById('budget-max-input').addEventListener('input', e => {
+        state.budgetMax = e.target.value ? parseInt(e.target.value) : null;
+        document.querySelectorAll('.budget-preset-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
+        updateBudgetSummary();
+    });
+
+    document.getElementById('city-input').addEventListener('input', e => {
+        state.preferredCity = e.target.value.trim();
+        updateLocationSummary();
+    });
+
+    document.querySelectorAll('.radius-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
+            btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
+            state.searchRadius = parseInt(btn.dataset.value);
+            updateLocationSummary();
+        });
+    });
+
+    function updateLocationSummary() {
+        const summary = document.getElementById('location-summary');
+        if (!state.preferredCity) {
+            summary.textContent = 'Aucune localisation sélectionnée';
+            return;
+        }
+        const radiusText = state.searchRadius === 0 ? 'Toute la France' :
+            state.searchRadius ? 'dans un rayon de ' + state.searchRadius + ' km' : '';
+        summary.textContent = state.preferredCity + (radiusText ? ' · ' + radiusText : '');
+    }
+
+    document.querySelectorAll('.capacity-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            document.querySelectorAll('.capacity-btn').forEach(b => {
+                b.classList.remove('border-primary', 'bg-primary/10');
+                b.querySelector('.capacity-radio').classList.remove('bg-primary', 'border-primary');
+            });
+            btn.classList.add('border-primary', 'bg-primary/10');
+            btn.querySelector('.capacity-radio').classList.add('bg-primary', 'border-primary');
+            state.capacityMin = parseInt(btn.dataset.value);
+        });
+    });
+
+    btnNext.addEventListener('click', () => {
+        if (state.currentStep < state.totalSteps) {
+            state.currentStep++;
+            showStep(state.currentStep);
+        }
+    });
+
+    btnPrev.addEventListener('click', () => {
+        if (state.currentStep > 1) {
+            state.currentStep--;
+            showStep(state.currentStep);
+        }
+    });
+
+    btnSkip.addEventListener('click', () => {
+        if (state.currentStep < state.totalSteps) {
+            state.currentStep++;
+            showStep(state.currentStep);
+        } else {
+            fetch('{{ path('app_register_preferences_skip') }}', {
+                method: 'POST',
+                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
+                body: JSON.stringify({ _token: '{{ csrf_token('preferences_skip') }}' }),
+            })
+            .then(r => r.json())
+            .then(d => { if (d.redirect) window.location.href = d.redirect; });
+        }
+    });
+
+    btnSubmit.addEventListener('click', () => {
+        btnSubmit.disabled = true;
+        btnSubmit.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Enregistrement...';
+
+        const payload = {
+            cuisineTypes:  state.cuisineTypes,
+            budgetMin:     state.budgetMin,
+            budgetMax:     state.budgetMax,
+            preferredCity: state.preferredCity,
+            searchRadius:  state.searchRadius,
+            capacityMin:   state.capacityMin,
+            _token: '{{ csrf_token('preferences_save') }}',
+        };
+
+        fetch('{{ path('app_register_preferences_save') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify(payload),
+        })
+        .then(r => r.json())
+        .then(d => {
+            if (d.redirect) window.location.href = d.redirect;
+        })
+        .catch(() => {
+            btnSubmit.disabled = false;
+            btnSubmit.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Terminer';
+        });
+    });
+
+    showStep(1);
+})();
+</script>
+{% endblock %}
