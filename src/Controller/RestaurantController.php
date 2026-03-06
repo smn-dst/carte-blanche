@@ -13,6 +13,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
+use App\Service\AiDescriptionService;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 class RestaurantController extends AbstractController
 {
@@ -29,7 +31,7 @@ class RestaurantController extends AbstractController
             throw $this->createNotFoundException('Restaurant non trouvé.');
         }
 
-        return $this->render('restaurant/show.html.twig', [
+        return $this->render('encheres/detail.html.twig', [
             'restaurant' => $restaurant,
         ]);
     }
@@ -165,5 +167,26 @@ class RestaurantController extends AbstractController
         }
 
         return trim($apiKey);
+    }
+
+    #[Route('/restaurant/generate-description', name: 'app_restaurant_generate_description', methods: ['POST'])]
+    public function generateDescription(
+        Request $request,
+        AiDescriptionService $aiDescriptionService,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data) {
+            return $this->json(['error' => 'Données invalides'], 400);
+        }
+
+        try {
+            $description = $aiDescriptionService->generateDescription($data);
+            return $this->json(['description' => $description]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Erreur de génération : ' . $e->getMessage()], 500);
+        }
     }
 }
