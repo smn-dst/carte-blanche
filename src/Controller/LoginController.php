@@ -20,14 +20,14 @@ class LoginController extends AbstractController
 
         if ($this -> getUser()) {
             $this->addFlash('error', 'Vous êtes déjà connecté !');
+
             return $this->redirectToRoute('app_home');
         }
-        
+
         return $this->render('login/login.html.twig', [
             'last_username' => $lastUsername,
             'error' => $error,
         ]);
-
     }
 
     #[Route(path: '/logout', name: 'app_logout')]

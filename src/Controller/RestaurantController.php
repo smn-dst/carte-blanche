@@ -8,13 +8,13 @@ use App\Exception\RestaurantNotFoundException;
 use App\Form\RestaurantFormType;
 use App\Repository\RestaurantRepository;
 use App\Security\Voter\RestaurantVoter;
+use App\Service\AiDescriptionService;
 use App\Service\RestaurantService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-use App\Service\AiDescriptionService;
-use Symfony\Component\HttpFoundation\JsonResponse;
 
 class RestaurantController extends AbstractController
 {
@@ -186,7 +186,7 @@ class RestaurantController extends AbstractController
             $description = $aiDescriptionService->generateDescription($data);
             return $this->json(['description' => $description]);
         } catch (\Throwable $e) {
-            return $this->json(['error' => 'Erreur de génération : ' . $e->getMessage()], 500);
+            return $this->json(['error' => 'Erreur de génération : ' .$e->getMessage()], 500);
         }
     }
 }
