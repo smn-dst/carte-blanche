@@ -84,6 +84,7 @@ class UserPreferenceController extends AbstractController
         $em->flush();
 
         $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
+
         return $this->json([
             'success' => true,
             'redirect' => $this->generateUrl('app_home'),
@@ -115,8 +116,8 @@ class UserPreferenceController extends AbstractController
         $budgetMin = $data['budgetMin'] ?? null;
         $budgetMax = $data['budgetMax'] ?? null;
         if ($budgetMin || $budgetMax) {
-            $min = $budgetMin ? number_format((float) $budgetMin, 0, ',', ' ') . ' €' : '0 €';
-            $max = $budgetMax ? number_format((float) $budgetMax, 0, ',', ' ') . ' €' : 'illimité';
+            $min = $budgetMin ? number_format((float) $budgetMin, 0, ',', ' ').' €' : '0 €';
+            $max = $budgetMax ? number_format((float) $budgetMax, 0, ',', ' ').' €' : 'illimité';
             $parts[] = "Budget recherché : entre {$min} et {$max}";
         }
 
