@@ -38,7 +38,7 @@ class RegistrationController extends AbstractController
             return $this->redirectToRoute('app_register_preferences');
         }
 
-        if ($this -> getUser()) {
+        if ($this->getUser()) {
             $this->addFlash('error', 'Vous êtes déjà connecté !');
 
             return $this->redirectToRoute('app_home');
