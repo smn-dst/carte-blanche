@@ -1,0 +1,112 @@
+<script>
+    (function () {
+        const setupImageUploadRepeater = function () {
+            document.querySelectorAll('[data-image-upload-wrapper]').forEach(function (wrapper) {
+                if (wrapper.dataset.imageRepeaterBound === '1') {
+                    return;
+                }
+
+                const group = wrapper.querySelector('[data-image-upload-group]');
+                const addButton = wrapper.querySelector('[data-add-image-input]');
+
+                if (!group || !addButton) {
+                    return;
+                }
+
+                const inputName = group.dataset.inputName;
+                const inputIdPrefix = group.dataset.inputIdPrefix || 'restaurant_uploaded_images';
+
+                if (!inputName) {
+                    return;
+                }
+
+                const bindFileLabel = function (row) {
+                    const input = row.querySelector('input[type="file"]');
+                    const fileNameLabel = row.querySelector('[data-file-name]');
+
+                    if (!input || !fileNameLabel || input.dataset.fileLabelBound === '1') {
+                        return;
+                    }
+
+                    input.addEventListener('change', function () {
+                        if (input.files && input.files.length > 0) {
+                            fileNameLabel.textContent = input.files.length === 1
+                                ? input.files[0].name
+                                : input.files.length + ' fichiers sélectionnés';
+                            return;
+                        }
+
+                        fileNameLabel.textContent = 'Aucun fichier sélectionné';
+                    });
+
+                    input.dataset.fileLabelBound = '1';
+                };
+
+                const updateRows = function () {
+                    const rows = Array.from(group.querySelectorAll('[data-image-upload-row]'));
+
+                    rows.forEach(function (row, index) {
+                        const removeButton = row.querySelector('[data-remove-image-input]');
+                        if (removeButton) {
+                            removeButton.classList.toggle('hidden', rows.length <= 1);
+                        }
+
+                        const input = row.querySelector('input[type="file"]');
+                        if (input) {
+                            input.id = inputIdPrefix + '_' + index;
+                        }
+
+                        bindFileLabel(row);
+                    });
+                };
+
+                const createRow = function () {
+                    const row = document.createElement('div');
+                    row.setAttribute('data-image-upload-row', '');
+                    row.className = 'rounded-lg border border-border/70 bg-background/30 p-3';
+                    row.innerHTML = ''
+                        + '<div class="flex flex-col gap-2 md:flex-row md:items-center">'
+                        + '  <input type="file"'
+                        + '         name="' + inputName + '"'
+                        + '         accept="image/jpeg,image/png,image/webp"'
+                        + '         class="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer">'
+                        + '  <button type="button"'
+                        + '          data-remove-image-input'
+                        + '          class="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300 hover:bg-red-500/20 transition-colors">'
+                        + '      Supprimer'
+                        + '  </button>'
+                        + '</div>'
+                        + '<p data-file-name class="mt-2 text-xs text-muted-foreground">Aucun fichier sélectionné</p>';
+
+                    return row;
+                };
+
+                addButton.addEventListener('click', function () {
+                    group.appendChild(createRow());
+                    updateRows();
+                });
+
+                group.addEventListener('click', function (event) {
+                    const removeButton = event.target.closest('[data-remove-image-input]');
+                    if (!removeButton) {
+                        return;
+                    }
+
+                    const row = removeButton.closest('[data-image-upload-row]');
+                    if (!row) {
+                        return;
+                    }
+
+                    row.remove();
+                    updateRows();
+                });
+
+                updateRows();
+                wrapper.dataset.imageRepeaterBound = '1';
+            });
+        };
+
+        document.addEventListener('DOMContentLoaded', setupImageUploadRepeater);
+        document.addEventListener('turbo:load', setupImageUploadRepeater);
+    })();
+</script>
