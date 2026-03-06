@@ -184,6 +184,7 @@ class RestaurantController extends AbstractController
 
         try {
             $description = $aiDescriptionService->generateDescription($data);
+
             return $this->json(['description' => $description]);
         } catch (\Throwable $e) {
             return $this->json(['error' => 'Erreur de génération : '.$e->getMessage()], 500);
