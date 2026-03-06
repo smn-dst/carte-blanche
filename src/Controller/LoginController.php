@@ -18,7 +18,7 @@ class LoginController extends AbstractController
         // last username entered by the user
         $lastUsername = $authenticationUtils->getLastUsername();
 
-        if ($this -> getUser()) {
+        if ($this->getUser()) {
             $this->addFlash('error', 'Vous êtes déjà connecté !');
 
             return $this->redirectToRoute('app_home');
