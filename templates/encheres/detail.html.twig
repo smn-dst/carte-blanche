@@ -37,6 +37,21 @@
 						{{ restaurant.name }}
 					</h1>
 
+					{# {% if app.user %}
+						<form method="post" action="{{ isFavorite ? path('app_favorite_remove', { id: restaurant.id }) : path('app_favorite_add', { id: restaurant.id }) }}" class="inline">
+							<input type="hidden" name="_token" value="{{ csrf_token(isFavorite ? 'favorite_remove_' ~ restaurant.id : 'favorite_add_' ~ restaurant.id) }}">
+							<button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200
+									                {{ isFavorite
+									                    ? 'bg-primary/20 border-primary text-primary hover:bg-red-500/20 hover:border-red-400 hover:text-red-400'
+									                    : 'bg-background/50 border-border text-muted-foreground hover:bg-primary/10 hover:border-primary hover:text-primary' }}">
+								<svg class="w-4 h-4" fill="{{ isFavorite ? 'currentColor' : 'none' }}" stroke="currentColor" viewbox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+								</svg>
+								{{ isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+							</button>
+						</form>
+					{% endif %} #}
+
 					<div class="flex items-center gap-2 text-xl text-muted-foreground">
 						<span class="text-primary">📍</span>
 						{{ restaurant.address }}
@@ -399,7 +414,7 @@
 			if (qty < restaurant.maxCapacity) {
 				qty++;
 				updateDisplay();
-		}	
+		}
 		}
 		function decrementQty() {
 			if (qty > 1) {
