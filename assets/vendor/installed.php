@@ -19,4 +19,24 @@
     array (
     ),
   ),
+  'mapbox-gl' => 
+  array (
+    'version' => '3.19.0',
+    'dependencies' => 
+    array (
+    ),
+    'extraFiles' => 
+    array (
+    ),
+  ),
+  'mapbox-gl/dist/mapbox-gl.min.css' => 
+  array (
+    'version' => '3.19.0',
+    'dependencies' => 
+    array (
+    ),
+    'extraFiles' => 
+    array (
+    ),
+  ),
 );

@@ -16,6 +16,13 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'map' => [
+        'path' => './assets/js/map/map.js',
+        'entrypoint' => true,
+    ],
+    'map-helpers' => [
+        'path' => './assets/js/map/map-helpers.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
@@ -24,5 +31,12 @@ return [
     ],
     '@hotwired/turbo' => [
         'version' => '7.3.0',
+    ],
+    'mapbox-gl' => [
+        'version' => '3.19.0',
+    ],
+    'mapbox-gl/dist/mapbox-gl.min.css' => [
+        'version' => '3.19.0',
+        'type' => 'css',
     ],
 ];

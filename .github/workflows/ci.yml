@@ -180,6 +180,19 @@ jobs:
       - run: chmod +x vendor/bin/*
       - run: composer run phpunit:functional
 
+  test-js:
+    name: "Tests JS (Vitest)"
+    needs: [lint-js]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: npm
+      - run: npm ci
+      - run: npm run test:js
+
   # ─── E2E ─────────────────────
 
   e2e:
@@ -268,7 +281,7 @@ jobs:
   build:
     name: "Build production"
     if: github.ref == 'refs/heads/main'
-    needs: [unit-tests, functional-tests, e2e]
+    needs: [unit-tests, functional-tests, e2e, test-js]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
