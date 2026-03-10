@@ -16,7 +16,7 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[Route('/register')]
 class UserPreferenceController extends AbstractController
 {
-    #[Route('register/preferences', name: 'app_register_preferences', methods: ['GET', 'POST'])]
+    #[Route('/preferences', name: 'app_register_preferences', methods: ['GET', 'POST'])]
     public function preferences(
         Request $request,
         EntityManagerInterface $em,
@@ -35,7 +35,7 @@ class UserPreferenceController extends AbstractController
 
             $preferenceText = $this->buildPreferenceText($data);
 
-            $embedding = new UserPreferenceEmbedding();
+            $embedding = $user->getUserPreferenceEmbedding() ?? new UserPreferenceEmbedding();
             $embedding->setUser($user);
             $embedding->setPreferencesText($preferenceText);
             $embedding->setEmbedding([]);
@@ -74,7 +74,7 @@ class UserPreferenceController extends AbstractController
 
         $preferenceText = $this->buildPreferenceText($data);
 
-        $embedding = new UserPreferenceEmbedding();
+        $embedding = $user->getUserPreferenceEmbedding() ?? new UserPreferenceEmbedding();
         $embedding->setUser($user);
         $embedding->setPreferencesText($preferenceText);
         $embedding->setEmbedding([]);
@@ -82,6 +82,8 @@ class UserPreferenceController extends AbstractController
 
         $em->persist($embedding);
         $em->flush();
+
+        $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
 
         return $this->json([
             'success' => true,

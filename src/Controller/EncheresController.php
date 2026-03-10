@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Repository\CategoryRepository;
+use App\Repository\FavoriteRepository;
 use App\Repository\RestaurantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
@@ -90,7 +91,7 @@ class EncheresController extends AbstractController
     }
 
     #[Route('/encheres/{id}', name: 'app_enchere_detail', methods: ['GET'])]
-    public function detail(int $id, RestaurantRepository $restaurantRepository): Response
+    public function detail(int $id, RestaurantRepository $restaurantRepository, FavoriteRepository $favoriteRepository): Response
     {
         $restaurant = $restaurantRepository->find($id);
 
@@ -98,8 +99,18 @@ class EncheresController extends AbstractController
             return $this->render('encheres/404.html.twig');
         }
 
+        $isFavorite = false;
+        $user = $this->getUser();
+        if ($user instanceof \App\Entity\User) {
+            $isFavorite = null !== $favoriteRepository->findOneBy([
+                'user' => $user,
+                'restaurant' => $restaurant,
+            ]);
+        }
+
         return $this->render('encheres/detail.html.twig', [
             'restaurant' => $restaurant,
+            'isFavorite' => $isFavorite,
         ]);
     }
 }

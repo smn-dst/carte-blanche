@@ -31,7 +31,31 @@
                     </div>
                     <div class="md:col-span-2">
                         {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.description, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 min-h-[100px]'}}) }}
+                        
+                        <div class="relative mt-1">
+                            {{ form_widget(form.description, {'attr': {
+                                'class': 'w-full rounded-md border border-border bg-background px-3 py-2 min-h-[120px]',
+                                'id': 'restaurant-description',
+                                'placeholder': 'Rédigez une description ou générez-en une avec l\'IA...'
+                            }}) }}
+                        </div>
+
+                        <div class="flex items-center gap-3 mt-2">
+                            <button type="button" id="btn-generate-description"
+                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary text-sm hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                                <svg id="icon-generate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <svg id="icon-loading" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                Générer avec l'IA
+                            </button>
+                            <span id="ai-status" class="text-xs text-muted-foreground hidden"></span>
+                        </div>
+
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.description) }}</div>
                     </div>
                     <div class="md:col-span-2">
@@ -181,6 +205,73 @@
 
         {{ form_end(form) }}
     </section>
+
+    <script>
+    (function () {
+        const btn      = document.getElementById('btn-generate-description');
+        const textarea = document.querySelector('textarea[name*="description"]');
+        console.log('btn:', btn);
+        console.log('textarea:', textarea);
+        const iconGen    = document.getElementById('icon-generate');
+        const iconLoad   = document.getElementById('icon-loading');
+        const status     = document.getElementById('ai-status');
+
+        function getFieldValue(name) {
+            const el = document.querySelector(`[name*="[${name}]"]`);
+            return el ? el.value.trim() : '';
+        }
+
+        function getCheckedCategories() {
+            return Array.from(
+                document.querySelectorAll('input[name*="[categories]"]:checked')
+            ).map(el => el.closest('label').querySelector('span')?.textContent?.trim() ?? '');
+        }
+
+        btn.addEventListener('click', async () => {
+            console.log('Génération de description IA...');
+            btn.disabled = true;
+            iconGen.classList.add('hidden');
+            iconLoad.classList.remove('hidden');
+            status.textContent = 'Génération en cours...';
+            status.classList.remove('hidden');
+
+            const payload = {
+                name:            getFieldValue('name'),
+                address:         getFieldValue('address'),
+                capacity:        getFieldValue('capacity'),
+                askingPrice:     getFieldValue('askingPrice'),
+                annualRevenue:   getFieldValue('annualRevenue'),
+                rent:            getFieldValue('rent'),
+                leaseRemaining:  getFieldValue('leaseRemaining'),
+                auctionLocation: getFieldValue('auctionLocation'),
+                categories:      getCheckedCategories(),
+            };
+
+            try {
+                const res  = await fetch('{{ path('app_restaurant_generate_description') }}', {
+                    method:  'POST',
+                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                    body:    JSON.stringify(payload),
+                });
+                const data = await res.json();
+
+                if (data.description) {
+                    textarea.value = data.description;
+                    status.textContent = '✓ Description générée — vous pouvez la modifier';
+                    status.classList.remove('hidden');
+                } else {
+                    status.textContent = '✗ Erreur : ' + (data.error ?? 'inconnue');
+                }
+            } catch (e) {
+                status.textContent = '✗ Erreur réseau';
+            } finally {
+                btn.disabled = false;
+                iconGen.classList.remove('hidden');
+                iconLoad.classList.add('hidden');
+            }
+        });
+    })();
+    </script>
 {% endblock %}
 
 {% block javascripts %}
