@@ -1,0 +1,26 @@
+/* ── Desktop : sidebar ── */
+@media (min-width: 768px) {
+    main:has(.map-page) {
+        @apply overflow-hidden;
+    }
+
+    .map-sidebar-open {
+        transform: translateX(0);
+    }
+
+    .map-sidebar-closed {
+        transform: translateX(-100%);
+    }
+}
+
+/* ── Popups Mapbox ── */
+.mapboxgl-popup-content {
+    background: transparent !important;
+    padding: 0 !important;
+    box-shadow: none !important;
+    border-radius: 0.75rem;
+}
+
+.mapboxgl-popup-tip {
+    border-top-color: #111827 !important;
+}
