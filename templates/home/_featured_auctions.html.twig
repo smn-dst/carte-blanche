@@ -27,6 +27,7 @@
 				href: path('app_restaurant_show', { id: r.id }),
 				image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
 				variant: 'first',
+				restaurantId: r.id,
 				isFavorite: r.id in favoriteRestaurantIds|default([])
 			} %}
 			{% endif %}
@@ -44,6 +45,7 @@
 					href: path('app_restaurant_show', { id: r.id }),
 					image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
 					variant: 'small',
+					restaurantId: r.id,
 					isFavorite: r.id in favoriteRestaurantIds|default([])
 				} %}
 				{% endfor %}
@@ -63,6 +65,7 @@
 				href: path('app_restaurant_show', { id: r.id }),
 				image: r.firstImage ? '/uploads/restaurants/' ~ r.firstImage.fileName : null,
 				variant: 'bottom',
+				restaurantId: r.id,
 				isFavorite: r.id in favoriteRestaurantIds|default([])
 			} %}
 			{% endfor %}

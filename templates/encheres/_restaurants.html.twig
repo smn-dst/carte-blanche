@@ -5,6 +5,7 @@
             <li>
             {% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
                 variant: loop.first ? 'first' : (loop.index <= 3 ? 'small' : 'bottom'),
+                restaurantId: restaurant.id,
                 isFavorite: restaurant.id in favoriteRestaurantIds|default([]),
                 href: path('app_restaurant_show', { id: restaurant.id }),
                 image: restaurant.firstImage ? '/uploads/restaurants/' ~ restaurant.firstImage.fileName : null,

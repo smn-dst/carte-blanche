@@ -77,7 +77,11 @@ class FavoritesController extends AbstractController
         $restaurant->setFavoriteCount($restaurant->getFavoriteCount() + 1);
         $em->flush();
 
-        return $this->redirectToRoute('app_restaurant_show', ['id' => $id]);
+        $referer = $request->headers->get('Referer');
+
+        return $referer
+            ? $this->redirect($referer)
+            : $this->redirectToRoute('app_restaurant_show', ['id' => $id]);
     }
 
     #[Route('/restaurant/{id}/favoris/retirer', name: 'app_favorite_remove', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -110,6 +114,10 @@ class FavoritesController extends AbstractController
         $restaurant->setFavoriteCount(max(0, $restaurant->getFavoriteCount() - 1));
         $em->flush();
 
-        return $this->redirectToRoute('app_restaurant_show', ['id' => $id]);
+        $referer = $request->headers->get('Referer');
+
+        return $referer
+            ? $this->redirect($referer)
+            : $this->redirectToRoute('app_restaurant_show', ['id' => $id]);
     }
 }

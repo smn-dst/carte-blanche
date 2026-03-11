@@ -3,33 +3,231 @@
 {% block title %}{{ restaurant.name }}{% endblock %}
 
 {% block body %}
-	{% for type, message in app.flashes %}
-		<div class="alert alert-{{ type }}" role="alert">
-			{{ message|join(', ') }}
-		</div>
-	{% endfor %}
-	<div class="p-8">
-		<div class="flex flex-wrap items-center gap-4">
-			<h1 class="text-3xl font-bold">{{ restaurant.name }}</h1>
-			{% if app.user %}
-				{% if isFavorite %}
-					<form method="post" action="{{ path('app_favorite_remove', { id: restaurant.id }) }}" class="inline">
-						<input type="hidden" name="_token" value="{{ csrf_token('favorite_remove_' ~ restaurant.id) }}">
-						<button type="submit" class="rounded-lg border border-gray-500 bg-transparent px-4 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
-							Retirer des favoris
-						</button>
-					</form>
-				{% else %}
-					<form method="post" action="{{ path('app_favorite_add', { id: restaurant.id }) }}" class="inline">
-						<input type="hidden" name="_token" value="{{ csrf_token('favorite_add_' ~ restaurant.id) }}">
-						<button type="submit" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition">
-							Ajouter aux favoris
-						</button>
-					</form>
-				{% endif %}
-			{% endif %}
-		</div>
-		<p class="text-gray-400 mt-2">{{ restaurant.address }}</p>
-		<p class="mt-4">Prix de départ : {{ restaurant.askingPrice|number_format(0, ',', ' ') }} €</p>
-	</div>
+    {% set firstImage = restaurant.firstImage %}
+    {% set galleryImages = restaurant.images %}
+
+    <section class="p-6 md:p-10 space-y-8">
+        <header class="space-y-4">
+            <a href="{{ path('app_encheres') }}" class="inline-flex items-center gap-2 text-sm text-muted-foreground hover:text-white transition-colors">
+                ← Retour aux enchères
+            </a>
+
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div>
+                    <h1 class="text-3xl md:text-4xl font-bold leading-tight">{{ restaurant.name }}</h1>
+                    <p class="text-muted-foreground mt-2">{{ restaurant.address }}</p>
+                </div>
+
+                {% if is_granted('RESTAURANT_EDIT', restaurant) %}
+                    <a href="{{ path('app_restaurant_edit', {id: restaurant.id}) }}" class="primary-btn">
+                        Modifier l'annonce
+                    </a>
+                {% endif %}
+            </div>
+
+            {% if restaurant.categories|length > 0 %}
+                <div class="flex flex-wrap gap-2">
+                    {% for category in restaurant.categories %}
+                        <span class="rounded-full border border-primary/40 bg-primary/10 px-3 py-1 text-xs font-medium text-primary">
+                            {{ category.name }}
+                        </span>
+                    {% endfor %}
+                </div>
+            {% endif %}
+        </header>
+
+        <div class="grid gap-4 lg:grid-cols-3">
+            <div class="lg:col-span-2 rounded-2xl border border-border overflow-hidden bg-secondary/20 min-h-[280px]">
+                {% if firstImage and firstImage.fileName %}
+                    <img src="{{ asset('uploads/restaurants/' ~ firstImage.fileName) }}"
+                         alt="{{ restaurant.name }}"
+                         class="w-full h-full max-h-[460px] object-cover">
+                {% else %}
+                    <div class="h-full min-h-[280px] flex items-center justify-center bg-secondary/40 text-muted-foreground">
+                        Aucune image disponible
+                    </div>
+                {% endif %}
+            </div>
+
+            <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
+                {% for image in galleryImages|slice(1, 3) %}
+                    {% if image.fileName %}
+                        <div class="rounded-2xl border border-border overflow-hidden bg-secondary/20 h-[140px] sm:h-[160px]">
+                            <img src="{{ asset('uploads/restaurants/' ~ image.fileName) }}"
+                                 alt="{{ restaurant.name }} — photo {{ loop.index + 1 }}"
+                                 class="w-full h-full object-cover">
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+
+        <div class="grid gap-6 lg:grid-cols-3">
+            <div class="lg:col-span-2 space-y-6">
+                 <div class="rounded-xl border border-border bg-secondary/20 p-6 flex items-center gap-4 justify-between">
+
+                    <div class="flex items-center gap-2 text-primary">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" 
+                        {% if isFavorite %}
+                            fill="currentColor"
+                        {% else %}
+                            fill="none"
+                        {% endif %}
+                        stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-heart-icon lucide-heart shrink-0"><path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/></svg>
+                        <span class="leading-none">12</span>
+                    </div>
+
+                    {% if app.user %}
+                        {% if isFavorite %}
+                            <form method="post" action="{{ path('app_favorite_remove', { id: restaurant.id }) }}" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('favorite_remove_' ~ restaurant.id) }}">
+                                <button type="submit" class="rounded-lg border border-primary bg-background px-4 py-2 text-sm font-medium text-white hover:bg-white/10 transition">
+                                    Retirer des favoris
+                                </button>
+                            </form>
+                        {% else %}
+                            <form method="post" action="{{ path('app_favorite_add', { id: restaurant.id }) }}" class="inline">
+                                <input type="hidden" name="_token" value="{{ csrf_token('favorite_add_' ~ restaurant.id) }}">
+                                <button type="submit" class="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary/90 transition">
+                                    Ajouter aux favoris
+                                </button>
+                            </form>
+                        {% endif %}
+                    {% endif %}
+                </div>
+                
+                <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                    <h2 class="text-lg font-semibold">Présentation</h2>
+                    {% if restaurant.description %}
+                        <p class="text-sm text-muted-foreground leading-relaxed">{{ restaurant.description }}</p>
+                    {% else %}
+                        <p class="text-sm text-muted-foreground">Aucune description renseignée.</p>
+                    {% endif %}
+                </div>
+
+                <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                    <h2 class="text-lg font-semibold">Informations clés</h2>
+                    <div class="grid gap-4 sm:grid-cols-2">
+                        <div class="rounded-lg border border-border/70 bg-background/40 p-4">
+                            <p class="text-xs uppercase tracking-wide text-muted-foreground">Prix demandé</p>
+                            <p class="text-2xl font-bold text-primary mt-1">{{ restaurant.askingPrice|number_format(0, ',', ' ') }} €</p>
+                        </div>
+                        <div class="rounded-lg border border-border/70 bg-background/40 p-4">
+                            <p class="text-xs uppercase tracking-wide text-muted-foreground">Capacité</p>
+                            <p class="text-2xl font-bold mt-1">{{ restaurant.capacity }}</p>
+                        </div>
+
+                        {% if restaurant.annualRevenue %}
+                            <div class="rounded-lg border border-border/70 bg-background/40 p-4">
+                                <p class="text-xs uppercase tracking-wide text-muted-foreground">CA annuel</p>
+                                <p class="text-xl font-semibold mt-1">{{ restaurant.annualRevenue|number_format(0, ',', ' ') }} €</p>
+                            </div>
+                        {% endif %}
+
+                        {% if restaurant.rent %}
+                            <div class="rounded-lg border border-border/70 bg-background/40 p-4">
+                                <p class="text-xs uppercase tracking-wide text-muted-foreground">Loyer mensuel</p>
+                                <p class="text-xl font-semibold mt-1">{{ restaurant.rent|number_format(0, ',', ' ') }} €</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                    <h2 class="text-lg font-semibold">Galerie</h2>
+                    {% if galleryImages|length > 0 %}
+                        <div class="grid gap-3 grid-cols-2 md:grid-cols-3">
+                            {% for image in galleryImages %}
+                                {% if image.fileName %}
+                                    <div class="rounded-lg overflow-hidden border border-border bg-background/30 aspect-[4/3]">
+                                        <img src="{{ asset('uploads/restaurants/' ~ image.fileName) }}"
+                                             alt="{{ restaurant.name }} — galerie {{ loop.index }}"
+                                             class="w-full h-full object-cover">
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <p class="text-sm text-muted-foreground">Aucune image pour ce restaurant.</p>
+                    {% endif %}
+                </div>
+            </div>
+
+            <aside class="space-y-6">
+                <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+                    <h2 class="text-lg font-semibold">Enchère</h2>
+                    <div class="space-y-3 text-sm">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted-foreground">Date</span>
+                            <span class="font-medium">
+                                {% if restaurant.auctionDate %}
+                                    {{ restaurant.auctionDate|date('d/m/Y') }}
+                                {% else %}
+                                    Non renseignée
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted-foreground">Heure</span>
+                            <span class="font-medium">
+                                {% if restaurant.auctionTime %}
+                                    {{ restaurant.auctionTime|date('H:i') }}
+                                {% else %}
+                                    Non renseignée
+                                {% endif %}
+                            </span>
+                        </div>
+                        <div class="flex items-start justify-between gap-3">
+                            <span class="text-muted-foreground">Lieu</span>
+                            <span class="font-medium text-right">{{ restaurant.auctionLocation ?: 'Non renseigné' }}</span>
+                        </div>
+                        {% if restaurant.ticketPrice %}
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-muted-foreground">Prix ticket</span>
+                                <span class="font-semibold text-primary">{{ restaurant.ticketPrice|number_format(0, ',', ' ') }} €</span>
+                            </div>
+                        {% endif %}
+                    </div>
+
+                    {% if restaurant.auctionLocationLat and restaurant.auctionLocationLng %}
+                        <a href="https://www.google.com/maps?q={{ restaurant.auctionLocationLat }},{{ restaurant.auctionLocationLng }}"
+                           target="_blank"
+                           rel="noopener noreferrer"
+                           class="inline-flex items-center justify-center w-full rounded-md border border-border px-3 py-2 text-sm hover:border-primary hover:text-primary transition-colors">
+                            Ouvrir le lieu sur Google Maps
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-3">
+                    <h2 class="text-lg font-semibold">Annonce</h2>
+                    <div class="text-sm space-y-2">
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted-foreground">Statut</span>
+                            <span class="font-medium capitalize">{{ restaurant.status.value }}</span>
+                        </div>
+                        <div class="flex items-center justify-between gap-3">
+                            <span class="text-muted-foreground">Créée le</span>
+                            <span class="font-medium">{{ restaurant.createdAt|date('d/m/Y') }}</span>
+                        </div>
+                        {% if restaurant.updatedAt %}
+                            <div class="flex items-center justify-between gap-3">
+                                <span class="text-muted-foreground">Mise à jour</span>
+                                <span class="font-medium">{{ restaurant.updatedAt|date('d/m/Y H:i') }}</span>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                {% if restaurant.owner %}
+                    <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-3">
+                        <h2 class="text-lg font-semibold">Vendeur</h2>
+                        <p class="text-sm text-muted-foreground">
+                            {{ restaurant.owner.firstName }} {{ restaurant.owner.lastName }}
+                        </p>
+                    </div>
+                {% endif %}
+            </aside>
+        </div>
+    </section>
 {% endblock %}

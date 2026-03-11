@@ -2,6 +2,10 @@
 
 namespace App\Controller;
 
+use App\Dto\RestaurantInputDto;
+use App\Entity\User;
+use App\Exception\RestaurantNotFoundException;
+use App\Form\RestaurantFormType;
 use App\Repository\FavoriteRepository;
 use App\Repository\RestaurantRepository;
 use App\Security\Voter\RestaurantVoter;
