@@ -33,7 +33,13 @@ class RegistrationController extends AbstractController
             $this->registrationManagerService->register($dto);
 
             // Add a flash message to inform the user that registration was successful
-            $this->addFlash('success', 'Registration successful! Please check your email to verify your account.');
+            $this->addFlash('success', 'Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
+
+            return $this->redirectToRoute('app_register_preferences');
+        }
+
+        if ($this->getUser()) {
+            $this->addFlash('error', 'Vous êtes déjà connecté !');
 
             return $this->redirectToRoute('app_home');
         }
