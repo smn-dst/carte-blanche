@@ -1,5 +1,7 @@
 {% extends 'base.html.twig' %}
 
+{% block title %}Favoris{% endblock %}
+
 {% block body %}
     <div class="flex flex-col flex-1 min-h-0">
         {% for type, message in app.flashes %}
@@ -8,18 +10,16 @@
             </div>
         {% endfor %}
 
-        {% set total = pagination.total_count %}
+        {% set total = restaurants|length %}
         {% include 'Components/headers/page-header.html.twig' with {
-            title: 'Page des enchères',
-            description: total ~ ' enchère' ~ (total > 1 ? 's' : '') ~ ' disponible' ~ (total > 1 ? 's' : '')
+            title: 'Mes Favoris',
+            description: total ~ ' enchère' ~ (total > 1 ? 's' : '') ~ ' en favori' ~ (total > 1 ? 's' : '')
         } %}
 
-        {{ include('encheres/_search.html.twig') }}
+        {{ include('favorites/_search.html.twig') }}
 
         <div class="flex-1 min-h-0">
-            {{ include('encheres/_restaurants.html.twig') }}
+            {{ include('favorites/_favoris.html.twig', { restaurants: restaurants }) }}
         </div>
-
-        {{ include('encheres/pagination.html.twig', { route: 'app_encheres', pagination: pagination }) }}
     </div>
 {% endblock %}

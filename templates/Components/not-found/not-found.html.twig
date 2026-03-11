@@ -1,0 +1,20 @@
+{% set button = button|default('') %}
+
+<div class="flex-1 flex w-full min-h-full flex flex-col items-center justify-center p-12 bg-gradient-to-br from-primary/5 to-primary/10 border border-primary/20 rounded-xl">
+    <svg class="size-24 text-primary" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-search-x-icon lucide-search-x">
+        {{ icon|raw }}
+    </svg>
+    <h1 class="text-3xl font-bold m-4"> {{ title }}</h1>
+    <p class="mb-16"> {{ description }} </p>
+
+    {% if button %}
+        {% include 'Components/buttons/buttons-primary.html.twig' with {
+            as: 'a',
+            href: href,
+            label: button,
+            variant: 'secondary',
+            with_arrow: true,
+            extra_classes: 'group-hover:bg-white group-hover:text-primary [&_svg]:transition-transform [&_svg]:duration-300 [&_svg]:group-hover:translate-x-1'
+        } %}
+    {% endif %}
+</div>

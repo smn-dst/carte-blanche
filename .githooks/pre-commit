@@ -122,14 +122,18 @@ fi
 
 # -----------------------------------------------------------------------------
 # 4. PHPStan (analyse statique) - uniquement sur les fichiers staged
+#    Préfère Docker (PHP 8.4) pour éviter l'erreur de version PHP locale
 # -----------------------------------------------------------------------------
 if [ -n "$STAGED_PHP_FILES" ]; then
     echo "${YELLOW}[4/4] Analyse statique PHPStan...${NC}"
 
-    if [ -f "./vendor/bin/phpstan" ]; then
+    # Préférer PHPStan via Docker (même PHP que le projet) si disponible
+    if command -v docker >/dev/null 2>&1 && docker compose exec -T php true 2>/dev/null; then
+        PHPSTAN="docker compose exec -T php php vendor/bin/phpstan"
+    elif [ -f "./vendor/bin/phpstan" ]; then
         PHPSTAN="./vendor/bin/phpstan"
     else
-        echo "${YELLOW}  ⚠ PHPStan non trouvé dans vendor, skip.${NC}"
+        echo "${YELLOW}  ⚠ PHPStan non trouvé (Docker non dispo ou vendor), skip.${NC}"
         PHPSTAN=""
     fi
 
