@@ -62,6 +62,7 @@ readonly class RestaurantService
             auctionLocation: $restaurant->getAuctionLocation(),
             auctionLocationLat: $restaurant->getAuctionLocationLat(),
             auctionLocationLng: $restaurant->getAuctionLocationLng(),
+            ticketPrice: $restaurant->getTicketPrice(),
             maxCapacity: $restaurant->getMaxCapacity(),
             categories: $restaurant->getCategories()->toArray(),
         );
@@ -226,7 +227,7 @@ readonly class RestaurantService
         $restaurant->setAuctionLocation($dto->auctionLocation);
         $restaurant->setAuctionLocationLat($dto->auctionLocationLat);
         $restaurant->setAuctionLocationLng($dto->auctionLocationLng);
-        $restaurant->setTicketPrice($this->calculateTicketPrice($dto->askingPrice ?? '0'));
+        $restaurant->setTicketPrice($dto->ticketPrice ?? $this->calculateTicketPrice($dto->askingPrice ?? '0'));
         $restaurant->setMaxCapacity($dto->maxCapacity);
 
         foreach ($restaurant->getCategories() as $existing) {
