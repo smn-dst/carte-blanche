@@ -4,6 +4,7 @@ namespace App\Form;
 
 use App\Dto\RestaurantInputDto;
 use App\Entity\Category;
+use App\Form\DataTransformer\MoneyTransformer;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\DateType;
@@ -51,7 +52,13 @@ final class RestaurantFormType extends AbstractType
             ->add('askingPrice', TextType::class, ['label' => 'Prix demandé (€)'])
             ->add('annualRevenue', TextType::class, ['label' => "Chiffre d'affaires annuel (€)", 'required' => false])
             ->add('rent', TextType::class, ['label' => 'Loyer mensuel (€)', 'required' => false])
-            ->add('leaseRemaining', IntegerType::class, ['label' => 'Bail restant (mois)', 'required' => false])
+            ->add('leaseRemaining', IntegerType::class, ['label' => 'Bail restant (mois)', 'required' => false]);
+
+        $builder->get('askingPrice')->addModelTransformer(new MoneyTransformer());
+        $builder->get('annualRevenue')->addModelTransformer(new MoneyTransformer());
+        $builder->get('rent')->addModelTransformer(new MoneyTransformer());
+
+        $builder
             ->add('pappersUrl', TextType::class, ['label' => 'URL Pappers', 'required' => false])
             ->add('auctionDate', DateType::class, ['label' => "Date d'enchère", 'required' => false, 'widget' => 'single_text'])
             ->add('auctionTime', TimeType::class, ['label' => "Heure d'enchère", 'required' => false, 'widget' => 'single_text'])

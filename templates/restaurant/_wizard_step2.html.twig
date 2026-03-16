@@ -1,0 +1,24 @@
+<div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+    <h2 class="text-lg font-semibold">Localisation</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+            {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+            {{ form_widget(form.address, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': 'Commencez à saisir une adresse...'}}) }}
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div>
+            <p class="text-xs text-muted-foreground mt-1">Sélectionnez une suggestion pour renseigner automatiquement la latitude et la longitude.</p>
+        </div>
+        <div class="hidden" aria-hidden="true">
+            {{ form_widget(form.latitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'latitude'}}) }}
+            {{ form_widget(form.longitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'longitude'}}) }}
+        </div>
+        <div class="md:col-span-2">
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.latitude) }}</div>
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.longitude) }}</div>
+        </div>
+        <div>
+            {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+            {{ form_widget(form.capacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.capacity) }}</div>
+        </div>
+    </div>
+</div>

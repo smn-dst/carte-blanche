@@ -1,0 +1,101 @@
+{#
+  Variables attendues :
+    - field : FormView du champ categories (EntityType, multiple=true, expanded=false)
+#}
+
+<div class="relative" data-multi-select>
+    {# Le <select multiple> caché rendu par Symfony — on le masque mais on le garde dans le DOM #}
+    <div class="sr-only" aria-hidden="true">
+        {{ form_widget(field) }}
+    </div>
+
+    {# Bouton déclencheur #}
+    <button type="button"
+            data-multi-select-trigger
+            class="mt-1 w-full rounded-md border border-border bg-background px-3 py-2 text-left text-sm flex items-center justify-between gap-2 hover:border-primary/60 transition-colors">
+        <span data-multi-select-label class="text-muted-foreground">Sélectionner des catégories</span>
+        <svg class="h-4 w-4 shrink-0 text-muted-foreground transition-transform" data-multi-select-chevron viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06Z" clip-rule="evenodd"/>
+        </svg>
+    </button>
+
+    {# Dropdown — on itère field.vars.choices car expanded=false n'a pas de sous-FormViews #}
+    <div data-multi-select-dropdown
+         class="absolute z-10 mt-1 w-full rounded-md border border-border bg-background shadow-lg hidden">
+        <div class="p-2 flex flex-wrap gap-2">
+            {% for choice in field.vars.choices %}
+                {% set isSelected = choice.value in field.vars.value %}
+                <label data-multi-select-option
+                       data-value="{{ choice.value }}"
+                       class="cursor-pointer">
+                    <input type="checkbox"
+                           class="sr-only peer"
+                           value="{{ choice.value }}"
+                           {% if isSelected %}checked{% endif %}>
+                    <span class="inline-flex items-center rounded-full border border-border px-3 py-1.5 text-sm text-muted-foreground transition-colors
+                                 peer-checked:border-primary peer-checked:bg-primary peer-checked:text-white
+                                 hover:border-primary/60 hover:text-white">
+                        {{ choice.label }}
+                    </span>
+                </label>
+            {% endfor %}
+        </div>
+    </div>
+    {% do field.setRendered %}
+</div>
+
+<script>
+(function () {
+    const container = document.querySelector('[data-multi-select]');
+    if (!container) return;
+
+    const trigger = container.querySelector('[data-multi-select-trigger]');
+    const dropdown = container.querySelector('[data-multi-select-dropdown]');
+    const labelEl = container.querySelector('[data-multi-select-label]');
+    const chevron = container.querySelector('[data-multi-select-chevron]');
+    const select = container.querySelector('select');
+    const options = container.querySelectorAll('[data-multi-select-option] input[type="checkbox"]');
+
+    function syncLabel() {
+        const selected = Array.from(select.selectedOptions).map(o => o.text);
+        labelEl.textContent = selected.length > 0
+            ? selected.join(', ')
+            : 'Sélectionner des catégories';
+        labelEl.classList.toggle('text-muted-foreground', selected.length === 0);
+    }
+
+    function syncSelect() {
+        Array.from(select.options).forEach(function (opt) {
+            opt.selected = false;
+        });
+        options.forEach(function (cb) {
+            if (cb.checked) {
+                const opt = select.querySelector('option[value="' + cb.value + '"]');
+                if (opt) opt.selected = true;
+            }
+        });
+        syncLabel();
+    }
+
+    options.forEach(function (cb) {
+        cb.addEventListener('change', syncSelect);
+    });
+
+    trigger.addEventListener('click', function (e) {
+        e.stopPropagation();
+        const isOpen = !dropdown.classList.contains('hidden');
+        dropdown.classList.toggle('hidden', isOpen);
+        chevron.style.transform = isOpen ? '' : 'rotate(180deg)';
+    });
+
+    document.addEventListener('click', function (e) {
+        if (!container.contains(e.target)) {
+            dropdown.classList.add('hidden');
+            chevron.style.transform = '';
+        }
+    });
+
+    // Init label from already-selected options in the hidden select
+    syncLabel();
+}());
+</script>

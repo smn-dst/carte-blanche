@@ -1,0 +1,20 @@
+<div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
+    <h2 class="text-lg font-semibold">Présentation</h2>
+    <div class="grid gap-4 md:grid-cols-2">
+        <div class="md:col-span-2">
+            {{ form_label(form.name, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+            {{ form_widget(form.name, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.name) }}</div>
+        </div>
+        <div class="md:col-span-2">
+            {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+            {{ form_widget(form.description, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 min-h-[120px]'}}) }}
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.description) }}</div>
+        </div>
+        <div class="md:col-span-2">
+            {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+            {{ include('Components/multi-select.html.twig', {field: form.categories}) }}
+            <div class="text-red-400 text-xs mt-1">{{ form_errors(form.categories) }}</div>
+        </div>
+    </div>
+</div>

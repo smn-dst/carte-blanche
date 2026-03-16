@@ -1,0 +1,81 @@
+<script>
+    (function () {
+        const scriptSelector = 'script[data-flatpickr-script="restaurant-auction"]';
+        const styleSelector = 'link[data-flatpickr-style="restaurant-auction"]';
+
+        const initPickers = function () {
+            if (typeof window.flatpickr !== 'function') {
+                return;
+            }
+
+            document.querySelectorAll('input[data-auction-picker="date"]').forEach(function (input) {
+                if (input.dataset.flatpickrBound === '1') {
+                    return;
+                }
+
+                window.flatpickr(input, {
+                    dateFormat: 'Y-m-d',
+                    altInput: true,
+                    altFormat: 'd/m/Y',
+                    locale: 'fr',
+                    allowInput: true,
+                });
+
+                input.dataset.flatpickrBound = '1';
+            });
+
+            document.querySelectorAll('input[data-auction-picker="time"]').forEach(function (input) {
+                if (input.dataset.flatpickrBound === '1') {
+                    return;
+                }
+
+                window.flatpickr(input, {
+                    enableTime: true,
+                    noCalendar: true,
+                    time_24hr: true,
+                    dateFormat: 'H:i',
+                    allowInput: true,
+                });
+
+                input.dataset.flatpickrBound = '1';
+            });
+        };
+
+        const loadFlatpickr = function () {
+            if (typeof window.flatpickr === 'function') {
+                initPickers();
+                return;
+            }
+
+            if (!document.querySelector(styleSelector)) {
+                const style = document.createElement('link');
+                style.rel = 'stylesheet';
+                style.href = 'https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css';
+                style.dataset.flatpickrStyle = 'restaurant-auction';
+                document.head.appendChild(style);
+            }
+
+            const existingScript = document.querySelector(scriptSelector);
+            if (existingScript) {
+                if (existingScript.dataset.loaded === '1') {
+                    initPickers();
+                }
+
+                return;
+            }
+
+            const script = document.createElement('script');
+            script.src = 'https://cdn.jsdelivr.net/npm/flatpickr';
+            script.defer = true;
+            script.dataset.flatpickrScript = 'restaurant-auction';
+            script.addEventListener('load', function () {
+                script.dataset.loaded = '1';
+                initPickers();
+            });
+            document.head.appendChild(script);
+        };
+
+        document.addEventListener('DOMContentLoaded', loadFlatpickr);
+        document.addEventListener('turbo:load', loadFlatpickr);
+    })();
+</script>

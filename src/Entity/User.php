@@ -113,6 +113,18 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $picture = null;
 
+    #[ORM\Column]
+    private bool $notifNewAuctions = true;
+
+    #[ORM\Column]
+    private bool $notifReminders = true;
+
+    #[ORM\Column]
+    private bool $notifResults = false;
+
+    #[ORM\Column]
+    private bool $notifNewsletter = true;
+
     public function __construct()
     {
         $this->createdAt = new \DateTimeImmutable();
@@ -532,6 +544,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPicture(?string $picture): static
     {
         $this->picture = $picture;
+
+        return $this;
+    }
+
+    public function isNotifNewAuctions(): bool
+    {
+        return $this->notifNewAuctions;
+    }
+
+    public function setNotifNewAuctions(bool $notifNewAuctions): static
+    {
+        $this->notifNewAuctions = $notifNewAuctions;
+
+        return $this;
+    }
+
+    public function isNotifReminders(): bool
+    {
+        return $this->notifReminders;
+    }
+
+    public function setNotifReminders(bool $notifReminders): static
+    {
+        $this->notifReminders = $notifReminders;
+
+        return $this;
+    }
+
+    public function isNotifResults(): bool
+    {
+        return $this->notifResults;
+    }
+
+    public function setNotifResults(bool $notifResults): static
+    {
+        $this->notifResults = $notifResults;
+
+        return $this;
+    }
+
+    public function isNotifNewsletter(): bool
+    {
+        return $this->notifNewsletter;
+    }
+
+    public function setNotifNewsletter(bool $notifNewsletter): static
+    {
+        $this->notifNewsletter = $notifNewsletter;
 
         return $this;
     }

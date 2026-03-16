@@ -91,10 +91,30 @@
                         {% for item in profile.notifications %}
                             <li class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
                                 <span>{{ item.label }}</span>
-                                <span class="{{ item.enabled ? 'text-green-300' : 'text-muted-foreground' }}">{{ item.enabled ? 'Active' : 'Inactive' }}</span>
+                                <form method="post" action="{{ path('app_profile_notification_toggle', {key: item.key}) }}">
+                                    <input type="hidden" name="_token" value="{{ csrf_token('notif_toggle_' ~ item.key) }}">
+                                    <button type="submit"
+                                            class="rounded-full px-3 py-1 text-xs font-medium transition-colors {{ item.enabled ? 'bg-green-500/15 text-green-300 hover:bg-green-500/25' : 'bg-muted text-muted-foreground hover:bg-muted/80' }}">
+                                        {{ item.enabled ? 'Activé' : 'Désactivé' }}
+                                    </button>
+                                </form>
                             </li>
                         {% endfor %}
                     </ul>
+                </section>
+
+                <section class="rounded-xl border border-border bg-secondary/20 p-6">
+                    <h2 class="text-lg font-semibold mb-4">Mes préférences</h2>
+                    <p class="text-sm text-muted-foreground mb-4">Décrivez vos préférences pour personnaliser vos recommandations.</p>
+                    {{ form_start(preferencesForm, {
+                        'action': path('app_profile_preferences'),
+                        'method': 'POST',
+                        'attr': {'class': 'space-y-3'}
+                    }) }}
+                        {{ form_widget(preferencesForm.preferencesText, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 min-h-[100px]'}}) }}
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(preferencesForm.preferencesText) }}</div>
+                        <button class="primary-btn" type="submit">Enregistrer les préférences</button>
+                    {{ form_end(preferencesForm) }}
                 </section>
 
                 <section class="rounded-xl border border-border bg-secondary/20 p-6">
@@ -109,9 +129,39 @@
                 <section class="rounded-xl border border-border bg-secondary/20 p-6">
                     <h2 class="text-lg font-semibold mb-4">Securite</h2>
                     <ul class="space-y-3 text-sm">
-                        {% for action in profile.securityActions %}
-                            <li class="rounded-lg border border-border bg-background/60 px-4 py-3">{{ action }}</li>
-                        {% endfor %}
+                        <li class="rounded-lg border border-border bg-background/60 px-4 py-3">
+                            {% set passwordFormHasErrors = changePasswordForm.vars.submitted and not changePasswordForm.vars.valid %}
+                            <details{% if passwordFormHasErrors %} open{% endif %}>
+                                <summary class="cursor-pointer font-medium select-none">Changer mon mot de passe</summary>
+                                <div class="mt-4">
+                                    {{ form_start(changePasswordForm, {
+                                        'action': path('app_profile_change_password'),
+                                        'method': 'POST',
+                                        'attr': {'class': 'space-y-3'}
+                                    }) }}
+                                        <div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm) }}</div>
+                                        <div>
+                                            {{ form_label(changePasswordForm.currentPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                            {{ form_widget(changePasswordForm.currentPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                            <div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.currentPassword) }}</div>
+                                        </div>
+                                        <div>
+                                            {{ form_label(changePasswordForm.newPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                            {{ form_widget(changePasswordForm.newPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                            <div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.newPassword) }}</div>
+                                        </div>
+                                        <div>
+                                            {{ form_label(changePasswordForm.confirmPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                                            {{ form_widget(changePasswordForm.confirmPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                                            <div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.confirmPassword) }}</div>
+                                        </div>
+                                        <button class="primary-btn" type="submit">Mettre a jour le mot de passe</button>
+                                    {{ form_end(changePasswordForm) }}
+                                </div>
+                            </details>
+                        </li>
+                        <li class="rounded-lg border border-border bg-background/60 px-4 py-3">Configurer l'authentification a deux facteurs</li>
+                        <li class="rounded-lg border border-border bg-background/60 px-4 py-3">Supprimer mon compte</li>
                     </ul>
                 </section>
             </div>

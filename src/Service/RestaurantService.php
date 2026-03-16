@@ -3,6 +3,10 @@
 namespace App\Service;
 
 use App\Dto\RestaurantInputDto;
+use App\Dto\RestaurantStep1Dto;
+use App\Dto\RestaurantStep2Dto;
+use App\Dto\RestaurantStep3Dto;
+use App\Dto\RestaurantStep4Dto;
 use App\Entity\Image;
 use App\Entity\Restaurant;
 use App\Entity\User;
@@ -58,10 +62,42 @@ readonly class RestaurantService
             auctionLocation: $restaurant->getAuctionLocation(),
             auctionLocationLat: $restaurant->getAuctionLocationLat(),
             auctionLocationLng: $restaurant->getAuctionLocationLng(),
-            ticketPrice: $restaurant->getTicketPrice(),
             maxCapacity: $restaurant->getMaxCapacity(),
             categories: $restaurant->getCategories()->toArray(),
         );
+    }
+
+    public function buildInputDtoForStep(Restaurant $restaurant, int $step): object
+    {
+        return match ($step) {
+            1 => new RestaurantStep1Dto(
+                name: $restaurant->getName() ?? '',
+                description: $restaurant->getDescription(),
+                categories: $restaurant->getCategories()->toArray(),
+            ),
+            2 => new RestaurantStep2Dto(
+                address: $restaurant->getAddress() ?? '',
+                latitude: $restaurant->getLatitude(),
+                longitude: $restaurant->getLongitude(),
+                capacity: $restaurant->getCapacity() ?? 0,
+            ),
+            3 => new RestaurantStep3Dto(
+                askingPrice: $restaurant->getAskingPrice(),
+                annualRevenue: $restaurant->getAnnualRevenue(),
+                rent: $restaurant->getRent(),
+                leaseRemaining: $restaurant->getLeaseRemaining(),
+                pappersUrl: $restaurant->getPappersUrl(),
+            ),
+            4 => new RestaurantStep4Dto(
+                auctionDate: $restaurant->getAuctionDate(),
+                auctionTime: $restaurant->getAuctionTime(),
+                auctionLocation: $restaurant->getAuctionLocation(),
+                auctionLocationLat: $restaurant->getAuctionLocationLat(),
+                auctionLocationLng: $restaurant->getAuctionLocationLng(),
+                maxCapacity: $restaurant->getMaxCapacity(),
+            ),
+            default => throw new \InvalidArgumentException("Step {$step} invalide."),
+        };
     }
 
     public function create(User $owner, RestaurantInputDto $dto): Restaurant
@@ -82,6 +118,48 @@ readonly class RestaurantService
         $this->applyDto($restaurant, $dto);
         $restaurant->setUpdatedAt(new \DateTimeImmutable());
         $this->saveImages($restaurant, $dto->uploadedImages);
+        $this->entityManager->flush();
+    }
+
+    public function updateStep(Restaurant $restaurant, object $stepDto): void
+    {
+        if ($stepDto instanceof RestaurantStep1Dto) {
+            $restaurant->setName(trim($stepDto->name));
+            $restaurant->setDescription($stepDto->description);
+            foreach ($restaurant->getCategories() as $existing) {
+                $restaurant->removeCategory($existing);
+            }
+            foreach ($stepDto->categories as $category) {
+                $restaurant->addCategory($category);
+            }
+        } elseif ($stepDto instanceof RestaurantStep2Dto) {
+            if (null === $stepDto->latitude || null === $stepDto->longitude) {
+                throw new \InvalidArgumentException('Latitude et longitude sont obligatoires.');
+            }
+            $restaurant->setAddress(trim($stepDto->address));
+            $restaurant->setLatitude($stepDto->latitude);
+            $restaurant->setLongitude($stepDto->longitude);
+            $restaurant->setCapacity($stepDto->capacity);
+        } elseif ($stepDto instanceof RestaurantStep3Dto) {
+            $restaurant->setAskingPrice($stepDto->askingPrice ?? '0');
+            $restaurant->setAnnualRevenue($stepDto->annualRevenue);
+            $restaurant->setRent($stepDto->rent);
+            $restaurant->setLeaseRemaining($stepDto->leaseRemaining);
+            $restaurant->setPappersUrl($stepDto->pappersUrl);
+            $restaurant->setTicketPrice($this->calculateTicketPrice($stepDto->askingPrice ?? '0'));
+        } elseif ($stepDto instanceof RestaurantStep4Dto) {
+            $restaurant->setAuctionDate($stepDto->auctionDate);
+            $restaurant->setAuctionTime($stepDto->auctionTime);
+            $restaurant->setAuctionLocation($stepDto->auctionLocation);
+            $restaurant->setAuctionLocationLat($stepDto->auctionLocationLat);
+            $restaurant->setAuctionLocationLng($stepDto->auctionLocationLng);
+            $restaurant->setMaxCapacity($stepDto->maxCapacity);
+            $this->saveImages($restaurant, $stepDto->uploadedImages);
+        } else {
+            throw new \InvalidArgumentException('DTO type non supporté : '.get_class($stepDto));
+        }
+
+        $restaurant->setUpdatedAt(new \DateTimeImmutable());
         $this->entityManager->flush();
     }
 
@@ -148,7 +226,7 @@ readonly class RestaurantService
         $restaurant->setAuctionLocation($dto->auctionLocation);
         $restaurant->setAuctionLocationLat($dto->auctionLocationLat);
         $restaurant->setAuctionLocationLng($dto->auctionLocationLng);
-        $restaurant->setTicketPrice($dto->ticketPrice);
+        $restaurant->setTicketPrice($this->calculateTicketPrice($dto->askingPrice ?? '0'));
         $restaurant->setMaxCapacity($dto->maxCapacity);
 
         foreach ($restaurant->getCategories() as $existing) {
@@ -157,5 +235,17 @@ readonly class RestaurantService
         foreach ($dto->categories as $category) {
             $restaurant->addCategory($category);
         }
+    }
+
+    private function calculateTicketPrice(string $askingPrice): string
+    {
+        $price = (float) $askingPrice;
+
+        return match (true) {
+            $price < 100_000 => '50.00',
+            $price <= 300_000 => '100.00',
+            $price <= 500_000 => '200.00',
+            default => '350.00',
+        };
     }
 }

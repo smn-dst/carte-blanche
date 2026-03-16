@@ -25,6 +25,8 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 final class AppFixtures extends Fixture
 {
     private const FIXTURE_PASSWORD = 'password';
+    private const ADMIN_PASSWORD = 'Admin@123';
+    private const VENDOR_PASSWORD = 'Vendor@123';
 
     public function __construct(
         private readonly UserPasswordHasherInterface $passwordHasher,
@@ -101,7 +103,8 @@ final class AppFixtures extends Fixture
             $u->setUpdatedAt($createdAt);
             $u->setIsVerified(true);
             $u->setIsSuspended(false);
-            $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
+            $password = 0 === $i ? self::ADMIN_PASSWORD : self::FIXTURE_PASSWORD;
+            $u->setPassword($this->passwordHasher->hashPassword($u, $password));
             $manager->persist($u);
             $admins[] = $u;
         }
@@ -154,16 +157,17 @@ final class AppFixtures extends Fixture
         foreach ($emails as $i => $email) {
             $u = new User();
             $u->setEmail($email);
-            $u->setFirstName($faker->firstName());
-            $u->setLastName($faker->lastName());
+            $u->setFirstName(0 === $i ? 'Vendor' : $faker->firstName());
+            $u->setLastName(0 === $i ? 'CarteBlanche' : $faker->lastName());
             $u->setPhoneNumber($faker->optional(0.8)->phoneNumber());
             $u->setRoles(['ROLE_VENDOR']);
             $createdAt = \DateTimeImmutable::createFromMutable($faker->dateTimeBetween('-1 year', 'now'));
             $u->setCreatedAt($createdAt);
             $u->setUpdatedAt($createdAt);
-            $u->setIsVerified($faker->boolean(85));
+            $u->setIsVerified(0 === $i ? true : $faker->boolean(85));
             $u->setIsSuspended(false);
-            $u->setPassword($this->passwordHasher->hashPassword($u, self::FIXTURE_PASSWORD));
+            $password = 0 === $i ? self::VENDOR_PASSWORD : self::FIXTURE_PASSWORD;
+            $u->setPassword($this->passwordHasher->hashPassword($u, $password));
             $manager->persist($u);
             $vendors[] = $u;
         }

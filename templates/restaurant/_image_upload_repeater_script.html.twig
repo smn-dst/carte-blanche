@@ -1,5 +1,27 @@
 <script>
     (function () {
+        const ensurePreviewBlock = function (row) {
+            let previewWrapper = row.querySelector('[data-file-preview]');
+            let previewImage = row.querySelector('[data-file-preview-image]');
+
+            if (!previewWrapper) {
+                previewWrapper = document.createElement('div');
+                previewWrapper.setAttribute('data-file-preview', '');
+                previewWrapper.className = 'mt-2 hidden';
+                row.appendChild(previewWrapper);
+            }
+
+            if (!previewImage) {
+                previewImage = document.createElement('img');
+                previewImage.setAttribute('data-file-preview-image', '');
+                previewImage.alt = 'Aperçu';
+                previewImage.className = 'h-16 w-16 sm:h-20 sm:w-20 rounded border border-border object-cover';
+                previewWrapper.appendChild(previewImage);
+            }
+
+            return { previewWrapper, previewImage };
+        };
+
         const setupImageUploadRepeater = function () {
             document.querySelectorAll('[data-image-upload-wrapper]').forEach(function (wrapper) {
                 if (wrapper.dataset.imageRepeaterBound === '1') {
@@ -23,6 +45,7 @@
                 const bindFileLabel = function (row) {
                     const input = row.querySelector('input[type="file"]');
                     const fileNameLabel = row.querySelector('[data-file-name]');
+                    const { previewWrapper, previewImage } = ensurePreviewBlock(row);
 
                     if (!input || !fileNameLabel || input.dataset.fileLabelBound === '1') {
                         return;
@@ -30,13 +53,29 @@
 
                     input.addEventListener('change', function () {
                         if (input.files && input.files.length > 0) {
+                            const firstFile = input.files[0];
                             fileNameLabel.textContent = input.files.length === 1
-                                ? input.files[0].name
+                                ? firstFile.name
                                 : input.files.length + ' fichiers sélectionnés';
+
+                            if (firstFile && firstFile.type.startsWith('image/')) {
+                                const reader = new FileReader();
+                                reader.onload = function (event) {
+                                    previewImage.src = String(event.target?.result || '');
+                                    previewWrapper.classList.remove('hidden');
+                                };
+                                reader.readAsDataURL(firstFile);
+                            } else {
+                                previewImage.src = '';
+                                previewWrapper.classList.add('hidden');
+                            }
+
                             return;
                         }
 
                         fileNameLabel.textContent = 'Aucun fichier sélectionné';
+                        previewImage.src = '';
+                        previewWrapper.classList.add('hidden');
                     });
 
                     input.dataset.fileLabelBound = '1';
@@ -75,6 +114,9 @@
                         + '          class="rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300 hover:bg-red-500/20 transition-colors">'
                         + '      Supprimer'
                         + '  </button>'
+                        + '</div>'
+                        + '<div data-file-preview class="mt-2 hidden">'
+                        + '  <img data-file-preview-image alt="Aperçu" class="h-16 w-16 sm:h-20 sm:w-20 rounded border border-border object-cover">'
                         + '</div>'
                         + '<p data-file-name class="mt-2 text-xs text-muted-foreground">Aucun fichier sélectionné</p>';
 

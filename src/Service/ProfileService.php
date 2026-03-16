@@ -2,17 +2,22 @@
 
 namespace App\Service;
 
+use App\Dto\ChangePasswordInputDto;
 use App\Dto\ProfileUpdateInputDto;
 use App\Entity\User;
+use App\Entity\UserPreferenceEmbedding;
 use App\Exception\ProfileEmailAlreadyUsedException;
+use App\Exception\ProfileWrongCurrentPasswordException;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final readonly class ProfileService
+readonly class ProfileService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -53,10 +58,10 @@ final readonly class ProfileService
             'createdAt' => $user->getCreatedAt(),
             'updatedAt' => $user->getUpdatedAt(),
             'notifications' => [
-                ['label' => 'Nouvelles enchères', 'enabled' => true],
-                ['label' => "Rappels d'encheres", 'enabled' => true],
-                ['label' => 'Résultats des ventes', 'enabled' => false],
-                ['label' => 'Newsletter', 'enabled' => true],
+                ['key' => 'notifNewAuctions', 'label' => 'Nouvelles enchères', 'enabled' => $user->isNotifNewAuctions()],
+                ['key' => 'notifReminders', 'label' => "Rappels d'enchères", 'enabled' => $user->isNotifReminders()],
+                ['key' => 'notifResults', 'label' => 'Résultats des ventes', 'enabled' => $user->isNotifResults()],
+                ['key' => 'notifNewsletter', 'label' => 'Newsletter', 'enabled' => $user->isNotifNewsletter()],
             ],
             'payment' => [
                 'label' => 'Carte enregistrée',
@@ -88,6 +93,53 @@ final readonly class ProfileService
         $user->setEmail($normalizedEmail);
         $user->setPhoneNumber(trim($dto->phoneNumber));
         $user->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    /**
+     * @throws ProfileWrongCurrentPasswordException
+     */
+    public function changePassword(User $user, ChangePasswordInputDto $dto): void
+    {
+        if (!$this->passwordHasher->isPasswordValid($user, $dto->currentPassword)) {
+            throw new ProfileWrongCurrentPasswordException();
+        }
+
+        $hashed = $this->passwordHasher->hashPassword($user, $dto->newPassword);
+        $user->setPassword($hashed);
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    public function toggleNotification(User $user, string $key): void
+    {
+        $allowed = ['notifNewAuctions', 'notifReminders', 'notifResults', 'notifNewsletter'];
+        if (!in_array($key, $allowed, true)) {
+            throw new \InvalidArgumentException(sprintf('Clé de notification inconnue : "%s".', $key));
+        }
+
+        $getter = 'is'.ucfirst($key);
+        $setter = 'set'.ucfirst($key);
+        $current = $user->$getter();
+        $user->$setter(!$current);
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    public function updatePreferences(User $user, string $text): void
+    {
+        $pref = $user->getUserPreferenceEmbedding();
+        if (null === $pref) {
+            $pref = new UserPreferenceEmbedding();
+            $pref->setUser($user);
+            $pref->setEmbedding([]);
+            $this->entityManager->persist($pref);
+        }
+        $pref->setPreferencesText($text);
+        $pref->setUpdatedAt(new \DateTimeImmutable());
 
         $this->entityManager->flush();
     }

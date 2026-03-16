@@ -3,6 +3,10 @@
 namespace App\Tests\Unit\Service;
 
 use App\Dto\RestaurantInputDto;
+use App\Dto\RestaurantStep1Dto;
+use App\Dto\RestaurantStep2Dto;
+use App\Dto\RestaurantStep3Dto;
+use App\Dto\RestaurantStep4Dto;
 use App\Entity\Category;
 use App\Entity\Restaurant;
 use App\Entity\User;
@@ -84,7 +88,6 @@ class RestaurantServiceTest extends TestCase
             auctionLocation: null,
             auctionLocationLat: null,
             auctionLocationLng: null,
-            ticketPrice: '50.00',
             maxCapacity: 100,
             categories: [],
         );
@@ -165,7 +168,6 @@ class RestaurantServiceTest extends TestCase
         $this->assertSame('3500.00', $dto->rent);
         $this->assertSame(18, $dto->leaseRemaining);
         $this->assertSame('https://pappers.fr/test', $dto->pappersUrl);
-        $this->assertSame('75.00', $dto->ticketPrice);
         $this->assertSame(120, $dto->maxCapacity);
     }
 
@@ -307,5 +309,119 @@ class RestaurantServiceTest extends TestCase
             ->method('flush');
 
         $this->service->delete($restaurant);
+    }
+
+    // --- calculateTicketPrice (via updateStep step3) ---
+
+    public function testCalculateTicketPriceBelowHundredK(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $dto = new RestaurantStep3Dto(askingPrice: '99999.00');
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('50.00', $restaurant->getTicketPrice());
+    }
+
+    public function testCalculateTicketPriceAtHundredK(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $dto = new RestaurantStep3Dto(askingPrice: '100000.00');
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('100.00', $restaurant->getTicketPrice());
+    }
+
+    public function testCalculateTicketPriceAtThreeHundredK(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $dto = new RestaurantStep3Dto(askingPrice: '300000.00');
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('100.00', $restaurant->getTicketPrice());
+    }
+
+    public function testCalculateTicketPriceAboveFiveHundredK(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $dto = new RestaurantStep3Dto(askingPrice: '500001.00');
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('350.00', $restaurant->getTicketPrice());
+    }
+
+    // --- updateStep ---
+
+    public function testUpdateStepStep1UpdatesNameDescriptionAndCategories(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $oldCat = new Category();
+        $newCat = new Category();
+        $restaurant->addCategory($oldCat);
+
+        $dto = new RestaurantStep1Dto(name: 'Nouveau Nom', description: 'Desc', categories: [$newCat]);
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('Nouveau Nom', $restaurant->getName());
+        $this->assertSame('Desc', $restaurant->getDescription());
+        $this->assertFalse($restaurant->getCategories()->contains($oldCat));
+        $this->assertTrue($restaurant->getCategories()->contains($newCat));
+    }
+
+    public function testUpdateStepStep2UpdatesLocationFields(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $dto = new RestaurantStep2Dto(
+            address: '10 rue Rivoli, Paris',
+            latitude: 48.8600,
+            longitude: 2.3450,
+            capacity: 120,
+        );
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame('10 rue Rivoli, Paris', $restaurant->getAddress());
+        $this->assertSame(48.8600, $restaurant->getLatitude());
+        $this->assertSame(2.3450, $restaurant->getLongitude());
+        $this->assertSame(120, $restaurant->getCapacity());
+    }
+
+    public function testUpdateStepStep4UpdatesAuctionFields(): void
+    {
+        $restaurant = $this->createRestaurant();
+        $date = new \DateTime('2026-06-01');
+        $time = new \DateTime('14:00');
+
+        $dto = new RestaurantStep4Dto(
+            auctionDate: $date,
+            auctionTime: $time,
+            auctionLocation: 'Salle des ventes, Lyon',
+            maxCapacity: 200,
+        );
+
+        $this->entityManager->method('flush');
+
+        $this->service->updateStep($restaurant, $dto);
+
+        $this->assertSame($date, $restaurant->getAuctionDate());
+        $this->assertSame($time, $restaurant->getAuctionTime());
+        $this->assertSame('Salle des ventes, Lyon', $restaurant->getAuctionLocation());
+        $this->assertSame(200, $restaurant->getMaxCapacity());
     }
 }

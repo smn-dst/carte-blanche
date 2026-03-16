@@ -57,9 +57,6 @@ final class RestaurantInputDto
 
         public ?float $auctionLocationLng = null,
 
-        #[Assert\PositiveOrZero]
-        public ?string $ticketPrice = null,
-
         #[Assert\Positive]
         public int $maxCapacity = 50,
 

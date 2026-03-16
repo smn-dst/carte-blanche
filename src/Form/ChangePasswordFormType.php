@@ -1,0 +1,37 @@
+<?php
+
+namespace App\Form;
+
+use App\Dto\ChangePasswordInputDto;
+use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\FormBuilderInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
+
+final class ChangePasswordFormType extends AbstractType
+{
+    public function buildForm(FormBuilderInterface $builder, array $options): void
+    {
+        $builder
+            ->add('currentPassword', PasswordType::class, [
+                'label' => 'Mot de passe actuel',
+                'attr' => ['autocomplete' => 'current-password'],
+            ])
+            ->add('newPassword', PasswordType::class, [
+                'label' => 'Nouveau mot de passe',
+                'attr' => ['autocomplete' => 'new-password'],
+            ])
+            ->add('confirmPassword', PasswordType::class, [
+                'label' => 'Confirmer le nouveau mot de passe',
+                'attr' => ['autocomplete' => 'new-password'],
+            ]);
+    }
+
+    public function configureOptions(OptionsResolver $resolver): void
+    {
+        $resolver->setDefaults([
+            'data_class' => ChangePasswordInputDto::class,
+            'csrf_token_id' => 'profile_change_password',
+        ]);
+    }
+}

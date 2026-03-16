@@ -1,0 +1,60 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Créer un restaurant — Étape {{ step }}/4{% endblock %}
+
+{% block body %}
+    <section class="p-6 md:p-10 space-y-6">
+        <header class="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
+            <div class="flex items-center gap-4">
+                <a href="{{ path('app_restaurant_index') }}" class="text-muted-foreground hover:text-white transition-colors text-sm">
+                    ← Mes restaurants
+                </a>
+                <h1 class="text-3xl font-bold">Créer un restaurant</h1>
+            </div>
+            {{ include('restaurant/_wizard_progress.html.twig', {currentStep: step}) }}
+        </header>
+
+        {% for type, messages in app.flashes %}
+            {% for message in messages %}
+                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                    {{ message }}
+                </div>
+            {% endfor %}
+        {% endfor %}
+
+        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+
+            {% if step == 1 %}
+                {{ include('restaurant/_wizard_step1.html.twig') }}
+            {% elseif step == 2 %}
+                {{ include('restaurant/_wizard_step2.html.twig') }}
+            {% elseif step == 3 %}
+                {{ include('restaurant/_wizard_step3.html.twig') }}
+            {% elseif step == 4 %}
+                {{ include('restaurant/_wizard_step4.html.twig') }}
+            {% endif %}
+
+            <div class="flex gap-4">
+                {% if step > 1 %}
+                    <a href="{{ path('app_restaurant_new_step', {step: step - 1}) }}" class="secondary-btn">← Précédent</a>
+                {% endif %}
+                <button type="submit" class="primary-btn">
+                    {% if step < 4 %}Étape suivante →{% else %}Créer le restaurant{% endif %}
+                </button>
+                <a href="{{ path('app_restaurant_index') }}" class="secondary-btn">Annuler</a>
+            </div>
+
+        {{ form_end(form) }}
+    </section>
+{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    {% if step == 2 or step == 4 %}
+        {{ include('restaurant/_address_autocomplete_script.html.twig', { googleMapsApiKey: googleMapsApiKey }) }}
+    {% endif %}
+    {% if step == 4 %}
+        {{ include('restaurant/_auction_datetime_picker_script.html.twig') }}
+        {{ include('restaurant/_image_upload_repeater_script.html.twig') }}
+    {% endif %}
+{% endblock %}

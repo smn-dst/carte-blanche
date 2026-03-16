@@ -105,12 +105,12 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <div>
                         {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'data-auction-picker': 'date'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
                     </div>
                     <div>
                         {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'data-auction-picker': 'time'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionTime) }}</div>
                     </div>
                     <div class="md:col-span-2">
@@ -186,5 +186,6 @@
 {% block javascripts %}
     {{ parent() }}
     {{ include('restaurant/_address_autocomplete_script.html.twig', { googleMapsApiKey: googleMapsApiKey }) }}
+    {{ include('restaurant/_auction_datetime_picker_script.html.twig') }}
     {{ include('restaurant/_image_upload_repeater_script.html.twig') }}
 {% endblock %}
