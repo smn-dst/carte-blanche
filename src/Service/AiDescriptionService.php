@@ -2,34 +2,32 @@
 
 namespace App\Service;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Neuron\RestaurantDescriptionAgent;
+use NeuronAI\Chat\Messages\UserMessage;
 
 class AiDescriptionService
 {
-    public function __construct(
-        private readonly HttpClientInterface $httpClient,
-        private readonly string $ollamaUrl = 'http://host.docker.internal:11434',
-    ) {
-    }
-
     /**
      * @param array<string, mixed> $restaurantData
      */
     public function generateDescription(array $restaurantData): string
     {
-        $prompt = $this->buildPrompt($restaurantData);
+        $agent = RestaurantDescriptionAgent::make();
 
-        $response = $this->httpClient->request('POST', $this->ollamaUrl.'/api/generate', [
-            'json' => [
-                'model' => 'content-generator',
-                'prompt' => $prompt,
-                'stream' => false,
-            ],
-        ]);
+        // chat() retourne un AgentHandler, run() retourne l'AgentState
+        $handler = $agent->chat(new UserMessage($this->buildPrompt($restaurantData)));
+        $state   = $handler->run();
 
-        $data = $response->toArray();
-
-        return $data['response'] ?? '';
+        // Le dernier message de l'état contient la réponse
+        $messages = $state->get('messages') ?? [];
+        if (empty($messages)) {
+            throw new \RuntimeException('Aucun message retourné par le modèle');
+        }
+        $last = end($messages);
+        if ($last === false) {
+            throw new \RuntimeException('Impossible de lire le dernier message');
+        }
+        return $last->getContent() ?? '';
     }
 
     /**
@@ -39,33 +37,15 @@ class AiDescriptionService
     {
         $parts = ['Génère une description commerciale pour ce restaurant :'];
 
-        if (!empty($data['name'])) {
-            $parts[] = "- Nom : {$data['name']}";
-        }
-        if (!empty($data['address'])) {
-            $parts[] = "- Adresse : {$data['address']}";
-        }
-        if (!empty($data['capacity'])) {
-            $parts[] = "- Capacité : {$data['capacity']} couverts";
-        }
-        if (!empty($data['askingPrice'])) {
-            $parts[] = "- Prix de cession : {$data['askingPrice']} €";
-        }
-        if (!empty($data['annualRevenue'])) {
-            $parts[] = "- CA annuel : {$data['annualRevenue']} €";
-        }
-        if (!empty($data['rent'])) {
-            $parts[] = "- Loyer mensuel : {$data['rent']} €";
-        }
-        if (!empty($data['leaseRemaining'])) {
-            $parts[] = "- Bail restant : {$data['leaseRemaining']} ans";
-        }
-        if (!empty($data['categories'])) {
-            $parts[] = '- Types de cuisine : '.implode(', ', $data['categories']);
-        }
-        if (!empty($data['auctionLocation'])) {
-            $parts[] = "- Lieu de l'enchère : {$data['auctionLocation']}";
-        }
+        if (!empty($data['name']))             $parts[] = "- Nom : {$data['name']}";
+        if (!empty($data['address']))          $parts[] = "- Adresse : {$data['address']}";
+        if (!empty($data['capacity']))         $parts[] = "- Capacité : {$data['capacity']} couverts";
+        if (!empty($data['askingPrice']))      $parts[] = "- Prix de cession : {$data['askingPrice']} €";
+        if (!empty($data['annualRevenue']))    $parts[] = "- CA annuel : {$data['annualRevenue']} €";
+        if (!empty($data['rent']))             $parts[] = "- Loyer mensuel : {$data['rent']} €";
+        if (!empty($data['leaseRemaining']))   $parts[] = "- Bail restant : {$data['leaseRemaining']} ans";
+        if (!empty($data['categories']))       $parts[] = "- Types de cuisine : " . implode(', ', $data['categories']);
+        if (!empty($data['auctionLocation']))  $parts[] = "- Lieu enchère : {$data['auctionLocation']}";
 
         return implode("\n", $parts);
     }
