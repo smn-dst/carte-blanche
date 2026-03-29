@@ -8,7 +8,7 @@ use NeuronAI\Chat\Messages\UserMessage;
 class AiDescriptionService
 {
     /**
-     * @param array<string,
+     * @param array<string, mixed> $restaurantData
      */
     public function generateDescription(array $restaurantData): string
     {
@@ -20,7 +20,7 @@ class AiDescriptionService
 
         $content = $response->getContent();
 
-        if ($content === null || trim($content) === '') {
+        if (null === $content || '' === trim($content)) {
             throw new \RuntimeException('Aucun contenu retourné par le modèle');
         }
 
@@ -28,7 +28,7 @@ class AiDescriptionService
     }
 
     /**
-     * @param array<string,
+     * @param array<string, mixed> $data
      */
     private function buildPrompt(array $data): string
     {
@@ -56,7 +56,7 @@ class AiDescriptionService
             $parts[] = "- Bail restant : {$data['leaseRemaining']} ans";
         }
         if (!empty($data['categories'])) {
-            $parts[] = '- Types de cuisine : ' . implode(', ', $data['categories']);
+            $parts[] = '- Types de cuisine : '.implode(', ', $data['categories']);
         }
         if (!empty($data['auctionLocation'])) {
             $parts[] = "- Lieu enchère : {$data['auctionLocation']}";
