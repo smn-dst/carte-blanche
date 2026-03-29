@@ -8,31 +8,27 @@ use NeuronAI\Chat\Messages\UserMessage;
 class AiDescriptionService
 {
     /**
-     * @param array<string, mixed> $restaurantData
+     * @param array<string,
      */
     public function generateDescription(array $restaurantData): string
     {
         $agent = RestaurantDescriptionAgent::make();
 
-        // chat() retourne un AgentHandler, run() retourne l'AgentState
-        $handler = $agent->chat(new UserMessage($this->buildPrompt($restaurantData)));
-        $state = $handler->run();
+        $response = $agent->chat(
+            new UserMessage($this->buildPrompt($restaurantData))
+        )->getMessage();
 
-        // Le dernier message de l'état contient la réponse
-        $messages = $state->get('messages') ?? [];
-        if (empty($messages)) {
-            throw new \RuntimeException('Aucun message retourné par le modèle');
-        }
-        $last = end($messages);
-        if (false === $last) {
-            throw new \RuntimeException('Impossible de lire le dernier message');
+        $content = $response->getContent();
+
+        if ($content === null || trim($content) === '') {
+            throw new \RuntimeException('Aucun contenu retourné par le modèle');
         }
 
-        return $last->getContent() ?? '';
+        return $content;
     }
 
     /**
-     * @param array<string, mixed> $data
+     * @param array<string,
      */
     private function buildPrompt(array $data): string
     {
@@ -60,7 +56,7 @@ class AiDescriptionService
             $parts[] = "- Bail restant : {$data['leaseRemaining']} ans";
         }
         if (!empty($data['categories'])) {
-            $parts[] = '- Types de cuisine : '.implode(', ', $data['categories']);
+            $parts[] = '- Types de cuisine : ' . implode(', ', $data['categories']);
         }
         if (!empty($data['auctionLocation'])) {
             $parts[] = "- Lieu enchère : {$data['auctionLocation']}";

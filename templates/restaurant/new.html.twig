@@ -61,7 +61,7 @@
                     <div class="md:col-span-2">
                         {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
                         {{ form_widget(form.address, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': 'Commencez à saisir une adresse...'}}) }}
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div
+                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div>
                     </div>
                     <div class="hidden" aria-hidden="true">
                         {{ form_widget(form.latitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'latitude'}}) }}
