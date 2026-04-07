@@ -2,34 +2,29 @@
 
 namespace App\Service;
 
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use App\Neuron\RestaurantDescriptionAgent;
+use NeuronAI\Chat\Messages\UserMessage;
 
 class AiDescriptionService
 {
-    public function __construct(
-        private readonly HttpClientInterface $httpClient,
-        private readonly string $ollamaUrl = 'http://host.docker.internal:11434',
-    ) {
-    }
-
     /**
      * @param array<string, mixed> $restaurantData
      */
     public function generateDescription(array $restaurantData): string
     {
-        $prompt = $this->buildPrompt($restaurantData);
+        $agent = RestaurantDescriptionAgent::make();
 
-        $response = $this->httpClient->request('POST', $this->ollamaUrl.'/api/generate', [
-            'json' => [
-                'model' => 'content-generator',
-                'prompt' => $prompt,
-                'stream' => false,
-            ],
-        ]);
+        $response = $agent->chat(
+            new UserMessage($this->buildPrompt($restaurantData))
+        )->getMessage();
 
-        $data = $response->toArray();
+        $content = $response->getContent();
 
-        return $data['response'] ?? '';
+        if (null === $content || '' === trim($content)) {
+            throw new \RuntimeException('Aucun contenu retourné par le modèle');
+        }
+
+        return $content;
     }
 
     /**
@@ -64,7 +59,7 @@ class AiDescriptionService
             $parts[] = '- Types de cuisine : '.implode(', ', $data['categories']);
         }
         if (!empty($data['auctionLocation'])) {
-            $parts[] = "- Lieu de l'enchère : {$data['auctionLocation']}";
+            $parts[] = "- Lieu enchère : {$data['auctionLocation']}";
         }
 
         return implode("\n", $parts);
