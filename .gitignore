@@ -45,3 +45,4 @@ tailwindcss-linux-arm64
 *.iws
 out/
 ###< jetbrains ###
+.env
