@@ -4,10 +4,10 @@
 sh:
 	docker compose exec -it php sh
 
-tailwind-watch:
+watch:
 	docker compose exec -it php php bin/console tailwind:build --watch
 
-tailwind-install:
+install:
 	docker compose exec -it php composer require symfony/ux-tailwind
 
 cache:
@@ -69,6 +69,15 @@ down:
 
 build:
 	docker compose up -d --build
+
+assets:
+	docker compose exec php php bin/console asset-map:compile
+
+sprite:
+	npm run build:icons
+
+test-js:
+	npm run test:js
 
 crud:
 	docker compose exec -it php php bin/console make:crud
