@@ -12,7 +12,7 @@ final class ChangePasswordInputDto
 
         #[Assert\NotBlank(message: 'Veuillez saisir un nouveau mot de passe.')]
         #[Assert\Length(
-            min: 10,
+            min: 4,
             max: 4096,
             minMessage: 'Le nouveau mot de passe doit contenir au moins {{ limit }} caractères.',
         )]

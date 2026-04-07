@@ -30,7 +30,7 @@
 
                 <div class="text-sm">
                     <span class="inline-flex rounded-full px-3 py-1 {{ profile.isVerified ? 'bg-green-500/15 text-green-300' : 'bg-yellow-500/15 text-yellow-300' }}">
-                        {{ profile.isVerified ? 'Compte verifie' : 'Compte non verifie' }}
+                        {{ profile.isVerified ? 'Compte vérifié' : 'Compte non vérifié' }}
                     </span>
                 </div>
 
@@ -94,7 +94,7 @@
                                 <form method="post" action="{{ path('app_profile_notification_toggle', {key: item.key}) }}">
                                     <input type="hidden" name="_token" value="{{ csrf_token('notif_toggle_' ~ item.key) }}">
                                     <button type="submit"
-                                            class="rounded-full px-3 py-1 text-xs font-medium transition-colors {{ item.enabled ? 'bg-green-500/15 text-green-300 hover:bg-green-500/25' : 'bg-muted text-muted-foreground hover:bg-muted/80' }}">
+                                            class="rounded-full px-3 py-1 text-xs font-medium transition-colors {{ item.enabled ? 'bg-green-500/15 text-green-300 hover:bg-green-500/25 cursor-pointer' : 'bg-muted text-muted-foreground hover:bg-muted/80 cursor-pointer' }}">
                                         {{ item.enabled ? 'Activé' : 'Désactivé' }}
                                     </button>
                                 </form>
