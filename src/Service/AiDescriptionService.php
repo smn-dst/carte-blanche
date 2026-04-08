@@ -12,19 +12,25 @@ class AiDescriptionService
      */
     public function generateDescription(array $restaurantData): string
     {
-        $agent = RestaurantDescriptionAgent::make();
+        try {
+            $agent = RestaurantDescriptionAgent::make();
 
-        $response = $agent->chat(
-            new UserMessage($this->buildPrompt($restaurantData))
-        )->getMessage();
+            $response = $agent->chat(
+                new UserMessage($this->buildPrompt($restaurantData))
+            )->getMessage();
 
-        $content = $response->getContent();
+            $content = $response->getContent();
 
-        if (null === $content || '' === trim($content)) {
-            throw new \RuntimeException('Aucun contenu retourné par le modèle');
+            if (null === $content || '' === trim($content)) {
+                throw new \RuntimeException('Aucun contenu retourné par le modèle');
+            }
+
+            return $content;
+        } catch (\RuntimeException $e) {
+            throw $e;
+        } catch (\Throwable $e) {
+            throw new \RuntimeException('Erreur de connexion à Ollama : '.$e->getMessage(), 0, $e);
         }
-
-        return $content;
     }
 
     /**

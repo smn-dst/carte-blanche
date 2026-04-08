@@ -2,7 +2,8 @@
 
 namespace App\Neuron;
 
-use NeuronAI\Agent;
+use NeuronAI\Agent\Agent;
+use NeuronAI\HttpClient\GuzzleHttpClient;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
 
@@ -16,6 +17,7 @@ class RestaurantDescriptionAgent extends Agent
         return new Ollama(
             url: rtrim($baseUrl, '/').'/api',
             model: $model,
+            httpClient: new GuzzleHttpClient(timeout: 180.0, connectTimeout: 10.0),
         );
     }
 
