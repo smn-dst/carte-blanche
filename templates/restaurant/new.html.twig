@@ -3,81 +3,124 @@
 {% block title %}Créer un restaurant{% endblock %}
 
 {% block body %}
-    <section class="p-6 md:p-10 space-y-6">
-        <header class="flex items-center gap-4">
-            <a href="{{ path('app_restaurant_index') }}" class="text-muted-foreground hover:text-white transition-colors text-sm">
-                ← Mes restaurants
+
+{# ── Sticky header ── #}
+<div class="border-b border-border bg-background/50 backdrop-blur-xl sticky top-0 z-20">
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+        <div class="flex items-center gap-4">
+            <a href="{{ path('app_restaurant_index') }}"
+               class="inline-flex items-center justify-center w-10 h-10 rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-white transition-colors shrink-0">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7"/>
+                </svg>
             </a>
-            <h1 class="text-3xl font-bold">Créer un restaurant</h1>
-        </header>
+            <div>
+                <h1 class="text-4xl sm:text-5xl font-bold">Nouvelle enchère</h1>
+                <p class="text-muted-foreground mt-1">Créez une nouvelle annonce d'enchère</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
+    <div class="max-w-4xl mx-auto">
 
         {% for type, messages in app.flashes %}
             {% for message in messages %}
-                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                <div class="mb-6 rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
                     {{ message }}
                 </div>
             {% endfor %}
         {% endfor %}
 
-        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+        {{ form_start(form, {'attr': {'class': 'space-y-8'}}) }}
 
-            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Informations générales</h2>
-                <div class="grid gap-4 md:grid-cols-2">
+            {# ── Informations du restaurant ── #}
+            <div class="rounded-xl border border-border bg-card p-8 space-y-6">
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Informations du restaurant
+                </h2>
+
+                <div class="grid gap-6 md:grid-cols-2">
                     <div class="md:col-span-2">
-                        {{ form_label(form.name, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.name, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.name, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        {{ form_widget(form.name, {'attr': {
+                            'class': 'mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40',
+                            'placeholder': 'Le Bistrot Moderne'
+                        }}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.name) }}</div>
                     </div>
-                    <div class="md:col-span-2">
-                        {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        
-                        <div class="relative mt-1">
-                            {{ form_widget(form.description, {'attr': {
-                                'class': 'w-full rounded-md border border-border bg-background px-3 py-2 min-h-[120px]',
-                                'id': 'restaurant-description',
-                                'placeholder': 'Rédigez une description ou générez-en une avec l\'IA...'
-                            }}) }}
-                        </div>
 
-                        <div class="flex items-center gap-3 mt-2">
+                    <div class="md:col-span-2">
+                        <div class="flex items-center justify-between mb-2">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
                             <button type="button" id="btn-generate-description"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary text-sm hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 text-sm font-medium transition-colors cursor-pointer">
                                 <svg id="icon-generate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                                 </svg>
                                 <svg id="icon-loading" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                Générer avec l'IA
+                                <span id="btn-generate-label">Générer avec IA</span>
                             </button>
-                            <span id="ai-status" class="hidden text-xs px-3 py-1 rounded-full border"></span>
                         </div>
-
+                        {{ form_widget(form.description, {'attr': {
+                            'class': 'w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/40',
+                            'id': 'restaurant-description',
+                            'placeholder': 'Décrivez votre établissement, son ambiance, sa clientèle...'
+                        }}) }}
+                        <span id="ai-status" class="hidden mt-2 text-xs px-3 py-1 rounded-full border"></span>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.description) }}</div>
                     </div>
+
                     <div class="md:col-span-2">
-                        {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.address, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': 'Commencez à saisir une adresse...'}}) }}
+                        {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.address, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': 'Commencez à saisir une adresse...'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div>
                     </div>
+
                     <div class="hidden" aria-hidden="true">
                         {{ form_widget(form.latitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'latitude'}}) }}
                         {{ form_widget(form.longitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'longitude'}}) }}
                     </div>
                     <div class="md:col-span-2">
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.latitude) }}</div>
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.longitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.latitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.longitude) }}</div>
                     </div>
+
                     <div>
-                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.capacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.capacity, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': '60'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.capacity) }}</div>
                     </div>
+
                     <div class="md:col-span-2">
-                        {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
                         <div class="mt-2 flex flex-wrap gap-2 rounded-lg border border-border bg-background/40 p-3">
                             {% for categoryField in form.categories %}
                                 <label class="cursor-pointer">
@@ -88,94 +131,178 @@
                                 </label>
                             {% endfor %}
                         </div>
+                        {% do form.categories.setRendered %}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.categories) }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Informations financières</h2>
-                <div class="grid gap-4 md:grid-cols-2">
+            {# ── Informations financières ── #}
+            <div class="rounded-xl border border-border bg-card p-8 space-y-6">
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Informations financières
+                </h2>
+
+                <div class="grid gap-6 md:grid-cols-2">
                     <div>
-                        {{ form_label(form.askingPrice, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.askingPrice, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.askingPrice, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <line x1="12" y1="1" x2="12" y2="23" stroke-width="2" stroke-linecap="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.askingPrice, {'attr': {'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0'}}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.askingPrice) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.annualRevenue, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.annualRevenue, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.annualRevenue, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <line x1="12" y1="1" x2="12" y2="23" stroke-width="2" stroke-linecap="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.annualRevenue, {'attr': {'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0'}}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.annualRevenue) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.rent, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.rent, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.rent, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <line x1="12" y1="1" x2="12" y2="23" stroke-width="2" stroke-linecap="round"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.rent, {'attr': {'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0'}}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.rent) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.leaseRemaining, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.leaseRemaining, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.leaseRemaining, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        {{ form_widget(form.leaseRemaining, {'attr': {'class': 'mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.leaseRemaining) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.pappersUrl, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.pappersUrl, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.pappersUrl, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        {{ form_widget(form.pappersUrl, {'attr': {'class': 'mt-2 w-full rounded-md border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary/40'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.pappersUrl) }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Enchère</h2>
-                <div class="grid gap-4 md:grid-cols-2">
+            {# ── Détails de l'enchère ── #}
+            <div class="rounded-xl border border-border bg-card p-8 space-y-6">
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Détails de l'enchère
+                </h2>
+
+                <div class="grid gap-6 md:grid-cols-2">
                     <div>
-                        {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'data-auction-picker': 'date'}}) }}
+                        {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <rect x="3" y="4" width="18" height="18" rx="2" ry="2" stroke-width="2"/>
+                                    <line x1="16" y1="2" x2="16" y2="6" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="8" y1="2" x2="8" y2="6" stroke-width="2" stroke-linecap="round"/>
+                                    <line x1="3" y1="10" x2="21" y2="10" stroke-width="2"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionDate, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'data-auction-picker': 'date'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'data-auction-picker': 'time'}}) }}
+                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <polyline points="12 6 12 12 16 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionTime, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'data-auction-picker': 'time'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionTime) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.auctionLocation, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionLocation, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': "Commencez à saisir un lieu d'enchère..."}}) }}
+                        {{ form_label(form.auctionLocation, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionLocation, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': "Salle des Ventes Drouot, Paris"
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionLocation) }}</div>
                     </div>
                     <div class="hidden" aria-hidden="true">
                         {{ form_widget(form.auctionLocationLat) }}
                         {{ form_widget(form.auctionLocationLng) }}
                     </div>
-                    {# <div>
-                        {{ form_label(form.ticketPrice, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.ticketPrice, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.ticketPrice) }}</div>
-                    </div> #}
                     <div>
-                        {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.maxCapacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.maxCapacity, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': '100'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.maxCapacity) }}</div>
                     </div>
                 </div>
             </div>
 
-            <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Images</h2>
+            {# ── Images ── #}
+            <div class="rounded-xl border border-border bg-card p-8 space-y-4">
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Images
+                </h2>
                 <p class="text-sm text-muted-foreground">Formats acceptés : JPEG, PNG, WebP — 5 Mo max par image.</p>
+
                 <div data-image-upload-wrapper class="space-y-3">
-                    {{ form_label(form.uploadedImages, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                    {{ form_label(form.uploadedImages, null, {'label_attr': {'class': 'sr-only'}}) }}
 
                     <div data-image-upload-group
                          data-input-name="{{ form.vars.name }}[uploadedImages][]"
                          data-input-id-prefix="{{ form.uploadedImages.vars.id }}"
                          class="space-y-3">
-                        <div data-image-upload-row class="rounded-lg border border-border/70 bg-background/30 p-3">
-                            <div class="flex flex-col gap-2 md:flex-row md:items-center">
+                        <div data-image-upload-row
+                             class="border-2 border-dashed border-border rounded-xl p-10 text-center hover:border-primary/50 transition-colors bg-secondary/20 cursor-pointer">
+                            <svg class="w-12 h-12 mx-auto text-muted-foreground mb-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4M17 8l-5-5-5 5M12 3v12"/>
+                            </svg>
+                            <div class="flex flex-col items-center gap-3">
                                 <input type="file"
                                        id="{{ form.uploadedImages.vars.id }}_0"
                                        name="{{ form.vars.name }}[uploadedImages][]"
                                        accept="image/jpeg,image/png,image/webp"
-                                       class="block w-full text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer">
+                                       class="block w-full max-w-xs text-sm text-muted-foreground file:mr-4 file:py-2 file:px-4 file:rounded-md file:border-0 file:text-sm file:font-medium file:bg-primary file:text-white hover:file:bg-primary/80 cursor-pointer">
                                 <button type="button"
                                         data-remove-image-input
                                         class="hidden rounded-md border border-red-500/40 bg-red-500/10 px-3 py-2 text-xs text-red-300 hover:bg-red-500/20 transition-colors">
@@ -183,6 +310,7 @@
                                 </button>
                             </div>
                             <p data-file-name class="mt-2 text-xs text-muted-foreground">Aucun fichier sélectionné</p>
+                            <p class="text-xs text-muted-foreground mt-1">PNG, JPG, WebP jusqu'à 5 Mo</p>
                         </div>
                     </div>
 
@@ -194,24 +322,32 @@
 
                     {% do form.uploadedImages.setRendered %}
                     <div class="text-red-400 text-xs mt-1">{{ form_errors(form.uploadedImages) }}</div>
-                    <p class="text-xs text-muted-foreground">Ajoutez les images une par une avec le bouton, ou utilisez Ctrl/Cmd dans le sélecteur.</p>
                 </div>
             </div>
 
-            <div class="flex gap-4">
-                <button type="submit" class="primary-btn">Créer le restaurant</button>
-                <a href="{{ path('app_restaurant_index') }}" class="secondary-btn">Annuler</a>
+            {# ── Actions ── #}
+            <div class="flex items-center gap-4">
+                <button type="submit"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">
+                    Publier l'enchère
+                </button>
+                <a href="{{ path('app_restaurant_index') }}"
+                   class="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-white transition-colors">
+                    Annuler
+                </a>
             </div>
 
         {{ form_end(form) }}
-    </section>
+    </div>
+</div>
 
-    <script>
+<script>
 (function () {
     const btn      = document.getElementById('btn-generate-description');
     const textarea = document.querySelector('textarea[name*="description"]');
     const iconGen  = document.getElementById('icon-generate');
     const iconLoad = document.getElementById('icon-loading');
+    const label    = document.getElementById('btn-generate-label');
 
     function setStatus(message, type = 'info') {
         const status = document.getElementById('ai-status');
@@ -246,6 +382,7 @@
         btn.disabled = true;
         iconGen.classList.add('hidden');
         iconLoad.classList.remove('hidden');
+        label.textContent = 'Génération...';
         setStatus('Génération en cours...', 'info');
 
         const payload = {
@@ -280,6 +417,7 @@
             btn.disabled = false;
             iconGen.classList.remove('hidden');
             iconLoad.classList.add('hidden');
+            label.textContent = 'Générer avec IA';
         }
     });
 })();

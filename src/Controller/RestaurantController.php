@@ -41,7 +41,7 @@ class RestaurantController extends AbstractController
             ]);
         }
 
-        return $this->render('restaurant/show.html.twig', [
+        return $this->render('encheres/detail.html.twig', [
             'restaurant' => $restaurant,
             'isFavorite' => $isFavorite,
         ]);
@@ -142,8 +142,10 @@ class RestaurantController extends AbstractController
             $description = $aiDescriptionService->generateDescription($data);
 
             return $this->json(['description' => $description]);
-        } catch (\RuntimeException $e) {
-            return $this->json(['error' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+        } catch (\Throwable $e) {
+            return $this->json([
+                'error' => 'Erreur lors de la génération de la description : '.$e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
