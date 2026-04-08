@@ -128,11 +128,6 @@
                         {{ form_widget(form.auctionLocationLng) }}
                     </div>
                     <div>
-                        {{ form_label(form.ticketPrice, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.ticketPrice, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.ticketPrice) }}</div>
-                    </div>
-                    <div>
                         {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
                         {{ form_widget(form.maxCapacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.maxCapacity) }}</div>

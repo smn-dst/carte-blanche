@@ -2,7 +2,7 @@
 
 namespace App\Neuron;
 
-use NeuronAI\Agent\Agent;
+use NeuronAI\Agent;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
 
@@ -19,7 +19,7 @@ class RestaurantDescriptionAgent extends Agent
         );
     }
 
-    protected function instructions(): string
+    public function instructions(): string
     {
         return <<<PROMPT
             Tu es un expert en rédaction commerciale pour la restauration.

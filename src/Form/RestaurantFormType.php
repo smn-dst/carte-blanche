@@ -2,7 +2,6 @@
 
 namespace App\Form;
 
-use App\Dto\RestaurantInputDto;
 use App\Entity\Category;
 use App\Form\DataTransformer\MoneyTransformer;
 use Symfony\Bridge\Doctrine\Form\Type\EntityType;
@@ -22,9 +21,21 @@ final class RestaurantFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
+        // STEP 1
         $builder
             ->add('name', TextType::class, ['label' => 'Nom'])
             ->add('description', TextareaType::class, ['label' => 'Description', 'required' => false])
+            ->add('categories', EntityType::class, [
+                'label' => 'Catégories',
+                'class' => Category::class,
+                'choice_label' => 'name',
+                'multiple' => true,
+                'expanded' => false,
+                'required' => false,
+            ]);
+
+        // STEP 2
+        $builder
             ->add('address', TextType::class, [
                 'label' => 'Adresse',
                 'attr' => [
@@ -48,20 +59,45 @@ final class RestaurantFormType extends AbstractType
                     'data-address-autocomplete-target' => 'longitude',
                 ],
             ])
-            ->add('capacity', IntegerType::class, ['label' => 'Capacité'])
-            ->add('askingPrice', TextType::class, ['label' => 'Prix demandé (€)'])
-            ->add('annualRevenue', TextType::class, ['label' => "Chiffre d'affaires annuel (€)", 'required' => false])
-            ->add('rent', TextType::class, ['label' => 'Loyer mensuel (€)', 'required' => false])
-            ->add('leaseRemaining', IntegerType::class, ['label' => 'Bail restant (mois)', 'required' => false]);
+            ->add('capacity', IntegerType::class, ['label' => 'Capacité']);
 
+        // STEP 3
+        $builder
+            ->add('askingPrice', TextType::class, ['label' => 'Prix demandé (€)'])
+            ->add('annualRevenue', TextType::class, [
+                'label' => "Chiffre d'affaires annuel (€)",
+                'required' => false,
+            ])
+            ->add('rent', TextType::class, [
+                'label' => 'Loyer mensuel (€)',
+                'required' => false,
+            ])
+            ->add('leaseRemaining', IntegerType::class, [
+                'label' => 'Bail restant (mois)',
+                'required' => false,
+            ])
+            ->add('pappersUrl', TextType::class, [
+                'label' => 'URL Pappers',
+                'required' => false,
+            ]);
+
+        // Transformers
         $builder->get('askingPrice')->addModelTransformer(new MoneyTransformer());
         $builder->get('annualRevenue')->addModelTransformer(new MoneyTransformer());
         $builder->get('rent')->addModelTransformer(new MoneyTransformer());
 
+        // STEP 4
         $builder
-            ->add('pappersUrl', TextType::class, ['label' => 'URL Pappers', 'required' => false])
-            ->add('auctionDate', DateType::class, ['label' => "Date d'enchère", 'required' => false, 'widget' => 'single_text'])
-            ->add('auctionTime', TimeType::class, ['label' => "Heure d'enchère", 'required' => false, 'widget' => 'single_text'])
+            ->add('auctionDate', DateType::class, [
+                'label' => "Date d'enchère",
+                'required' => false,
+                'widget' => 'single_text',
+            ])
+            ->add('auctionTime', TimeType::class, [
+                'label' => "Heure d'enchère",
+                'required' => false,
+                'widget' => 'single_text',
+            ])
             ->add('auctionLocation', TextType::class, [
                 'label' => "Lieu d'enchère",
                 'required' => false,
@@ -82,28 +118,21 @@ final class RestaurantFormType extends AbstractType
                     'data-auction-location-autocomplete-target' => 'longitude',
                 ],
             ])
-            ->add('ticketPrice', TextType::class, ['label' => 'Prix du ticket (€)', 'required' => false])
-            ->add('maxCapacity', IntegerType::class, ['label' => 'Capacité max (tickets)'])
+            ->add('maxCapacity', IntegerType::class, [
+                'label' => 'Capacité max (tickets)',
+            ])
             ->add('uploadedImages', FileType::class, [
                 'label' => 'Ajouter des images',
                 'multiple' => true,
                 'required' => false,
                 'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
-            ])
-            ->add('categories', EntityType::class, [
-                'label' => 'Catégories',
-                'class' => Category::class,
-                'choice_label' => 'name',
-                'multiple' => true,
-                'expanded' => true,
-                'required' => false,
             ]);
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => RestaurantInputDto::class,
+            'data_class' => \App\Dto\RestaurantDto::class,
             'csrf_token_id' => 'restaurant_form',
         ]);
     }
