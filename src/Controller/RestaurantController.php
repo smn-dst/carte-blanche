@@ -5,11 +5,13 @@ namespace App\Controller;
 use App\Dto\RestaurantStep4Dto;
 use App\Entity\User;
 use App\Exception\RestaurantNotFoundException;
+use App\Form\RestaurantFormType;
+use App\Repository\RestaurantRepository;
+use App\Repository\FavoriteRepository;
 use App\Form\RestaurantStep1FormType;
 use App\Form\RestaurantStep2FormType;
 use App\Form\RestaurantStep3FormType;
 use App\Form\RestaurantStep4FormType;
-use App\Repository\RestaurantRepository;
 use App\Security\Voter\RestaurantVoter;
 use App\Service\RestaurantService;
 use App\Service\RestaurantWizardService;
@@ -27,15 +29,24 @@ class RestaurantController extends AbstractController
     }
 
     #[Route('/restaurant/{id}', name: 'app_restaurant_show', requirements: ['id' => '\d+'], methods: ['GET'])]
-    public function show(int $id, RestaurantRepository $restaurantRepository): Response
+    public function show(int $id, RestaurantRepository $restaurantRepository, FavoriteRepository $favoriteRepository): Response
     {
         $restaurant = $restaurantRepository->find($id);
         if (null === $restaurant) {
             throw $this->createNotFoundException('Restaurant non trouvé.');
         }
 
-        return $this->render('encheres/detail.html.twig', [
+        $isFavorite = false;
+        if ($this->getUser()) {
+            $isFavorite = null !== $favoriteRepository->findOneBy([
+                'user' => $this->getUser(),
+                'restaurant' => $restaurant,
+            ]);
+        }
+
+        return $this->render('restaurant/show.html.twig', [
             'restaurant' => $restaurant,
+            'isFavorite' => $isFavorite,
         ]);
     }
 
