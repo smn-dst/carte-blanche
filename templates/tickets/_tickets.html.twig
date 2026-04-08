@@ -1,0 +1,156 @@
+<div class="flex flex-col p-8 pt-0 gap-6">
+    {% if tickets|length > 0 %}
+        {% for ticket in tickets %}
+            {% set restaurant = ticket.restaurant %}
+            {% set order = ticket.order %}
+            {% set statusVal = ticket.status.value %}
+
+            <div class="rounded-xl border border-border bg-card overflow-hidden hover:border-primary/50 transition-all group">
+                <div class="p-6">
+                    <div class="flex flex-col lg:flex-row gap-6">
+
+                        {# Image du restaurant #}
+                        <div class="w-full lg:w-48 h-48 rounded-lg overflow-hidden flex-shrink-0 bg-secondary">
+                            {% if restaurant.firstImage %}
+                                <img
+                                    src="/uploads/restaurants/{{ restaurant.firstImage.fileName }}"
+                                    alt="{{ restaurant.name }}"
+                                    class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                                />
+                            {% else %}
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="size-12 text-muted-foreground" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/></svg>
+                                </div>
+                            {% endif %}
+                        </div>
+
+                        {# Détails #}
+                        <div class="flex-1 space-y-4">
+
+                            {# En-tête : nom + badge statut #}
+                            <div class="flex items-start justify-between gap-4">
+                                <div>
+                                    {% if restaurant.categories|length > 0 %}
+                                        <div class="text-xs text-primary uppercase tracking-wider mb-1">
+                                            {{ restaurant.categories|map(c => c.name)|join(', ') }}
+                                        </div>
+                                    {% endif %}
+                                    <h3 class="text-2xl font-bold group-hover:text-primary transition-colors">
+                                        {{ restaurant.name }}
+                                    </h3>
+                                    <div class="flex items-center gap-1 text-muted-foreground text-sm mt-1">
+                                        <svg class="size-4 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 10c0 4.993-5.539 10.193-7.399 11.799a1 1 0 0 1-1.202 0C9.539 20.193 4 14.993 4 10a8 8 0 0 1 16 0"/><circle cx="12" cy="10" r="3"/></svg>
+                                        {{ restaurant.address }}
+                                    </div>
+                                </div>
+
+                                {# Badge statut #}
+                                {% if statusVal == 'valide' %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-emerald-500/10 text-emerald-500 border-emerald-500/20 shrink-0">
+                                        Valide
+                                    </span>
+                                {% elseif statusVal == 'utilisee' %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-muted text-muted-foreground border-border shrink-0">
+                                        Utilisé
+                                    </span>
+                                {% else %}
+                                    <span class="px-3 py-1 rounded-full text-xs font-semibold border bg-destructive/10 text-destructive border-destructive/20 shrink-0">
+                                        Expiré
+                                    </span>
+                                {% endif %}
+                            </div>
+
+                            {# Grille d'infos #}
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+                                <div>
+                                    <div class="text-xs text-muted-foreground mb-1">Date enchère</div>
+                                    <div class="text-sm font-semibold flex items-center gap-1">
+                                        <svg class="size-3 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
+                                        {% if restaurant.auctionDate %}
+                                            {{ restaurant.auctionDate|date('d/m/Y') }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-muted-foreground mb-1">Heure</div>
+                                    <div class="text-sm font-semibold flex items-center gap-1">
+                                        <svg class="size-3 shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                                        {% if restaurant.auctionTime %}
+                                            {{ restaurant.auctionTime|date('H:i') }}
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-muted-foreground mb-1">Prix ticket</div>
+                                    <div class="text-sm font-semibold text-primary">
+                                        {% if restaurant.ticketPrice %}
+                                            {{ restaurant.ticketPrice|number_format(2, ',', ' ') }} €
+                                        {% else %}
+                                            —
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <div class="text-xs text-muted-foreground mb-1">Total commande</div>
+                                    <div class="text-sm font-semibold">
+                                        {{ order.totalAmount|number_format(2, ',', ' ') }} €
+                                    </div>
+                                </div>
+                            </div>
+
+                            {# Pied de carte : QR code + référence commande #}
+                            <div class="pt-4 border-t border-border">
+                                <div class="flex items-center justify-between gap-4 flex-wrap">
+                                    <div class="text-sm text-muted-foreground space-y-1">
+                                        <div>
+                                            QR code : <span class="font-mono font-semibold text-foreground">{{ ticket.qrCode }}</span>
+                                        </div>
+                                        <div>
+                                            Commande : <span class="font-mono font-semibold text-foreground">{{ order.reference }}</span>
+                                        </div>
+                                    </div>
+                                    <div class="flex items-center gap-2">
+                                        <a href="{{ path('app_restaurant_show', { id: restaurant.id }) }}"
+                                           class="inline-flex items-center gap-2 px-3 py-1.5 text-sm border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all group-hover:bg-primary group-hover:text-primary-foreground group-hover:border-primary">
+                                            Voir le restaurant
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {# Bandeau de confirmation pour les tickets valides #}
+                {% if statusVal == 'valide' %}
+                    <div class="bg-primary/5 border-t border-primary/20 px-6 py-3">
+                        <div class="flex items-center gap-2 text-sm">
+                            <svg class="size-4 text-primary shrink-0" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/></svg>
+                            <span class="text-muted-foreground">
+                                Ticket valide · Acheté le {{ ticket.createdAt|date('d/m/Y') }}
+                            </span>
+                        </div>
+                    </div>
+                {% endif %}
+            </div>
+        {% endfor %}
+
+    {% else %}
+        <div class="mt-8">
+            {% include 'Components/not-found/not-found.html.twig' with {
+                icon: '<path d="M2 9.5a5.5 5.5 0 0 1 9.591-3.676.56.56 0 0 0 .818 0A5.49 5.49 0 0 1 22 9.5c0 2.29-1.5 4-3 5.5l-5.492 5.313a2 2 0 0 1-3 .019L5 15c-1.5-1.5-3-3.2-3-5.5"/>',
+                title: 'Aucun ticket',
+                description: "Vous n'avez pas encore de ticket avec ce statut.",
+                button: 'Voir toutes les enchères',
+                href: path('app_encheres'),
+            } %}
+        </div>
+    {% endif %}
+</div>

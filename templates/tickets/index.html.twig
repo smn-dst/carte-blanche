@@ -1,0 +1,25 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes Tickets{% endblock %}
+
+{% block body %}
+    <div class="flex flex-col flex-1 min-h-0">
+        {% for type, message in app.flashes %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message | join(', ') }}
+            </div>
+        {% endfor %}
+
+        {% set total = tickets|length %}
+        {% include 'Components/headers/page-header.html.twig' with {
+            title: 'Mes Tickets',
+            description: total ~ ' ticket' ~ (total > 1 ? 's' : '')
+        } %}
+
+        {{ include('tickets/_filter.html.twig') }}
+
+        <div class="flex-1 min-h-0">
+            {{ include('tickets/_tickets.html.twig', { tickets: tickets }) }}
+        </div>
+    </div>
+{% endblock %}
