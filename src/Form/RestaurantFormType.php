@@ -118,6 +118,10 @@ final class RestaurantFormType extends AbstractType
                     'data-auction-location-autocomplete-target' => 'longitude',
                 ],
             ])
+            ->add('ticketPrice', TextType::class, [
+                'label' => 'Prix du ticket (€)',
+                'required' => false,
+            ])
             ->add('maxCapacity', IntegerType::class, [
                 'label' => 'Capacité max (tickets)',
             ])
@@ -127,12 +131,14 @@ final class RestaurantFormType extends AbstractType
                 'required' => false,
                 'attr' => ['accept' => 'image/jpeg,image/png,image/webp'],
             ]);
+
+        $builder->get('ticketPrice')->addModelTransformer(new MoneyTransformer());
     }
 
     public function configureOptions(OptionsResolver $resolver): void
     {
         $resolver->setDefaults([
-            'data_class' => \App\Dto\RestaurantDto::class,
+            'data_class' => \App\Dto\RestaurantInputDto::class,
             'csrf_token_id' => 'restaurant_form',
         ]);
     }
