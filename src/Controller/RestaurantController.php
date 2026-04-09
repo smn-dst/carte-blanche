@@ -2,7 +2,7 @@
 
 namespace App\Controller;
 
-use App\Dto\RestaurantDto;
+use App\Dto\RestaurantInputDto;
 use App\Entity\User;
 use App\Exception\RestaurantNotFoundException;
 use App\Form\RestaurantFormType;
@@ -28,7 +28,6 @@ class RestaurantController extends AbstractController
     public function show(int $id, RestaurantRepository $restaurantRepository, FavoriteRepository $favoriteRepository): Response
     {
         $restaurant = $restaurantRepository->find($id);
-
         if (null === $restaurant) {
             throw $this->createNotFoundException('Restaurant non trouvé.');
         }
@@ -41,7 +40,7 @@ class RestaurantController extends AbstractController
             ]);
         }
 
-        return $this->render('encheres/detail.html.twig', [
+        return $this->render('restaurant/show.html.twig', [
             'restaurant' => $restaurant,
             'isFavorite' => $isFavorite,
         ]);
@@ -76,7 +75,7 @@ class RestaurantController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $dto = new RestaurantDto();
+        $dto = new RestaurantInputDto();
         $form = $this->createForm(RestaurantFormType::class, $dto);
         $form->handleRequest($request);
 
@@ -84,9 +83,7 @@ class RestaurantController extends AbstractController
             $restaurant = $this->restaurantService->create($user, $dto);
             $this->addFlash('success', 'Restaurant créé avec succès.');
 
-            return $this->redirectToRoute('app_restaurant_edit', [
-                'id' => $restaurant->getId(),
-            ]);
+            return $this->redirectToRoute('app_restaurant_edit', ['id' => $restaurant->getId()]);
         }
 
         return $this->render('restaurant/new.html.twig', [
@@ -106,17 +103,15 @@ class RestaurantController extends AbstractController
 
         $this->denyAccessUnlessGranted(RestaurantVoter::EDIT, $restaurant);
 
-        $dto = $this->restaurantService->buildDto($restaurant);
+        $dto = $this->restaurantService->buildInputDto($restaurant);
         $form = $this->createForm(RestaurantFormType::class, $dto);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
             $this->restaurantService->update($restaurant, $dto);
-            $this->addFlash('success', 'Restaurant mis à jour.');
+            $this->addFlash('success', 'Restaurant mis à jour avec succès.');
 
-            return $this->redirectToRoute('app_restaurant_edit', [
-                'id' => $restaurant->getId(),
-            ]);
+            return $this->redirectToRoute('app_restaurant_edit', ['id' => $id]);
         }
 
         return $this->render('restaurant/edit.html.twig', [
@@ -124,29 +119,6 @@ class RestaurantController extends AbstractController
             'restaurant' => $restaurant,
             'googleMapsApiKey' => $this->resolveGoogleMapsApiKey(),
         ]);
-    }
-
-    #[Route('/restaurant/generer-description', name: 'app_restaurant_generate_description', methods: ['POST'])]
-    public function generateDescription(Request $request, AiDescriptionService $aiDescriptionService): JsonResponse
-    {
-        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
-
-        /** @var array<string, mixed>|null $data */
-        $data = json_decode($request->getContent(), true);
-
-        if (!is_array($data)) {
-            return $this->json(['error' => 'Données invalides.'], Response::HTTP_BAD_REQUEST);
-        }
-
-        try {
-            $description = $aiDescriptionService->generateDescription($data);
-
-            return $this->json(['description' => $description]);
-        } catch (\Throwable $e) {
-            return $this->json([
-                'error' => 'Erreur lors de la génération de la description : '.$e->getMessage(),
-            ], Response::HTTP_INTERNAL_SERVER_ERROR);
-        }
     }
 
     #[Route('/restaurant/{id}/supprimer', name: 'app_restaurant_delete', requirements: ['id' => '\d+'], methods: ['POST'])]
@@ -200,11 +172,32 @@ class RestaurantController extends AbstractController
     private function resolveGoogleMapsApiKey(): string
     {
         $apiKey = $_SERVER['GOOGLE_MAPS_API_KEY'] ?? $_ENV['GOOGLE_MAPS_API_KEY'] ?? null;
-
         if (!is_string($apiKey)) {
             return '';
         }
 
         return trim($apiKey);
+    }
+
+    #[Route('/restaurant/generate-description', name: 'app_restaurant_generate_description', methods: ['POST'])]
+    public function generateDescription(
+        Request $request,
+        AiDescriptionService $aiDescriptionService,
+    ): JsonResponse {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $data = json_decode($request->getContent(), true);
+
+        if (!$data) {
+            return $this->json(['error' => 'Données invalides'], 400);
+        }
+
+        try {
+            $description = $aiDescriptionService->generateDescription($data);
+
+            return $this->json(['description' => $description]);
+        } catch (\Throwable $e) {
+            return $this->json(['error' => 'Erreur de génération : '.$e->getMessage()], 500);
+        }
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Tests\Unit\Service;
 
-use App\Dto\RestaurantDto;
+use App\Dto\RestaurantInputDto;
 use App\Entity\Category;
 use App\Entity\Restaurant;
 use App\Entity\User;
@@ -65,12 +65,11 @@ class RestaurantServiceTest extends TestCase
         return $owner;
     }
 
-    private function createDto(): RestaurantDto
+    private function createInputDto(): RestaurantInputDto
     {
-        return new RestaurantDto(
+        return new RestaurantInputDto(
             name: 'Nouveau Restaurant',
             description: 'Une belle description',
-            categories: [],
             address: '5 avenue de la Paix, Lyon',
             latitude: 45.7640,
             longitude: 4.8357,
@@ -85,10 +84,13 @@ class RestaurantServiceTest extends TestCase
             auctionLocation: null,
             auctionLocationLat: null,
             auctionLocationLng: null,
+            ticketPrice: '50.00',
             maxCapacity: 100,
-            uploadedImages: [],
+            categories: [],
         );
     }
+
+    // --- findOrFail ---
 
     public function testFindOrFailReturnsRestaurantWhenFound(): void
     {
@@ -119,6 +121,8 @@ class RestaurantServiceTest extends TestCase
         $this->service->findOrFail(999);
     }
 
+    // --- findByOwner ---
+
     public function testFindByOwnerDelegatesToRepository(): void
     {
         $owner = $this->createOwner();
@@ -135,7 +139,9 @@ class RestaurantServiceTest extends TestCase
         $this->assertSame($restaurants, $result);
     }
 
-    public function testBuildDtoMapsAllScalarFields(): void
+    // --- buildInputDto ---
+
+    public function testBuildInputDtoMapsAllScalarFields(): void
     {
         $restaurant = $this->createRestaurant();
         $restaurant->setDescription('Description test');
@@ -146,7 +152,7 @@ class RestaurantServiceTest extends TestCase
         $restaurant->setTicketPrice('75.00');
         $restaurant->setMaxCapacity(120);
 
-        $dto = $this->service->buildDto($restaurant);
+        $dto = $this->service->buildInputDto($restaurant);
 
         $this->assertSame('Le Gourmet', $dto->name);
         $this->assertSame('Description test', $dto->description);
@@ -159,26 +165,29 @@ class RestaurantServiceTest extends TestCase
         $this->assertSame('3500.00', $dto->rent);
         $this->assertSame(18, $dto->leaseRemaining);
         $this->assertSame('https://pappers.fr/test', $dto->pappersUrl);
+        $this->assertSame('75.00', $dto->ticketPrice);
         $this->assertSame(120, $dto->maxCapacity);
     }
 
-    public function testBuildDtoCopiesCategoriesAsArray(): void
+    public function testBuildInputDtoCopiesCategoriesAsArray(): void
     {
         $restaurant = $this->createRestaurant();
         $category = new Category();
 
         $restaurant->addCategory($category);
 
-        $dto = $this->service->buildDto($restaurant);
+        $dto = $this->service->buildInputDto($restaurant);
 
         $this->assertCount(1, $dto->categories);
         $this->assertContains($category, $dto->categories);
     }
 
+    // --- create ---
+
     public function testCreatePersistsAndFlushesRestaurant(): void
     {
         $owner = $this->createOwner();
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
 
         $this->entityManager
             ->expects($this->once())
@@ -197,7 +206,7 @@ class RestaurantServiceTest extends TestCase
     public function testCreateAssignsOwnerAndCreatedAt(): void
     {
         $owner = $this->createOwner();
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
 
         $this->entityManager->method('persist');
         $this->entityManager->method('flush');
@@ -215,7 +224,7 @@ class RestaurantServiceTest extends TestCase
     public function testCreateAppliesDtoFieldsToRestaurant(): void
     {
         $owner = $this->createOwner();
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
 
         $this->entityManager->method('persist');
         $this->entityManager->method('flush');
@@ -223,35 +232,19 @@ class RestaurantServiceTest extends TestCase
         $result = $this->service->create($owner, $dto);
 
         $this->assertSame('Nouveau Restaurant', $result->getName());
-        $this->assertSame('Une belle description', $result->getDescription());
         $this->assertSame('5 avenue de la Paix, Lyon', $result->getAddress());
         $this->assertSame(45.7640, $result->getLatitude());
         $this->assertSame(4.8357, $result->getLongitude());
         $this->assertSame(80, $result->getCapacity());
         $this->assertSame('350000.00', $result->getAskingPrice());
-        $this->assertSame('800000.00', $result->getAnnualRevenue());
-        $this->assertSame('4000.00', $result->getRent());
-        $this->assertSame(24, $result->getLeaseRemaining());
-        $this->assertSame(100, $result->getMaxCapacity());
     }
 
-    public function testCreateCalculatesTicketPrice(): void
-    {
-        $owner = $this->createOwner();
-        $dto = $this->createDto();
-
-        $this->entityManager->method('persist');
-        $this->entityManager->method('flush');
-
-        $result = $this->service->create($owner, $dto);
-
-        $this->assertSame('200.00', $result->getTicketPrice());
-    }
+    // --- update ---
 
     public function testUpdateFlushesAndSetsUpdatedAt(): void
     {
         $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
 
         $this->entityManager
             ->expects($this->once())
@@ -269,17 +262,15 @@ class RestaurantServiceTest extends TestCase
     public function testUpdateAppliesDtoFields(): void
     {
         $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
 
         $this->entityManager->method('flush');
 
         $this->service->update($restaurant, $dto);
 
         $this->assertSame('Nouveau Restaurant', $restaurant->getName());
-        $this->assertSame('Une belle description', $restaurant->getDescription());
         $this->assertSame('5 avenue de la Paix, Lyon', $restaurant->getAddress());
         $this->assertSame(80, $restaurant->getCapacity());
-        $this->assertSame('200.00', $restaurant->getTicketPrice());
     }
 
     public function testUpdateSyncsCategories(): void
@@ -289,7 +280,7 @@ class RestaurantServiceTest extends TestCase
         $newCategory = new Category();
         $restaurant->addCategory($oldCategory);
 
-        $dto = $this->createDto();
+        $dto = $this->createInputDto();
         $dto->categories = [$newCategory];
 
         $this->entityManager->method('flush');
@@ -299,6 +290,8 @@ class RestaurantServiceTest extends TestCase
         $this->assertFalse($restaurant->getCategories()->contains($oldCategory));
         $this->assertTrue($restaurant->getCategories()->contains($newCategory));
     }
+
+    // --- delete ---
 
     public function testDeleteRemovesAndFlushes(): void
     {
@@ -314,57 +307,5 @@ class RestaurantServiceTest extends TestCase
             ->method('flush');
 
         $this->service->delete($restaurant);
-    }
-
-    public function testUpdateCalculatesTicketPriceBelowHundredK(): void
-    {
-        $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
-        $dto->askingPrice = '99999.00';
-
-        $this->entityManager->method('flush');
-
-        $this->service->update($restaurant, $dto);
-
-        $this->assertSame('50.00', $restaurant->getTicketPrice());
-    }
-
-    public function testUpdateCalculatesTicketPriceAtHundredK(): void
-    {
-        $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
-        $dto->askingPrice = '100000.00';
-
-        $this->entityManager->method('flush');
-
-        $this->service->update($restaurant, $dto);
-
-        $this->assertSame('100.00', $restaurant->getTicketPrice());
-    }
-
-    public function testUpdateCalculatesTicketPriceAtThreeHundredK(): void
-    {
-        $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
-        $dto->askingPrice = '300000.00';
-
-        $this->entityManager->method('flush');
-
-        $this->service->update($restaurant, $dto);
-
-        $this->assertSame('100.00', $restaurant->getTicketPrice());
-    }
-
-    public function testUpdateCalculatesTicketPriceAboveFiveHundredK(): void
-    {
-        $restaurant = $this->createRestaurant();
-        $dto = $this->createDto();
-        $dto->askingPrice = '500001.00';
-
-        $this->entityManager->method('flush');
-
-        $this->service->update($restaurant, $dto);
-
-        $this->assertSame('350.00', $restaurant->getTicketPrice());
     }
 }

@@ -2,7 +2,7 @@
 
 namespace App\Service;
 
-use App\Dto\RestaurantDto;
+use App\Dto\RestaurantInputDto;
 use App\Entity\Image;
 use App\Entity\Restaurant;
 use App\Entity\User;
@@ -24,7 +24,6 @@ readonly class RestaurantService
     public function findOrFail(int $id): Restaurant
     {
         $restaurant = $this->restaurantRepository->find($id);
-
         if (null === $restaurant) {
             throw new RestaurantNotFoundException($id);
         }
@@ -40,12 +39,11 @@ readonly class RestaurantService
         return $this->restaurantRepository->findByOwner($owner);
     }
 
-    public function buildDto(Restaurant $restaurant): RestaurantDto
+    public function buildInputDto(Restaurant $restaurant): RestaurantInputDto
     {
-        return new RestaurantDto(
+        return new RestaurantInputDto(
             name: $restaurant->getName() ?? '',
             description: $restaurant->getDescription(),
-            categories: $restaurant->getCategories()->toArray(),
             address: $restaurant->getAddress() ?? '',
             latitude: $restaurant->getLatitude(),
             longitude: $restaurant->getLongitude(),
@@ -60,19 +58,18 @@ readonly class RestaurantService
             auctionLocation: $restaurant->getAuctionLocation(),
             auctionLocationLat: $restaurant->getAuctionLocationLat(),
             auctionLocationLng: $restaurant->getAuctionLocationLng(),
+            ticketPrice: $restaurant->getTicketPrice(),
             maxCapacity: $restaurant->getMaxCapacity(),
-            uploadedImages: [],
+            categories: $restaurant->getCategories()->toArray(),
         );
     }
 
-    public function create(User $owner, RestaurantDto $dto): Restaurant
+    public function create(User $owner, RestaurantInputDto $dto): Restaurant
     {
         $restaurant = new Restaurant();
         $restaurant->setOwner($owner);
         $restaurant->setCreatedAt(new \DateTimeImmutable());
-
         $this->applyDto($restaurant, $dto);
-
         $this->entityManager->persist($restaurant);
         $this->saveImages($restaurant, $dto->uploadedImages);
         $this->entityManager->flush();
@@ -80,11 +77,10 @@ readonly class RestaurantService
         return $restaurant;
     }
 
-    public function update(Restaurant $restaurant, RestaurantDto $dto): void
+    public function update(Restaurant $restaurant, RestaurantInputDto $dto): void
     {
         $this->applyDto($restaurant, $dto);
         $restaurant->setUpdatedAt(new \DateTimeImmutable());
-
         $this->saveImages($restaurant, $dto->uploadedImages);
         $this->entityManager->flush();
     }
@@ -125,13 +121,12 @@ readonly class RestaurantService
             $image->setImageFile($uploadedFile);
             $image->setPosition($position);
             ++$position;
-
             $restaurant->addImage($image);
             $this->entityManager->persist($image);
         }
     }
 
-    private function applyDto(Restaurant $restaurant, RestaurantDto $dto): void
+    private function applyDto(Restaurant $restaurant, RestaurantInputDto $dto): void
     {
         if (null === $dto->latitude || null === $dto->longitude) {
             throw new \InvalidArgumentException('Latitude et longitude sont obligatoires.');
@@ -153,27 +148,14 @@ readonly class RestaurantService
         $restaurant->setAuctionLocation($dto->auctionLocation);
         $restaurant->setAuctionLocationLat($dto->auctionLocationLat);
         $restaurant->setAuctionLocationLng($dto->auctionLocationLng);
-        $restaurant->setTicketPrice($this->calculateTicketPrice($dto->askingPrice ?? '0'));
+        $restaurant->setTicketPrice($dto->ticketPrice);
         $restaurant->setMaxCapacity($dto->maxCapacity);
 
         foreach ($restaurant->getCategories() as $existing) {
             $restaurant->removeCategory($existing);
         }
-
         foreach ($dto->categories as $category) {
             $restaurant->addCategory($category);
         }
-    }
-
-    private function calculateTicketPrice(string $askingPrice): string
-    {
-        $price = (float) $askingPrice;
-
-        return match (true) {
-            $price < 100_000 => '50.00',
-            $price <= 300_000 => '100.00',
-            $price <= 500_000 => '200.00',
-            default => '350.00',
-        };
     }
 }
