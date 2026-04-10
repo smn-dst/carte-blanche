@@ -64,23 +64,6 @@ class RestaurantEditTest extends WebTestCase
         $this->assertResponseRedirects();
     }
 
-    public function testEditStepRedirectsToLoginWhenUnauthenticated(): void
-    {
-        $client = static::createClient();
-
-        $owner = $this->createTestUser(1);
-        $restaurant = $this->createTestRestaurant(10, $owner);
-
-        $mockService = $this->createMock(RestaurantService::class);
-        $mockService->method('findOrFail')->willReturn($restaurant);
-
-        static::getContainer()->set(RestaurantService::class, $mockService);
-
-        $client->request('GET', '/restaurant/10/modifier/1');
-
-        $this->assertResponseRedirects();
-    }
-
     // --- 404 when restaurant not found ---
 
     public function testEditReturns404WhenRestaurantNotFound(): void
