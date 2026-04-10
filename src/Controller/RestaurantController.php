@@ -40,7 +40,7 @@ class RestaurantController extends AbstractController
             ]);
         }
 
-        return $this->render('restaurant/show.html.twig', [
+        return $this->render('encheres/detail.html.twig', [
             'restaurant' => $restaurant,
             'isFavorite' => $isFavorite,
         ]);

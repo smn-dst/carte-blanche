@@ -4,16 +4,26 @@
 
 {% block body %}
     <section class="p-6 md:p-10 space-y-6">
-        <header class="flex items-center gap-4">
-            <a href="{{ path('app_restaurant_index') }}" class="text-muted-foreground hover:text-white transition-colors text-sm">
-                ← Mes restaurants
-            </a>
-            <h1 class="text-3xl font-bold">Créer un restaurant</h1>
-        </header>
+        <div class="border-b border-border bg-background/50 backdrop-blur-xl sticky top-0 z-20">
+            <div class="container mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center gap-4">
+                    <a href="{{ path('app_restaurant_index') }}"
+                    class="inline-flex items-center justify-center w-10 h-10 rounded-md text-muted-foreground hover:bg-secondary/60 hover:text-white transition-colors shrink-0">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 12H5M12 5l-7 7 7 7"/>
+                        </svg>
+                    </a>
+                    <div>
+                        <h1 class="text-4xl sm:text-5xl font-bold">Nouvelle enchère</h1>
+                        <p class="text-muted-foreground mt-1">Créez une nouvelle annonce d'enchère</p>
+                    </div>
+                </div>
+            </div>
+        </div>
 
         {% for type, messages in app.flashes %}
             {% for message in messages %}
-                <div class="rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
+                <div class="mb-6 rounded-lg border border-border bg-secondary/30 px-4 py-3 text-sm">
                     {{ message }}
                 </div>
             {% endfor %}
@@ -42,7 +52,7 @@
 
                         <div class="flex items-center gap-3 mt-2">
                             <button type="button" id="btn-generate-description"
-                                class="inline-flex items-center gap-2 px-4 py-2 rounded-lg border border-primary/40 bg-primary/10 text-primary text-sm hover:bg-primary hover:text-white transition-colors cursor-pointer">
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 text-sm font-medium transition-colors cursor-pointer">
                                 <svg id="icon-generate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                         d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
@@ -51,7 +61,7 @@
                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
                                 </svg>
-                                Générer avec l'IA
+                                <span id="btn-generate-label">Générer avec IA</span>
                             </button>
                             <span id="ai-status" class="text-xs text-muted-foreground hidden"></span>
                         </div>
@@ -68,11 +78,11 @@
                         {{ form_widget(form.longitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'longitude'}}) }}
                     </div>
                     <div class="md:col-span-2">
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.latitude) }}</div>
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.longitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.latitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.longitude) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
                         {{ form_widget(form.capacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.capacity) }}</div>
                     </div>
@@ -125,7 +135,7 @@
             </div>
 
             <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Enchère</h2>
+                <h2 class="text-lg font-semibold">Détails de l'enchère</h2>
                 <div class="grid gap-4 md:grid-cols-2">
                     <div>
                         {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
@@ -133,8 +143,19 @@
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <polyline points="12 6 12 12 16 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionTime, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'data-auction-picker': 'time'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionTime) }}</div>
                     </div>
                     <div class="md:col-span-2">
@@ -183,6 +204,7 @@
                                 </button>
                             </div>
                             <p data-file-name class="mt-2 text-xs text-muted-foreground">Aucun fichier sélectionné</p>
+                            <p class="text-xs text-muted-foreground mt-1">PNG, JPG, WebP jusqu'à 5 Mo</p>
                         </div>
                     </div>
 
@@ -198,9 +220,15 @@
                 </div>
             </div>
 
-            <div class="flex gap-4">
-                <button type="submit" class="primary-btn">Créer le restaurant</button>
-                <a href="{{ path('app_restaurant_index') }}" class="secondary-btn">Annuler</a>
+            <div class="flex items-center gap-4">
+                <button type="submit"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">
+                    Publier l'enchère
+                </button>
+                <a href="{{ path('app_restaurant_index') }}"
+                   class="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-white transition-colors">
+                    Annuler
+                </a>
             </div>
 
         {{ form_end(form) }}
@@ -210,68 +238,85 @@
     (function () {
         const btn      = document.getElementById('btn-generate-description');
         const textarea = document.querySelector('textarea[name*="description"]');
-        console.log('btn:', btn);
-        console.log('textarea:', textarea);
         const iconGen    = document.getElementById('icon-generate');
         const iconLoad   = document.getElementById('icon-loading');
         const status     = document.getElementById('ai-status');
+        const label    = document.getElementById('btn-generate-label');
+
+        function setStatus(message, type = 'info') {
+        const status = document.getElementById('ai-status');
+        status.textContent = message;
+        status.classList.remove(
+            'hidden',
+            'text-muted-foreground', 'border-border',
+            'text-green-400', 'border-green-500/30', 'bg-green-500/10',
+            'text-red-400', 'border-red-500/30', 'bg-red-500/10'
+        );
+        if (type === 'success') {
+            status.classList.add('text-green-400', 'border-green-500/30', 'bg-green-500/10');
+        } else if (type === 'error') {
+            status.classList.add('text-red-400', 'border-red-500/30', 'bg-red-500/10');
+        } else {
+            status.classList.add('text-muted-foreground', 'border-border');
+        }
+    }
 
         function getFieldValue(name) {
-            const el = document.querySelector(`[name*="[${name}]"]`);
-            return el ? el.value.trim() : '';
-        }
+        const el = document.querySelector(`[name*="[${name}]"]`);
+        return el ? el.value.trim() : '';
+    }
 
-        function getCheckedCategories() {
-            return Array.from(
-                document.querySelectorAll('input[name*="[categories]"]:checked')
-            ).map(el => el.closest('label').querySelector('span')?.textContent?.trim() ?? '');
-        }
+    function getCheckedCategories() {
+        return Array.from(
+            document.querySelectorAll('input[name*="[categories]"]:checked')
+        ).map(el => el.closest('label').querySelector('span')?.textContent?.trim() ?? '');
+    }
 
-        btn.addEventListener('click', async () => {
-            console.log('Génération de description IA...');
-            btn.disabled = true;
-            iconGen.classList.add('hidden');
-            iconLoad.classList.remove('hidden');
-            status.textContent = 'Génération en cours...';
-            status.classList.remove('hidden');
+     btn.addEventListener('click', async () => {
+        btn.disabled = true;
+        iconGen.classList.add('hidden');
+        iconLoad.classList.remove('hidden');
+        label.textContent = 'Génération...';
+        setStatus('Génération en cours...', 'info');
 
-            const payload = {
-                name:            getFieldValue('name'),
-                address:         getFieldValue('address'),
-                capacity:        getFieldValue('capacity'),
-                askingPrice:     getFieldValue('askingPrice'),
-                annualRevenue:   getFieldValue('annualRevenue'),
-                rent:            getFieldValue('rent'),
-                leaseRemaining:  getFieldValue('leaseRemaining'),
-                auctionLocation: getFieldValue('auctionLocation'),
-                categories:      getCheckedCategories(),
-            };
+        const payload = {
+            name:            getFieldValue('name'),
+            address:         getFieldValue('address'),
+            capacity:        getFieldValue('capacity'),
+            askingPrice:     getFieldValue('askingPrice'),
+            annualRevenue:   getFieldValue('annualRevenue'),
+            rent:            getFieldValue('rent'),
+            leaseRemaining:  getFieldValue('leaseRemaining'),
+            auctionLocation: getFieldValue('auctionLocation'),
+            categories:      getCheckedCategories(),
+        };
 
-            try {
-                const res  = await fetch('{{ path('app_restaurant_generate_description') }}', {
-                    method:  'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                    body:    JSON.stringify(payload),
-                });
-                const data = await res.json();
+        try {
+            const res  = await fetch('{{ path('app_restaurant_generate_description') }}', {
+                method:  'POST',
+                headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+                body:    JSON.stringify(payload),
+            });
+            const data = await res.json();
 
-                if (data.description) {
-                    textarea.value = data.description;
-                    status.textContent = '✓ Description générée — vous pouvez la modifier';
-                    status.classList.remove('hidden');
-                } else {
-                    status.textContent = '✗ Erreur : ' + (data.error ?? 'inconnue');
-                }
-            } catch (e) {
-                status.textContent = '✗ Erreur réseau';
-            } finally {
-                btn.disabled = false;
-                iconGen.classList.remove('hidden');
-                iconLoad.classList.add('hidden');
+            if (data.description) {
+                textarea.value = data.description;
+                setStatus('✓ Description générée — vous pouvez la modifier', 'success');
+            } else {
+                setStatus('✗ ' + (data.error ?? 'Erreur inconnue'), 'error');
             }
-        });
-    })();
-    </script>
+            } catch (e) {
+            setStatus('✗ Erreur réseau : ' + e.message, 'error');
+        } finally {
+            btn.disabled = false;
+            iconGen.classList.remove('hidden');
+            iconLoad.classList.add('hidden');
+            label.textContent = 'Générer avec IA';
+        }
+    });
+})();
+</script>
+</script>
 {% endblock %}
 
 {% block javascripts %}
