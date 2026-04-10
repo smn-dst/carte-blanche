@@ -9,8 +9,8 @@
                 ← Mes restaurants
             </a>
             <div>
-                <h1 class="text-3xl font-bold">{{ restaurant.name }}</h1>
-                <p class="text-sm text-muted-foreground">Modifier l'annonce</p>
+                <h1 class="text-4xl sm:text-5xl font-bold">{{ restaurant.name }}</h1>
+                <p class="text-muted-foreground mt-1">Modifier l'annonce</p>
             </div>
         </header>
 
@@ -22,10 +22,13 @@
             {% endfor %}
         {% endfor %}
 
-        {{ form_start(form, {'attr': {'class': 'space-y-6'}}) }}
+        {{ form_start(form, {'attr': {'class': 'space-y-8'}}) }}
 
             <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Informations générales</h2>
+                 <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Informations du restaurant
+                </h2>
                 <div class="grid gap-4 md:grid-cols-2">
                     <div class="md:col-span-2">
                         {{ form_label(form.name, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
@@ -33,13 +36,42 @@
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.name) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.description, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2 min-h-[100px]'}}) }}
+                        <div class="flex items-center justify-between mb-2">
+                            {{ form_label(form.description, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                            <button type="button" id="btn-generate-description"
+                                class="inline-flex items-center gap-2 px-3 py-1.5 rounded-md text-primary hover:bg-primary/10 text-sm font-medium transition-colors cursor-pointer">
+                                <svg id="icon-generate" class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                          d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                                </svg>
+                                <svg id="icon-loading" class="w-4 h-4 animate-spin hidden" fill="none" viewBox="0 0 24 24">
+                                    <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/>
+                                    <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/>
+                                </svg>
+                                <span id="btn-generate-label">Générer avec IA</span>
+                            </button>
+                        </div>
+                        {{ form_widget(form.description, {'attr': {
+                            'class': 'w-full rounded-md border border-border bg-background px-3 py-2 text-sm min-h-[120px] focus:outline-none focus:ring-2 focus:ring-primary/40',
+                            'id': 'restaurant-description'
+                        }}) }}
+                        <span id="ai-status" class="hidden mt-2 text-xs px-3 py-1 rounded-full border"></span>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.description) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.address, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': 'Commencez à saisir une adresse...'}}) }}
+                        {{ form_label(form.address, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.address, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': 'Commencez à saisir une adresse...'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.address) }}</div>
                         <p class="text-xs text-muted-foreground mt-1">Sélectionnez une suggestion pour renseigner automatiquement la latitude et la longitude.</p>
                     </div>
@@ -48,16 +80,25 @@
                         {{ form_widget(form.longitude, {'attr': {'class': 'hidden', 'data-address-autocomplete-target': 'longitude'}}) }}
                     </div>
                     <div class="md:col-span-2">
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.latitude) }}</div>
-                        <div class="text-red-400 text-xs mt-1">{{ form_errors(form.longitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.latitude) }}</div>
+                        <div class="text-red-400 text-xs">{{ form_errors(form.longitude) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.capacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.capacity, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.capacity, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.capacity) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+                        {{ form_label(form.categories, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
                         <div class="mt-2 flex flex-wrap gap-2 rounded-lg border border-border bg-background/40 p-3">
                             {% for categoryField in form.categories %}
                                 <label class="cursor-pointer">
@@ -113,13 +154,35 @@
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionTime, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.auctionTime, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <circle cx="12" cy="12" r="10" stroke-width="2"/>
+                                    <polyline points="12 6 12 12 16 14" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionTime, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'data-auction-picker': 'time'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionTime) }}</div>
                     </div>
                     <div class="md:col-span-2">
-                        {{ form_label(form.auctionLocation, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionLocation, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'placeholder': "Commencez à saisir un lieu d'enchère..."}}) }}
+                        {{ form_label(form.auctionLocation, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.auctionLocation, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0',
+                                'placeholder': "Commencez à saisir un lieu d'enchère..."
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionLocation) }}</div>
                         <p class="text-xs text-muted-foreground mt-1">Sélectionnez un lieu pour enregistrer automatiquement ses coordonnées.</p>
                     </div>
@@ -133,15 +196,27 @@
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.ticketPrice) }}</div>
                     </div>
                     <div>
-                        {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.maxCapacity, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_label(form.maxCapacity, null, {'label_attr': {'class': 'text-sm font-medium'}}) }}
+                        <div class="mt-2 flex items-center rounded-md border border-border bg-background focus-within:ring-2 focus-within:ring-primary/40">
+                            <span class="flex items-center pl-3 shrink-0 text-muted-foreground">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2M9 7a4 4 0 100 8 4 4 0 000-8zM23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+                                </svg>
+                            </span>
+                            {{ form_widget(form.maxCapacity, {'attr': {
+                                'class': 'flex-1 min-w-0 bg-transparent px-3 py-2 text-sm border-0 focus:outline-none focus:ring-0'
+                            }}) }}
+                        </div>
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.maxCapacity) }}</div>
                     </div>
                 </div>
             </div>
 
             <div class="rounded-xl border border-border bg-secondary/20 p-6 space-y-4">
-                <h2 class="text-lg font-semibold">Images</h2>
+                <h2 class="text-2xl font-bold flex items-center gap-3">
+                    <span class="w-1 h-8 bg-primary rounded-full inline-block shrink-0"></span>
+                    Images
+                </h2>
 
                 {% if restaurant.images|length > 0 %}
                     <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -204,9 +279,15 @@
                 </div>
             </div>
 
-            <div class="flex gap-4">
-                <button type="submit" class="primary-btn">Enregistrer les modifications</button>
-                <a href="{{ path('app_restaurant_index') }}" class="secondary-btn">Annuler</a>
+            <div class="flex items-center gap-4">
+                <button type="submit"
+                        class="flex-1 inline-flex items-center justify-center rounded-lg bg-primary px-6 py-3 text-sm font-semibold text-white hover:bg-primary/90 transition-colors">
+                    Enregistrer les modifications
+                </button>
+                <a href="{{ path('app_restaurant_index') }}"
+                   class="inline-flex items-center justify-center rounded-lg border border-border px-6 py-3 text-sm font-medium text-muted-foreground hover:bg-secondary/60 hover:text-white transition-colors">
+                    Annuler
+                </a>
             </div>
 
         {{ form_end(form) }}
@@ -224,14 +305,18 @@
             {% endfor %}
         {% endif %}
 
-        <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-6 space-y-4">
-            <h2 class="text-lg font-semibold text-red-400">Zone dangereuse</h2>
+        <div class="rounded-xl border border-red-500/20 bg-red-500/5 p-8 space-y-4">
+            <h2 class="text-xl font-bold text-red-400 flex items-center gap-3">
+                <span class="w-1 h-7 bg-red-500 rounded-full inline-block shrink-0"></span>
+                Zone dangereuse
+            </h2>
             <p class="text-sm text-muted-foreground">La suppression est définitive et irréversible.</p>
             <form method="post"
                   action="{{ path('app_restaurant_delete', {id: restaurant.id}) }}"
                   onsubmit="return confirm('Supprimer « {{ restaurant.name }} » ? Cette action est irréversible.')">
                 <input type="hidden" name="_token" value="{{ csrf_token('delete_restaurant_' ~ restaurant.id) }}">
-                <button type="submit" class="rounded-md border border-red-500/40 bg-red-500/10 px-4 py-2 text-sm text-red-400 hover:bg-red-500/20 transition-colors">
+                 <button type="submit"
+                        class="inline-flex items-center rounded-lg border border-red-500/40 bg-red-500/10 px-4 py-2.5 text-sm font-medium text-red-400 hover:bg-red-500/20 transition-colors">
                     Supprimer ce restaurant
                 </button>
             </form>
@@ -242,5 +327,6 @@
 {% block javascripts %}
     {{ parent() }}
     {{ include('restaurant/_address_autocomplete_script.html.twig', { googleMapsApiKey: googleMapsApiKey }) }}
+    {{ include('restaurant/_auction_datetime_picker_script.html.twig') }}
     {{ include('restaurant/_image_upload_repeater_script.html.twig') }}
 {% endblock %}
