@@ -41,11 +41,14 @@ services:
       MAILER_DSN: smtp://mailer:1025
       REDIS_URL: redis://redis:6379
       DEFAULT_URI: http://localhost:8000
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: content-generator
     depends_on:
       - database
       - rabbitmq
       - mailer
       - redis
+      - ollama
     ports:
       - "8888:8000"
     command: php -S 0.0.0.0:8000 -t public
@@ -121,7 +124,18 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- Ollama ---
+  ollama:
+    image: ollama/ollama
+    container_name: carte-blanche-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./Ollama:/models
+
 volumes:
   database_data:
   rabbitmq_data:
   redis_data:
+  ollama_data:
