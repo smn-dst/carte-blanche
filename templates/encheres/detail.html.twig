@@ -37,7 +37,7 @@
 						{{ restaurant.name }}
 					</h1>
 
-					{# {% if app.user %}
+					{% if app.user %}
 						<form method="post" action="{{ isFavorite ? path('app_favorite_remove', { id: restaurant.id }) : path('app_favorite_add', { id: restaurant.id }) }}" class="inline">
 							<input type="hidden" name="_token" value="{{ csrf_token(isFavorite ? 'favorite_remove_' ~ restaurant.id : 'favorite_add_' ~ restaurant.id) }}">
 							<button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200
@@ -50,7 +50,7 @@
 								{{ isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
 							</button>
 						</form>
-					{% endif %} #}
+					{% endif %}
 
 					<div class="flex items-center gap-2 text-xl text-muted-foreground">
 						<span class="text-primary">📍</span>
