@@ -1,5 +1,6 @@
 {% set variant = variant|default('primary') %}
-{% set tag = as|default('a') %}
+{# Ne pas nommer ce paramètre « as » : mot-clé Twig, le tag tombait toujours sur « a » (lien) au lieu de button. #}
+{% set tag = button_tag|default('a') %}
 {% set base_class = variant == 'secondary' ? 'secondary-btn' : 'primary-btn' %}
 {% set extra = extra_classes|default('') %}
 {% set type = type|default('submit') %}

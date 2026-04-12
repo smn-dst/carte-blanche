@@ -6,6 +6,7 @@ use App\Form\RegistrationFormType;
 use App\Service\RegistrationManagerService;
 use Random\RandomException;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -17,25 +18,41 @@ class RegistrationController extends AbstractController
     ) {
     }
 
+    #[Route('/register/confirmation', name: 'app_register_confirmation', methods: ['GET'])]
+    public function registrationConfirmation(Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        $email = $request->getSession()->get('registration_pending_email');
+        if (!\is_string($email) || '' === $email) {
+            return $this->redirectToRoute('app_register');
+        }
+
+        return $this->render('registration/confirmation.html.twig', [
+            'email' => $email,
+        ]);
+    }
+
     /**
      * @throws RandomException
      */
     #[Route('/register', name: 'app_register')]
-    public function register(Request $request,
-    ): Response {
+    public function register(Request $request, Security $security): Response
+    {
         $form = $this->createForm(RegistrationFormType::class);
         $form->handleRequest($request);
 
         if ($form->isSubmitted() && $form->isValid()) {
-            // Get the data from the form, which will be an instance of RegistrationInputDto
             $dto = $form->getData();
-            // Call the registration manager service to handle the registration logic
-            $this->registrationManagerService->register($dto);
+            $user = $this->registrationManagerService->register($dto);
 
-            // Add a flash message to inform the user that registration was successful
-            $this->addFlash('success', 'Inscription réussie! Veuillez vérifier votre email pour confirmer votre compte.');
+            $security->login($user, 'form_login', 'main');
+            $email = $user->getEmail();
+            if (\is_string($email) && '' !== $email) {
+                $request->getSession()->set('registration_pending_email', $email);
+            }
 
-            return $this->redirectToRoute('app_register_preferences');
+            return $this->redirectToRoute('app_register_confirmation');
         }
 
         if ($this->getUser()) {

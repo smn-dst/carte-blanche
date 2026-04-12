@@ -19,15 +19,19 @@ class RegistrationFormType extends AbstractType
         $builder
             ->add('firstName', TextType::class, [
                 'required' => true,
+                'empty_data' => '',
             ])
             ->add('lastName', TextType::class, [
                 'required' => true,
+                'empty_data' => '',
             ])
             ->add('email', EmailType::class, [
                 'required' => true,
+                'empty_data' => '',
             ])
             ->add('plainPassword', PasswordType::class, [
                 'required' => true,
+                'empty_data' => '',
                 'label' => 'Mot de passe',
                 'attr' => [
                     'placeholder' => 'Entrez votre mot de passe',
@@ -35,6 +39,7 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('confirmPassword', PasswordType::class, [
                 'required' => true,
+                'empty_data' => '',
                 'label' => 'Confirmez votre mot de passe',
                 'attr' => [
                     'placeholder' => 'Entrez à nouveau votre mot de passe',
@@ -42,6 +47,7 @@ class RegistrationFormType extends AbstractType
             ])
             ->add('phoneNumber', TelType::class, [
                 'required' => false,
+                'empty_data' => '',
             ])
             ->add('agreeTerms', CheckboxType::class, [
                 'required' => true,

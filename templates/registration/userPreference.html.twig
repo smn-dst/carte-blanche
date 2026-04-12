@@ -61,24 +61,23 @@
 
                     <div class="grid grid-cols-2 sm:grid-cols-3 gap-2" id="cuisine-grid">
                         {% set cuisines = [
-                            { value: 'french',        label: 'Français',          icon: '🥐' },
-                            { value: 'italian',       label: 'Italien',           icon: '🍝' },
-                            { value: 'japanese',      label: 'Japonais',          icon: '🍱' },
-                            { value: 'asian',         label: 'Asiatique',         icon: '🥢' },
-                            { value: 'mediterranean', label: 'Méditerranéen',     icon: '🫒' },
-                            { value: 'fastfood',      label: 'Burger',            icon: '🍔' },
-                            { value: 'brasserie',     label: 'Brasserie',         icon: '🍺' },
-                            { value: 'gastronomic',   label: 'Gastronomique',     icon: '⭐' },
-                            { value: 'vegan',         label: 'Végétarien',        icon: '🥗' },
-                            { value: 'seafood',       label: 'Fruits de mer',     icon: '🦞' },
-                            { value: 'pizza',         label: 'Pizzeria',          icon: '🍕' },
-                            { value: 'cafe',          label: 'Café / Brunch',     icon: '☕' },
+                            { value: 'french',        label: 'Français' },
+                            { value: 'italian',       label: 'Italien' },
+                            { value: 'japanese',      label: 'Japonais' },
+                            { value: 'asian',         label: 'Asiatique' },
+                            { value: 'mediterranean', label: 'Méditerranéen' },
+                            { value: 'fastfood',      label: 'Burger' },
+                            { value: 'brasserie',     label: 'Brasserie' },
+                            { value: 'gastronomic',   label: 'Gastronomique' },
+                            { value: 'vegan',         label: 'Végétarien' },
+                            { value: 'seafood',       label: 'Fruits de mer' },
+                            { value: 'pizza',         label: 'Pizzeria' },
+                            { value: 'cafe',          label: 'Café / Brunch' },
                         ] %}
                         {% for cuisine in cuisines %}
                         <button type="button"
-                            class="cuisine-btn flex items-center gap-2 px-3 py-2.5 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-sm text-left cursor-pointer"
+                            class="cuisine-btn flex items-center justify-center px-3 py-2.5 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-sm text-center cursor-pointer"
                             data-value="{{ cuisine.value }}">
-                            <span class="text-base leading-none">{{ cuisine.icon }}</span>
                             <span>{{ cuisine.label }}</span>
                         </button>
                         {% endfor %}
@@ -190,17 +189,16 @@
 
                     <div class="space-y-3" id="capacity-grid">
                         {% set capacities = [
-                            { value: 20,  label: 'Petit établissement',  sub: 'Moins de 20 couverts',   icon: '🪑' },
-                            { value: 50,  label: 'Taille moyenne',       sub: 'Entre 20 et 50 couverts', icon: '🍽️' },
-                            { value: 100, label: 'Grand restaurant',     sub: 'Entre 50 et 100 couverts', icon: '🏛️' },
-                            { value: 101, label: 'Très grande capacité', sub: 'Plus de 100 couverts',    icon: '🎪' },
-                            { value: 0,   label: 'Peu importe',          sub: 'Toutes tailles',          icon: '✨' },
+                            { value: 20,  label: 'Petit établissement',  sub: 'Moins de 20 couverts' },
+                            { value: 50,  label: 'Taille moyenne',       sub: 'Entre 20 et 50 couverts' },
+                            { value: 100, label: 'Grand restaurant',     sub: 'Entre 50 et 100 couverts' },
+                            { value: 101, label: 'Très grande capacité', sub: 'Plus de 100 couverts' },
+                            { value: 0,   label: 'Peu importe',          sub: 'Toutes tailles' },
                         ] %}
                         {% for cap in capacities %}
                         <button type="button"
                             class="capacity-btn w-full flex items-center gap-4 px-4 py-3.5 rounded-lg border border-border bg-background hover:border-primary/60 hover:bg-primary/5 transition-all duration-200 text-left cursor-pointer"
                             data-value="{{ cap.value }}">
-                            <span class="text-xl leading-none flex-shrink-0">{{ cap.icon }}</span>
                             <div>
                                 <p class="text-sm font-medium">{{ cap.label }}</p>
                                 <p class="text-xs text-muted-foreground">{{ cap.sub }}</p>
@@ -214,7 +212,7 @@
                 <div class="flex items-center justify-between mt-8 pt-6 border-t border-border">
                     <button type="button" id="btn-prev"
                         class="px-4 py-2 text-sm text-muted-foreground hover:text-foreground transition-colors hidden">
-                        ← Précédent
+                        Précédent
                     </button>
                     <div class="flex-1"></div>
 
@@ -246,7 +244,7 @@
 
             <div class="mt-6 text-center">
                 <a href="{{ path('app_home') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-                    ← Passer et accéder à l'accueil
+                    Passer et accéder à l'accueil
                 </a>
             </div>
 
@@ -254,208 +252,15 @@
     </div>
 </div>
 
-<script>
-(function () {
-    const state = {
-        currentStep: 1,
-        totalSteps: 4,
-        cuisineTypes: [],
-        budgetMin: null,
-        budgetMax: null,
-        preferredCity: '',
-        searchRadius: null,
-        capacityMin: null,
-    };
+<script type="application/json" id="user-preferences-config">{{ {
+    skipUrl: path('app_register_preferences_skip'),
+    saveUrl: path('app_register_preferences_save'),
+    csrfSkip: csrf_token('preferences_skip'),
+    csrfSave: csrf_token('preferences_save'),
+}|json_encode|raw }}</script>
+{% endblock %}
 
-    const progressBar   = document.getElementById('progress-bar');
-    const stepNum       = document.getElementById('current-step-num');
-    const stepPercent   = document.getElementById('step-percent');
-    const btnPrev       = document.getElementById('btn-prev');
-    const btnNext       = document.getElementById('btn-next');
-    const btnSkip       = document.getElementById('btn-skip');
-    const btnSubmit     = document.getElementById('btn-submit');
-
-    function updateProgress() {
-        const pct = Math.round(((state.currentStep - 1) / state.totalSteps) * 100);
-        progressBar.style.width = pct + '%';
-        stepNum.textContent = state.currentStep;
-        stepPercent.textContent = pct + '%';
-
-        for (let i = 1; i <= state.totalSteps; i++) {
-            const dot = document.getElementById('dot-' + i);
-            dot.classList.toggle('bg-primary', i <= state.currentStep);
-            dot.classList.toggle('bg-border',  i >  state.currentStep);
-            dot.classList.toggle('w-3',        i === state.currentStep);
-            dot.classList.toggle('h-3',        i === state.currentStep);
-            dot.classList.toggle('w-2',        i !== state.currentStep);
-            dot.classList.toggle('h-2',        i !== state.currentStep);
-        }
-
-        btnPrev.classList.toggle('hidden', state.currentStep === 1);
-        btnNext.classList.toggle('hidden', state.currentStep === 4);
-        btnSubmit.classList.toggle('hidden', state.currentStep !== 4);
-    }
-
-    function showStep(step) {
-        document.querySelectorAll('.step-panel').forEach((el, idx) => {
-            el.classList.toggle('hidden', idx + 1 !== step);
-        });
-        updateProgress();
-    }
-
-    function formatEuros(val) {
-        if (!val) return null;
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(val);
-    }
-
-    document.querySelectorAll('.cuisine-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            const val = btn.dataset.value;
-            const idx = state.cuisineTypes.indexOf(val);
-            if (idx === -1) {
-                state.cuisineTypes.push(val);
-                btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
-            } else {
-                state.cuisineTypes.splice(idx, 1);
-                btn.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
-            }
-            document.getElementById('cuisine-count').textContent = state.cuisineTypes.length;
-        });
-    });
-
-    function updateBudgetSummary() {
-        const summary = document.getElementById('budget-summary');
-        if (!state.budgetMin && !state.budgetMax) {
-            summary.textContent = 'Aucun budget sélectionné';
-        } else if (!state.budgetMax || state.budgetMax === 0) {
-            summary.textContent = 'À partir de ' + (formatEuros(state.budgetMin) ?? '0 €');
-        } else {
-            summary.textContent = (formatEuros(state.budgetMin) ?? '0 €') + ' – ' + formatEuros(state.budgetMax);
-        }
-    }
-
-    document.querySelectorAll('.budget-preset-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.budget-preset-btn').forEach(b => {
-                b.classList.remove('border-primary', 'bg-primary/10', 'text-primary');
-            });
-            btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
-            state.budgetMin = parseInt(btn.dataset.min) || null;
-            state.budgetMax = parseInt(btn.dataset.max) || null;
-            document.getElementById('budget-min-input').value = state.budgetMin || '';
-            document.getElementById('budget-max-input').value = state.budgetMax || '';
-            updateBudgetSummary();
-        });
-    });
-
-    document.getElementById('budget-min-input').addEventListener('input', e => {
-        state.budgetMin = e.target.value ? parseInt(e.target.value) : null;
-        document.querySelectorAll('.budget-preset-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
-        updateBudgetSummary();
-    });
-
-    document.getElementById('budget-max-input').addEventListener('input', e => {
-        state.budgetMax = e.target.value ? parseInt(e.target.value) : null;
-        document.querySelectorAll('.budget-preset-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
-        updateBudgetSummary();
-    });
-
-    document.getElementById('city-input').addEventListener('input', e => {
-        state.preferredCity = e.target.value.trim();
-        updateLocationSummary();
-    });
-
-    document.querySelectorAll('.radius-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.radius-btn').forEach(b => b.classList.remove('border-primary', 'bg-primary/10', 'text-primary'));
-            btn.classList.add('border-primary', 'bg-primary/10', 'text-primary');
-            state.searchRadius = parseInt(btn.dataset.value);
-            updateLocationSummary();
-        });
-    });
-
-    function updateLocationSummary() {
-        const summary = document.getElementById('location-summary');
-        if (!state.preferredCity) {
-            summary.textContent = 'Aucune localisation sélectionnée';
-            return;
-        }
-        const radiusText = state.searchRadius === 0 ? 'Toute la France' :
-            state.searchRadius ? 'dans un rayon de ' + state.searchRadius + ' km' : '';
-        summary.textContent = state.preferredCity + (radiusText ? ' · ' + radiusText : '');
-    }
-
-    document.querySelectorAll('.capacity-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
-            document.querySelectorAll('.capacity-btn').forEach(b => {
-                b.classList.remove('border-primary', 'bg-primary/10');
-                b.querySelector('.capacity-radio').classList.remove('bg-primary', 'border-primary');
-            });
-            btn.classList.add('border-primary', 'bg-primary/10');
-            btn.querySelector('.capacity-radio').classList.add('bg-primary', 'border-primary');
-            state.capacityMin = parseInt(btn.dataset.value);
-        });
-    });
-
-    btnNext.addEventListener('click', () => {
-        if (state.currentStep < state.totalSteps) {
-            state.currentStep++;
-            showStep(state.currentStep);
-        }
-    });
-
-    btnPrev.addEventListener('click', () => {
-        if (state.currentStep > 1) {
-            state.currentStep--;
-            showStep(state.currentStep);
-        }
-    });
-
-    btnSkip.addEventListener('click', () => {
-        if (state.currentStep < state.totalSteps) {
-            state.currentStep++;
-            showStep(state.currentStep);
-        } else {
-            fetch('{{ path('app_register_preferences_skip') }}', {
-                method: 'POST',
-                headers: { 'X-Requested-With': 'XMLHttpRequest', 'Content-Type': 'application/json' },
-                body: JSON.stringify({ _token: '{{ csrf_token('preferences_skip') }}' }),
-            })
-            .then(r => r.json())
-            .then(d => { if (d.redirect) window.location.href = d.redirect; });
-        }
-    });
-
-    btnSubmit.addEventListener('click', () => {
-        btnSubmit.disabled = true;
-        btnSubmit.innerHTML = '<svg class="w-4 h-4 animate-spin" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"/><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Enregistrement...';
-
-        const payload = {
-            cuisineTypes:  state.cuisineTypes,
-            budgetMin:     state.budgetMin,
-            budgetMax:     state.budgetMax,
-            preferredCity: state.preferredCity,
-            searchRadius:  state.searchRadius,
-            capacityMin:   state.capacityMin,
-            _token: '{{ csrf_token('preferences_save') }}',
-        };
-
-        fetch('{{ path('app_register_preferences_save') }}', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body: JSON.stringify(payload),
-        })
-        .then(r => r.json())
-        .then(d => {
-            if (d.redirect) window.location.href = d.redirect;
-        })
-        .catch(() => {
-            btnSubmit.disabled = false;
-            btnSubmit.innerHTML = '<svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg> Terminer';
-        });
-    });
-
-    showStep(1);
-})();
-</script>
+{% block javascripts %}
+	{{ parent() }}
+	{{ importmap('registration-preferences') }}
 {% endblock %}

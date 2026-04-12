@@ -1,0 +1,50 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Vérifiez votre boîte mail — Carte Blanche{% endblock %}
+
+{% block body %}
+	<div class="min-h-screen flex items-center justify-center relative overflow-hidden py-12 px-4">
+		<div class="absolute inset-0 from-primary/10 via-background to-background pointer-events-none">
+			<div class="absolute inset-0 opacity-30">
+				<div class="absolute top-1/4 right-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+				<div class="absolute bottom-1/4 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+			</div>
+		</div>
+
+		<div class="relative z-10 max-w-lg w-full">
+			<div class="p-8 sm:p-10 bg-card border border-primary/30 rounded-xl shadow-xl text-center">
+				<div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-primary/15 border border-primary/40 mb-6">
+					<svg class="size-8 text-primary" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+						<rect width="20" height="16" x="2" y="4" rx="2"/>
+						<path d="m22 7-10 7L2 7"/>
+					</svg>
+				</div>
+
+				<h1 class="text-2xl sm:text-3xl font-bold text-foreground mb-3">
+					Inscription réussie
+				</h1>
+				<p class="text-muted-foreground text-sm sm:text-base leading-relaxed mb-6">
+					Merci pour votre confiance. Un email de confirmation vient de vous être envoyé à l’adresse ci-dessous. Ouvrez-le et cliquez sur le lien pour activer votre compte.
+				</p>
+
+				<div class="rounded-lg bg-background border border-border px-4 py-3 mb-8">
+					<p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Adresse concernée</p>
+					<p class="text-foreground font-medium break-all">{{ email }}</p>
+				</div>
+
+				<div class="flex flex-col sm:flex-row gap-3 justify-center">
+					<a href="{{ path('app_register_preferences') }}" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg bg-primary text-primary-foreground font-semibold text-sm hover:bg-primary/90 transition-colors">
+						Continuer
+					</a>
+					<a href="{{ path('app_home') }}" class="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-lg border border-border text-foreground font-medium text-sm hover:bg-muted/30 transition-colors">
+						Retour à l’accueil
+					</a>
+				</div>
+
+				<p class="text-xs text-muted-foreground mt-8 leading-relaxed">
+					Vous ne voyez pas l’email ? Vérifiez vos courriers indésirables ou attendez quelques minutes avant de demander un nouvel envoi depuis votre espace compte.
+				</p>
+			</div>
+		</div>
+	</div>
+{% endblock %}

@@ -20,7 +20,7 @@ readonly class RegistrationManagerService
     /**
      * @throws RandomException
      */
-    public function register(RegistrationInputDto $registrationInputDto): void
+    public function register(RegistrationInputDto $registrationInputDto): User
     {
         $user = new User();
         $user->setEmail($registrationInputDto->email);
@@ -35,5 +35,7 @@ readonly class RegistrationManagerService
         $this->entityManager->flush();
 
         $this->sendMailService->sendVerificationEmail($user);
+
+        return $user;
     }
 }

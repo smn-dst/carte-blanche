@@ -1,0 +1,66 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Demande de remboursement — Carte Blanche
+{% endblock %}
+
+{% block body %}
+
+	{% include 'Components/headers/page-header.html.twig' with {
+		title: 'Demande de remboursement',
+		description: 'Commande ' ~ order.reference
+	} %}
+
+	<div class="container mx-auto px-4 py-8 max-w-2xl">
+
+		{% for type, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="mb-4 p-4 rounded-lg border {{ type == 'success' ? 'bg-green-900/20 border-green-500/30 text-green-400' : 'bg-red-900/20 border-red-500/30 text-red-400' }}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{# Récap commande #}
+		<div class="p-6 bg-(--card) border border-border rounded-lg mb-8">
+			<div class="flex items-center justify-between mb-4">
+				<h2 class="text-lg font-bold text-foreground">{{ order.reference }}</h2>
+				<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">{{ order.status.value }}</span>
+			</div>
+			<div class="flex flex-wrap gap-x-6 gap-y-1 text-sm text-muted-foreground">
+				<span>{{ order.createdAt|date('d/m/Y à H:i') }}</span>
+				<span>{{ order.tickets|length }}
+					ticket(s)</span>
+				<span class="font-semibold text-primary">{{ order.totalAmount|number_format(0, ',', ' ') }}
+					€</span>
+			</div>
+		</div>
+
+		{# Formulaire #}
+		<form method="post" action="{{ path('app_refund_request', { id: order.id }) }}" class="space-y-6">
+			<input type="hidden" name="_token" value="{{ csrf_token('refund_request_' ~ order.id) }}">
+
+			<div>
+				<label for="reason" class="block text-sm font-semibold text-foreground mb-2">Motif du remboursement</label>
+				<textarea name="reason" id="reason" rows="5" required class="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground placeholder-muted-foreground focus:border-primary focus:outline-none resize-none" placeholder="Expliquez pourquoi vous souhaitez être remboursé..."></textarea>
+				<p class="text-xs text-muted-foreground mt-2">Votre demande sera examinée sous 48h par notre équipe.</p>
+			</div>
+
+			<div class="p-4 bg-yellow-500/10 border border-yellow-500/20 rounded-lg">
+				<p class="text-sm text-yellow-400">
+					Le remboursement portera sur la totalité de la commande ({{ order.totalAmount|number_format(0, ',', ' ') }}
+					€). Vos tickets seront annulés.
+				</p>
+			</div>
+
+			<div class="flex gap-4">
+				<button type="submit" class="flex-1 py-3 bg-red-600 hover:bg-red-700 text-white font-semibold rounded-lg transition-colors text-center">
+					Confirmer la demande
+				</button>
+				<a href="{{ path('app_my_tickets') }}" class="flex-1 py-3 border border-border text-foreground font-semibold rounded-lg transition-colors text-center hover:bg-secondary">
+					Annuler
+				</a>
+			</div>
+		</form>
+	</div>
+
+{% endblock %}

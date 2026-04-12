@@ -12,6 +12,8 @@
   --color-primary: #6366F9;
 
   --color-secondary: oklch(0.269 0 0);
+  /* Fond barre latérale / tiroir mobile (requis pour bg-sidebar) */
+  --color-sidebar: #111111;
   --color-sidebar-border: oklch(0.269 0 0);
 
   --card: #151515;
