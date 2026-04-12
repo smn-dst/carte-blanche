@@ -1,28 +1,134 @@
-<div class="w-full flex flex-col items-center justify-center text-center bg-linear-to-br from-primary/10 via-background to-primary/5 py-32">
-	<p class="primary-comment">
-		<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-			<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0 1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
-			<path d="M20 2v4"/>
-			<path d="M22 4h-4"/>
-			<circle cx="4" cy="20" r="2"/>
-		</svg>
-		Rejoignez-nous
-	</p>
+{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+	<section class="relative w-full overflow-hidden border-t border-border bg-background text-center" aria-labelledby="cta-dashboard-heading">
+		<div class="pointer-events-none absolute inset-0 bg-linear-to-tl from-primary/20 via-violet-500/10 to-primary/8" aria-hidden="true"></div>
+		<div class="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 py-24 md:py-28">
+			<p class="primary-comment">
+				<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<rect width="7" height="9" x="3" y="3" rx="1"/>
+					<rect width="7" height="5" x="14" y="3" rx="1"/>
+					<rect width="7" height="9" x="14" y="12" rx="1"/>
+					<rect width="7" height="5" x="3" y="16" rx="1"/>
+				</svg>
+				Tableau de bord
+			</p>
 
-	<h1 class="text-5xl md:text-6xl font-bold mb-6 tracking-tight leading-none max-w-200 mt-8">
-		Prêt à investir ?
-	</h1>
+			<h2 id="cta-dashboard-heading" class="mt-6 max-w-200 text-5xl font-bold leading-none tracking-tight md:text-6xl">
+				Pilotez vos <span class="text-gradient">opportunités</span>
+			</h2>
 
-	<p class="text-description">
-		Découvrez et participez aux enchères des restaurants les plus prestigieux de France
-	</p>
+			<p class="mt-5 max-w-2xl px-4 text-xl leading-relaxed text-muted-foreground sm:text-2xl">
+				Suivez vos enchères, réservations et indicateurs clés depuis un seul espace conçu pour les investisseurs actifs.
+			</p>
 
-	<ul class="flex flex-col sm:flex-row gap-4 text-lg font-medium text-white items-center justify-center">
-		{% include 'Components/buttons/buttons-primary.html.twig' with {
-			href: '/dashboard',
-			label: 'Accéder au Dashboard',
-			variant: 'primary',
-			with_arrow: true
-		} %}
-	</ul>
-</div>
+			{% set cta_user = app.user %}
+			{% set avatar_initials = (cta_user.firstName|default('')|slice(0, 1) ~ cta_user.lastName|default('')|slice(0, 1))|upper %}
+			<div class="mt-14 w-full max-w-lg rounded-2xl border border-border bg-container/60 px-7 py-8 shadow-lg shadow-black/10 backdrop-blur-sm sm:px-9 sm:py-10">
+				<div class="flex items-center gap-7 sm:gap-10">
+					<div class="relative shrink-0">
+						{% if cta_user.picture|default %}
+							<img src="{{ cta_user.picture }}" alt="{% if cta_user.firstName|default or cta_user.lastName|default %}Photo de profil — {{ cta_user.firstName }} {{ cta_user.lastName }}{% else %}Votre photo de profil{% endif %}" width="96" height="96" class="size-20 rounded-full object-cover ring-2 ring-primary/35 ring-offset-4 ring-offset-container sm:size-24" loading="lazy" decoding="async">
+						{% else %}
+							<div class="flex size-20 items-center justify-center rounded-full bg-primary/20 text-xl font-bold tracking-tight text-primary ring-2 ring-primary/35 ring-offset-4 ring-offset-container sm:size-24 sm:text-2xl" aria-hidden="true">
+								{{ avatar_initials ?: '?' }}
+							</div>
+						{% endif %}
+					</div>
+					<div class="min-w-0 flex-1 text-left">
+						<div class="flex flex-col gap-3 sm:gap-4">
+							<p class="text-xs font-semibold uppercase tracking-widest text-primary">
+								Vous êtes connecté
+							</p>
+							{% if (cta_user.firstName ?? '')|trim != '' or (cta_user.lastName ?? '')|trim != '' %}
+								<p class="truncate text-base font-medium leading-snug text-foreground sm:text-lg">
+									{{ cta_user.firstName }}
+									{{ cta_user.lastName }}
+								</p>
+							{% endif %}
+							<p class="text-sm leading-relaxed text-muted-foreground sm:text-base sm:leading-relaxed">
+								Poursuivez depuis votre profil ou votre tableau de bord.
+							</p>
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<ul class="mt-12 flex flex-col items-center justify-center gap-4 text-lg font-medium text-white sm:flex-row sm:gap-6">
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					href: path('app_profile'),
+					label: 'Mon profil',
+					variant: 'primary',
+					with_arrow: true,
+				} %}
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					href: is_granted('ROLE_VENDOR') ? '/dashboard_vendeur' : '/',
+					label: 'Dashboard',
+					variant: 'secondary',
+					with_arrow: true,
+				} %}
+			</ul>
+		</div>
+	</section>
+{% else %}
+	<section class="relative w-full overflow-hidden border-t border-border bg-background text-center" aria-labelledby="cta-signup-heading">
+		<div class="pointer-events-none absolute inset-0 bg-linear-to-br from-primary/18 via-primary/8 to-primary/12" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute -top-24 left-1/2 h-[22rem] w-[min(92vw,40rem)] -translate-x-1/2 rounded-full bg-primary/30 blur-[110px]" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute bottom-[18%] right-[6%] h-56 w-56 rounded-full bg-amber-500/25 blur-[90px]" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute top-[32%] left-[4%] h-44 w-44 rounded-full bg-violet-500/20 blur-[72px]" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute inset-0 bg-[linear-gradient(rgba(99,102,241,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(99,102,241,0.07)_1px,transparent_1px)] bg-size-[52px_52px] opacity-35" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute left-1/2 top-[42%] h-[min(70vw,28rem)] w-[min(70vw,28rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-primary/15 opacity-70" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute left-1/2 top-[42%] h-[min(85vw,34rem)] w-[min(85vw,34rem)] -translate-x-1/2 -translate-y-1/2 rounded-full border border-white/5 opacity-50" aria-hidden="true"></div>
+
+		<div class="relative z-10 mx-auto flex max-w-3xl flex-col items-center px-6 py-24 md:py-28">
+			<p class="primary-comment relative z-10">
+				<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+					<path d="M11.017 2.814a1 1 0 0 1 1.966 0l1.051 5.558a2 2 0 0 0 1.594 1.594l5.558 1.051a1 1 0 0 1 0 1.966l-5.558 1.051a2 2 0 0 0-1.594 1.594l-1.051 5.558a1 1 0 0 1-1.966 0l-1.051-5.558a2 2 0 0 0-1.594-1.594l-5.558-1.051a1 1 0 0 1 0-1.966l5.558-1.051a2 2 0 0 0 1.594-1.594z"/>
+					<path d="M20 2v4"/>
+					<path d="M22 4h-4"/>
+					<circle cx="4" cy="20" r="2"/>
+				</svg>
+				Rejoignez-nous
+			</p>
+
+			<div class="relative z-10 mt-8 w-full max-w-2xl px-2 sm:px-4">
+				<div class="pointer-events-none absolute -left-1 top-10 text-primary/50 sm:-left-2 sm:top-14" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="m12 3-1.9 5.8a2 2 0 0 1-1.265 1.265L3 12l5.835 1.935a2 2 0 0 1 1.265 1.265L12 21l1.935-5.8a2 2 0 0 1 1.265-1.265L21 12l-5.8-1.9a2 2 0 0 1-1.265-1.265L12 3Z"/>
+					</svg>
+				</div>
+				<div class="pointer-events-none absolute -right-1 top-24 text-amber-400/40 sm:-right-2 sm:top-28" aria-hidden="true">
+					<svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+						<path d="m12 3-1.9 5.8a2 2 0 0 1-1.265 1.265L3 12l5.835 1.935a2 2 0 0 1 1.265 1.265L12 21l1.935-5.8a2 2 0 0 1 1.265-1.265L21 12l-5.8-1.9a2 2 0 0 1-1.265-1.265L12 3Z"/>
+					</svg>
+				</div>
+
+				<div class="relative overflow-hidden rounded-[1.75rem] border border-white/10 bg-linear-to-b from-white/5 to-transparent px-6 py-10 shadow-2xl shadow-primary/10 backdrop-blur-md sm:rounded-[2rem] sm:px-10 sm:py-12">
+					<div class="pointer-events-none absolute -right-16 -top-16 h-40 w-40 rounded-full bg-primary/20 blur-3xl" aria-hidden="true"></div>
+					<div class="pointer-events-none absolute -bottom-12 -left-10 h-36 w-36 rounded-full bg-violet-500/15 blur-3xl" aria-hidden="true"></div>
+
+					<h2 id="cta-signup-heading" class="relative text-5xl font-bold leading-none tracking-tight md:text-6xl">
+						Prêt à <span class="text-gradient">investir ?</span>
+					</h2>
+
+					<p class="relative mt-6 max-w-2xl mx-auto text-xl leading-relaxed text-muted-foreground sm:text-2xl">
+						Découvrez et participez aux enchères des restaurants les plus prestigieux de France
+					</p>
+				</div>
+			</div>
+
+			<ul class="relative z-10 mt-12 flex flex-col items-center justify-center gap-4 text-lg font-medium text-white sm:flex-row sm:gap-6">
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					href: path('app_register'),
+					label: 'Créer mon compte',
+					variant: 'primary',
+					with_arrow: true,
+				} %}
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					href: path('app_login'),
+					label: 'J’ai déjà un compte',
+					variant: 'secondary',
+					with_arrow: false,
+				} %}
+			</ul>
+		</div>
+	</section>
+{% endif %}

@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Repository\CategoryRepository;
 use App\Repository\FavoriteRepository;
 use App\Repository\RestaurantRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -11,9 +12,13 @@ use Symfony\Component\Routing\Attribute\Route;
 class HomeController extends AbstractController
 {
     #[Route('/', name: 'app_home', methods: ['GET'])]
-    public function index(RestaurantRepository $restaurantRepository, FavoriteRepository $favoriteRepository): Response
-    {
+    public function index(
+        RestaurantRepository $restaurantRepository,
+        FavoriteRepository $favoriteRepository,
+        CategoryRepository $categoryRepository,
+    ): Response {
         $featuredRestaurants = $restaurantRepository->findFeaturedForHome(5);
+        $popularCategories = $categoryRepository->findPopularForHome(4);
 
         $favoriteRestaurantIds = [];
         $user = $this->getUser();
@@ -24,6 +29,7 @@ class HomeController extends AbstractController
         return $this->render('home/index.html.twig', [
             'featuredRestaurants' => $featuredRestaurants,
             'favoriteRestaurantIds' => $favoriteRestaurantIds,
+            'popularCategories' => $popularCategories,
         ]);
     }
 }
