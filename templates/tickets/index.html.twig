@@ -1,0 +1,151 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes réservations — Carte Blanche
+{% endblock %}
+
+{% block body %}
+
+	{% include 'Components/headers/page-header.html.twig' with {
+		title: 'Mes réservations',
+		description: 'Retrouvez vos tickets et QR codes'
+	} %}
+
+	<div class="container mx-auto px-4 py-8">
+
+		{% if orders is empty %}
+
+			<div class="text-center py-20">
+				<div class="w-20 h-20 mx-auto mb-6 rounded-full bg-primary/10 flex items-center justify-center">
+					<svg class="size-10 text-primary" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+						<path d="M2 9a3 3 0 0 1 0 6v2a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-2a3 3 0 0 1 0-6V7a2 2 0 0 0-2-2H4a2 2 0 0 0-2 2Z"/>
+						<path d="M13 5v2"/><path d="M13 17v2"/><path d="M13 11v2"/>
+					</svg>
+				</div>
+				<h2 class="text-2xl font-bold text-foreground mb-2">Aucune réservation</h2>
+				<p class="text-muted-foreground mb-8">Participez à une enchère pour obtenir vos premiers tickets.</p>
+				<a href="{{ path('app_encheres') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+					Voir les enchères
+				</a>
+			</div>
+
+		{% else %}
+
+			<div class="space-y-8">
+				{% for order in orders %}
+					<div
+						class="bg-(--card) border border-border rounded-lg overflow-hidden">
+
+						{# En-tête commande #}
+						<div class="p-6 border-b border-border flex flex-wrap items-center justify-between gap-4">
+							<div>
+								<div class="flex items-center gap-3 mb-1">
+									<h2 class="text-lg font-bold text-foreground">{{ order.reference }}</h2>
+									{% if order.status.value == 'payee' %}
+										<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">Payée</span>
+									{% elseif order.status.value == 'en_attente' %}
+										<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">En attente</span>
+									{% else %}
+										<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">{{ order.status.value }}</span>
+									{% endif %}
+								</div>
+								<p class="text-sm text-muted-foreground">
+									{{ order.createdAt|date('d/m/Y à H:i') }}
+									—
+									{{ order.tickets|length }}
+									ticket(s) —
+									{{ order.totalAmount|number_format(0, ',', ' ') }}
+									€
+								</p>
+							</div>
+
+							<div class="flex gap-2">
+								{% set hasRefundPending = false %}
+								{% for refund in order.refunds %}
+									{% if refund.status.value == 'en_attente' %}
+										{% set hasRefundPending = true %}
+									{% endif %}
+								{% endfor %}
+
+								{% if hasRefundPending %}
+									<span class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-yellow-500/20 text-yellow-400">Remboursement en cours</span>
+								{% else %}
+									<a href="{{ path('app_refund_request', { id: order.id }) }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors">
+										Demander un remboursement
+									</a>
+								{% endif %}
+							</div>
+						</div>
+
+						{# Liste des tickets #}
+						{% if order.status.value == 'payee' and order.tickets|length > 0 %}
+							<div class="p-6 grid grid-cols-1 md:grid-cols-2 gap-4">
+								{% for ticket in order.tickets %}
+									<div
+										class="flex gap-4 p-4 bg-background rounded-xl border border-border">
+
+										{# QR Code — clic pour agrandir #}
+										<div class="flex-shrink-0">
+											<img src="{{ asset('uploads/qrcodes/' ~ ticket.qrCode) }}" alt="QR Code ticket" class="w-24 h-24 rounded-lg border border-border cursor-pointer hover:opacity-80 transition-opacity" onclick="document.getElementById('qr-modal-{{ ticket.id }}').classList.remove('hidden')">
+										</div>
+
+										{# Infos ticket #}
+										<div class="flex-1 min-w-0">
+											<div class="flex items-center gap-2 mb-1">
+												{% if ticket.status.value == 'valide' %}
+													<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-green-500/20 text-green-400">Valide</span>
+												{% elseif ticket.status.value == 'utilisee' %}
+													<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-gray-500/20 text-gray-400">Utilisé</span>
+												{% else %}
+													<span class="px-2 py-0.5 rounded-full text-[10px] font-semibold bg-red-500/20 text-red-400">Expiré</span>
+												{% endif %}
+											</div>
+
+											<h3 class="font-semibold text-foreground text-sm truncate">{{ ticket.restaurant.name }}</h3>
+											<p class="text-xs text-muted-foreground truncate">{{ ticket.restaurant.address }}</p>
+
+											{% if ticket.restaurant.auctionDate %}
+												<div class="mt-2 flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+													<span>📅
+														{{ ticket.restaurant.auctionDate|date('d/m/Y') }}</span>
+													{% if ticket.restaurant.auctionTime %}
+														<span>🕐
+															{{ ticket.restaurant.auctionTime|date('H:i') }}</span>
+													{% endif %}
+													{% if ticket.restaurant.auctionLocation %}
+														<span>📍
+															{{ ticket.restaurant.auctionLocation }}</span>
+													{% endif %}
+												</div>
+											{% endif %}
+										</div>
+									</div>
+									{# Modale QR plein écran #}
+									<div id="qr-modal-{{ ticket.id }}" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm" onclick="this.classList.add('hidden')">
+										<div class="text-center" onclick="event.stopPropagation()">
+											<img src="{{ asset('uploads/qrcodes/' ~ ticket.qrCode) }}" alt="QR Code ticket" class="w-80 h-80 rounded-2xl border-2 border-white/20 shadow-2xl">
+											<p class="text-white font-semibold mt-4">{{ ticket.restaurant.name }}</p>
+											{% if ticket.restaurant.auctionDate %}
+												<p class="text-gray-400 text-sm mt-1">{{ ticket.restaurant.auctionDate|date('d/m/Y') }}
+													{% if ticket.restaurant.auctionTime %}
+														à
+														{{ ticket.restaurant.auctionTime|date('H:i') }}
+													{% endif %}
+												</p>
+											{% endif %}
+											<button onclick="this.closest('[id^=qr-modal]').classList.add('hidden')" class="mt-6 px-6 py-2 rounded-lg border border-white/20 text-white hover:bg-white/10 transition-colors">
+												Fermer
+											</button>
+										</div>
+									</div>
+								{% endfor %}
+							</div>
+						{% endif %}
+
+					</div>
+				{% endfor %}
+			</div>
+
+		{% endif %}
+	</div>
+
+{% endblock %}

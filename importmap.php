@@ -23,6 +23,22 @@ return [
     'map-helpers' => [
         'path' => './assets/js/map/map-helpers.js',
     ],
+    'registration-register' => [
+        'path' => './assets/js/registration/register-page.js',
+        'entrypoint' => true,
+    ],
+    'registration-preferences' => [
+        'path' => './assets/js/registration/user-preferences-wizard.js',
+        'entrypoint' => true,
+    ],
+    'restaurant-form' => [
+        'path' => './assets/js/restaurant/restaurant-form-page.js',
+        'entrypoint' => true,
+    ],
+    'encheres-detail' => [
+        'path' => './assets/js/encheres/auction-ticket-stepper.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],

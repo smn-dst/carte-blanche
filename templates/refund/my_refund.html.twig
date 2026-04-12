@@ -1,0 +1,64 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Mes remboursements — Carte Blanche
+{% endblock %}
+
+{% block body %}
+
+	{% include 'Components/headers/page-header.html.twig' with {
+		title: 'Mes remboursements',
+		description: 'Suivi de vos demandes de remboursement'
+	} %}
+
+	<div class="container mx-auto px-4 py-8">
+
+		{% for type, messages in app.flashes %}
+			{% for message in messages %}
+				<div class="mb-4 p-4 rounded-lg border {{ type == 'success' ? 'bg-green-900/20 border-green-500/30 text-green-400' : 'bg-red-900/20 border-red-500/30 text-red-400' }}">
+					{{ message }}
+				</div>
+			{% endfor %}
+		{% endfor %}
+
+		{% if refunds is empty %}
+			<div class="text-center py-20">
+				<h2 class="text-2xl font-bold text-foreground mb-2">Aucune demande</h2>
+				<p class="text-muted-foreground mb-8">Vous n'avez pas encore fait de demande de remboursement.</p>
+				<a href="{{ path('app_my_tickets') }}" class="inline-flex items-center gap-2 px-6 py-3 bg-primary text-white font-semibold rounded-lg hover:bg-primary/90 transition-colors">
+					Voir mes réservations
+				</a>
+			</div>
+		{% else %}
+			<div class="space-y-4">
+				{% for refund in refunds %}
+					<div class="p-6 bg-(--card) border border-border rounded-lg">
+						<div class="flex flex-wrap items-center justify-between gap-4 mb-3">
+							<div>
+								<h3 class="font-bold text-foreground">{{ refund.order.reference }}</h3>
+								<p class="text-sm text-muted-foreground">Demandé le
+									{{ refund.createdAt|date('d/m/Y à H:i') }}</p>
+							</div>
+							<div class="flex items-center gap-3">
+								<span class="font-bold text-primary">{{ refund.amount|number_format(0, ',', ' ') }}
+									€</span>
+								{% if refund.status.value == 'en_attente' %}
+									<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/20 text-yellow-400">En attente</span>
+								{% elseif refund.status.value == 'traite' %}
+									<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/20 text-green-400">Remboursé</span>
+								{% elseif refund.status.value == 'refuse' %}
+									<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/20 text-red-400">Refusé</span>
+								{% else %}
+									<span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/20 text-blue-400">{{ refund.status.value }}</span>
+								{% endif %}
+							</div>
+						</div>
+						<div class="p-4 bg-background rounded-lg border border-border">
+							<p class="text-sm text-muted-foreground">{{ refund.reasonRefund }}</p>
+						</div>
+					</div>
+				{% endfor %}
+			</div>
+		{% endif %}
+	</div>
+
+{% endblock %}

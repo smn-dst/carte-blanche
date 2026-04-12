@@ -65,7 +65,7 @@
 
 						<div class="flex items-center">
 							{% include 'Components/buttons/buttons-primary.html.twig' with {
-                                as: 'button',
+                                button_tag: 'button',
                                 label: 'Se connecter',
                                 variant: 'primary',
                                 with_arrow: true,
@@ -120,7 +120,7 @@
 
 				<div class="mt-6 text-center">
 					<a href="{{ path('app_home') }}" class="text-sm text-muted-foreground hover:text-foreground transition-colors">
-						← Retour à l'accueil
+						Retour à l'accueil
 					</a>
 				</div>
 
