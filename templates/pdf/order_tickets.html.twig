@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<style>
+			body {
+				font-family: DejaVu Sans,
+				sans-serif;
+				font-size: 11px;
+				color: #1a1a1a;
+				margin: 0;
+				padding: 24px;
+			}
+			h1 {
+				font-size: 18px;
+				color: #4f46e5;
+				margin: 0 0 8px;
+			}
+			.meta {
+				margin-bottom: 20px;
+				color: #444;
+			}
+			.ticket {
+				border: 1px solid #ccc;
+				border-radius: 6px;
+				padding: 16px;
+				margin-bottom: 20px;
+				page-break-inside: avoid;
+			}
+			.ticket:not(:last-child) {
+				page-break-after: always;
+			}
+			.badge {
+				font-size: 9px;
+				text-transform: uppercase;
+				letter-spacing: 0.06em;
+				color: #4f46e5;
+				font-weight: bold;
+				margin: 0 0 6px;
+			}
+			.name {
+				font-size: 14px;
+				font-weight: bold;
+				margin: 0 0 4px;
+			}
+			.muted {
+				color: #555;
+				margin: 0 0 2px;
+			}
+			.qr-wrap {
+				text-align: center;
+				margin-top: 12px;
+				padding-top: 12px;
+				border-top: 1px solid #eee;
+			}
+			.qr-wrap img {
+				width: 120px;
+				height: 120px;
+			}
+			.qr-missing {
+				color: #999;
+				font-size: 10px;
+			}
+			.footer {
+				margin-top: 24px;
+				font-size: 9px;
+				color: #888;
+				text-align: center;
+			}
+		</style>
+	</head>
+	<body>
+		<h1>Carte Blanche — Vos billets</h1>
+		<p class="meta">
+			Commande
+			<strong>{{ order.reference }}</strong>
+			—
+			{{ order.createdAt|date('d/m/Y à H:i') }}
+		</p>
+
+		{% for row in ticketsPdf %}
+			<div class="ticket">
+				<p class="badge">{{ row.categoryLabel }}</p>
+				<p class="name">{{ row.restaurantName }}</p>
+				<p class="muted">{{ row.address }}</p>
+				{% if row.auctionDateFormatted %}
+					<p class="muted">Enchère : {{ row.auctionDateFormatted }}</p>
+				{% endif %}
+				{% if row.auctionLocation %}
+					<p class="muted">Lieu : {{ row.auctionLocation }}</p>
+				{% endif %}
+				<div class="qr-wrap">
+					{% if row.qrDataUri %}
+						<img src="{{ row.qrDataUri }}" alt="QR code billet">
+						<p class="muted" style="margin-top:6px;">Présentez ce code à l'entrée</p>
+					{% else %}
+						<p class="qr-missing">QR non disponible — consultez « Mes réservations » sur le site.</p>
+					{% endif %}
+				</div>
+			</div>
+		{% endfor %}
+
+		<p class="footer">© Carte Blanche — Document généré automatiquement</p>
+	</body>
+</html>

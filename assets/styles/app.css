@@ -1,5 +1,18 @@
 @import "tailwindcss";
 
+@layer base {
+	/* Liens et boutons interactifs : curseur explicite (sauf désactivés) */
+	a[href]:not([aria-disabled="true"]) {
+		cursor: pointer;
+	}
+	button:not(:disabled):not([aria-disabled="true"]) {
+		cursor: pointer;
+	}
+	summary {
+		cursor: pointer;
+	}
+}
+
 @import "./theme.css";
 @import "./components/buttons.css";
 @import "./components/sections.css";

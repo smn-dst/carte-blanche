@@ -3,10 +3,11 @@
 {% block title %}Modifier — {{ restaurant.name }}{% endblock %}
 
 {% block body %}
+    <div id="restaurant-form-config" class="hidden" data-google-maps-key="{{ googleMapsApiKey|default('')|e('html_attr') }}" data-generate-description-url="{{ path('app_restaurant_generate_description') }}"></div>
     <section class="p-6 md:p-10 space-y-6">
         <header class="flex items-center gap-4">
             <a href="{{ path('app_restaurant_index') }}" class="text-muted-foreground hover:text-white transition-colors text-sm">
-                ← Mes restaurants
+                Mes restaurants
             </a>
             <div>
                 <h1 class="text-4xl sm:text-5xl font-bold">{{ restaurant.name }}</h1>
@@ -150,7 +151,7 @@
                 <div class="grid gap-4 md:grid-cols-2">
                     <div>
                         {{ form_label(form.auctionDate, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+                        {{ form_widget(form.auctionDate, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2', 'data-auction-picker': 'date'}}) }}
                         <div class="text-red-400 text-xs mt-1">{{ form_errors(form.auctionDate) }}</div>
                     </div>
                     <div>
@@ -326,7 +327,5 @@
 
 {% block javascripts %}
     {{ parent() }}
-    {{ include('restaurant/_address_autocomplete_script.html.twig', { googleMapsApiKey: googleMapsApiKey }) }}
-    {{ include('restaurant/_auction_datetime_picker_script.html.twig') }}
-    {{ include('restaurant/_image_upload_repeater_script.html.twig') }}
+    {{ importmap('restaurant-form') }}
 {% endblock %}

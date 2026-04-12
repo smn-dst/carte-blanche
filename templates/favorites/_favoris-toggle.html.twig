@@ -1,7 +1,7 @@
 {% if app.user and restaurantId is defined and restaurantId is not null %}
-	<div class="absolute top-4 left-4 z-10">
+	<div class="absolute top-4 left-4 z-20 pointer-events-auto">
 		{% if isFavorite|default(false) %}
-			<form method="post" action="{{ path('app_favorite_remove', { id: restaurantId }) }}" class="inline">
+			<form method="post" action="{{ path('app_favorite_remove', { id: restaurantId }) }}" class="inline" data-preserve-scroll>
 				<input type="hidden" name="_token" value="{{ csrf_token('favorite_remove_' ~ restaurantId) }}">
 				<button type="submit" class="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border cursor-pointer" title="Retirer des favoris">
 					<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary fill-primary" width="24" height="24" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10,7 +10,7 @@
 				</button>
 			</form>
 		{% else %}
-			<form method="post" action="{{ path('app_favorite_add', { id: restaurantId }) }}" class="inline">
+			<form method="post" action="{{ path('app_favorite_add', { id: restaurantId }) }}" class="inline" data-preserve-scroll>
 				<input type="hidden" name="_token" value="{{ csrf_token('favorite_add_' ~ restaurantId) }}">
 				<button type="submit" class="p-2 rounded-full bg-background/80 backdrop-blur-sm hover:bg-background border border-border cursor-pointer" title="Ajouter aux favoris">
 					<svg xmlns="http://www.w3.org/2000/svg" class="size-5 text-primary" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

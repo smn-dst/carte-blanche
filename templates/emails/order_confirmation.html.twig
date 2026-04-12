@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+		<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:40px 20px;">
+			<tr>
+				<td align="center">
+					<table
+						width="600" cellpadding="0" cellspacing="0" style="background-color:#151515;border-radius:12px;border:1px solid #2a2a2a;">
+
+						{# Header #}
+						<tr>
+							<td style="padding:40px 40px 20px;text-align:center;border-bottom:1px solid #2a2a2a;">
+								<h1 style="color:#6366F9;font-size:24px;margin:0;">Carte Blanche</h1>
+							</td>
+						</tr>
+
+						{# Confirmation #}
+						<tr>
+							<td style="padding:40px;">
+
+								<table width="100%" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="center" style="padding-bottom:20px;">
+											<table cellpadding="0" cellspacing="0">
+												<tr>
+													<td style="width:60px;height:60px;border-radius:30px;background-color:#14532d;text-align:center;vertical-align:middle;font-size:28px;color:#22c55e;">
+														&#10003;
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+
+								<h2 style="color:#ffffff;font-size:22px;text-align:center;margin:0 0 10px;">Paiement confirmé !</h2>
+								<p style="color:#a1a1a1;text-align:center;margin:0 0 30px;font-size:15px;">
+									Bonjour
+									{{ user.firstName }}, votre commande a été validée.
+								</p>
+								<p style="color:#888;text-align:center;margin:-18px 0 28px;font-size:13px;line-height:1.45;">
+									Vous trouverez en pièce jointe un PDF avec vos places et les QR codes (aucun lien vers le site n’est nécessaire pour les afficher).
+								</p>
+
+								{# Récapitulatif #}
+								<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:30px;">
+									<tr>
+										<td style="padding:20px;">
+											<table width="100%" cellpadding="0" cellspacing="0">
+												<tr>
+													<td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Référence</td>
+													<td style="color:#6366F9;font-size:13px;font-weight:bold;text-align:right;padding-bottom:10px;">{{ order.reference }}</td>
+												</tr>
+												<tr>
+													<td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Date</td>
+													<td style="color:#ffffff;font-size:13px;text-align:right;padding-bottom:10px;">{{ order.createdAt|date('d/m/Y à H:i') }}</td>
+												</tr>
+												<tr>
+													<td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Tickets</td>
+													<td style="color:#ffffff;font-size:13px;text-align:right;padding-bottom:10px;">{{ order.tickets|length }}
+														place(s)</td>
+												</tr>
+												<tr>
+													<td colspan="2" style="border-top:1px solid #2a2a2a;padding-top:14px;">
+														<table width="100%" cellpadding="0" cellspacing="0">
+															<tr>
+																<td style="color:#ffffff;font-size:16px;font-weight:bold;">Total</td>
+																<td style="color:#6366F9;font-size:18px;font-weight:bold;text-align:right;">{{ order.totalAmount|number_format(0, ',', ' ') }}
+																	€</td>
+															</tr>
+														</table>
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+
+								{# Tickets #}
+								<h3 style="color:#ffffff;font-size:16px;margin:0 0 15px;">Vos tickets</h3>
+
+								{% for ticket in order.tickets %}
+									<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:12px;">
+										<tr>
+											<td style="padding:16px;">
+												<table width="100%" cellpadding="0" cellspacing="0">
+													<tr>
+														<td style="vertical-align:top;width:100%;">
+															<p style="color:#6366F9;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:0 0 4px;font-weight:600;">
+																{% if ticket.restaurant.categories is not empty %}
+																	{{ ticket.restaurant.categories|first.name }}
+																{% else %}
+																	Restaurant
+																{% endif %}
+															</p>
+															<p style="color:#ffffff;font-size:15px;font-weight:bold;margin:0 0 4px;">{{ ticket.restaurant.name }}</p>
+															<p style="color:#a1a1a1;font-size:12px;margin:0 0 4px;">{{ ticket.restaurant.address }}</p>
+															{% if ticket.restaurant.auctionDate %}
+																<p style="color:#a1a1a1;font-size:12px;margin:0;">
+																	{{ ticket.restaurant.auctionDate|date('d/m/Y') }}
+																	{% if ticket.restaurant.auctionTime %}
+																		à
+																		{{ ticket.restaurant.auctionTime|date('H:i') }}
+																	{% endif %}
+																</p>
+															{% endif %}
+														</td>
+														<td style="width:100px;text-align:center;vertical-align:top;padding-left:12px;">
+															<p style="color:#6366F9;font-size:11px;font-weight:600;margin:0;">QR Code disponible dans<br>Mes réservations</p>
+														</td>
+													</tr>
+												</table>
+											</td>
+										</tr>
+									</table>
+								{% endfor %}
+
+								<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+									<tr>
+										<td align="center">
+											<a href="{{ url('app_my_tickets') }}" style="display:inline-block;background-color:#6366F9;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+												Afficher mes réservations
+											</a>
+										</td>
+									</tr>
+								</table>
+
+								<p style="color:#a1a1a1;font-size:12px;text-align:center;margin:24px 0 0;line-height:1.5;">
+									Présentez votre QR code le jour de l'enchère pour accéder à la salle.
+								</p>
+							</td>
+						</tr>
+
+						{# Footer #}
+						<tr>
+							<td style="padding:20px 40px;border-top:1px solid #2a2a2a;text-align:center;">
+								<p style="color:#666;font-size:11px;margin:0;">© 2026 Carte Blanche Platform — Tous droits réservés</p>
+							</td>
+						</tr>
+
+					</table>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

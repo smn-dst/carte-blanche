@@ -1,0 +1,39 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Commande confirmée — Carte Blanche
+{% endblock %}
+
+{% block body %}
+	<div class="container mx-auto px-4 py-16 text-center">
+
+		<div class="w-20 h-20 mx-auto mb-6 rounded-full bg-green-500/20 flex items-center justify-center">
+			<svg class="size-10 text-green-400" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+				<path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><path d="m9 11 3 3L22 4"/>
+			</svg>
+		</div>
+
+		<h1 class="text-3xl font-bold text-foreground mb-4">Paiement confirmé !</h1>
+
+		{% if order %}
+			<p class="text-muted-foreground mb-2">Commande
+				<strong class="text-primary">{{ order.reference }}</strong>
+			</p>
+			<p class="text-muted-foreground mb-8">{{ order.tickets|length }}
+				ticket(s) —
+				{{ order.totalAmount|number_format(0, ',', ' ') }}
+				€</p>
+		{% else %}
+			<p class="text-muted-foreground mb-8">Votre commande est en cours de traitement.</p>
+		{% endif %}
+
+		<p class="text-muted-foreground mb-8">
+			Un email de confirmation avec vos QR codes a été envoyé.
+		</p>
+
+		<div class="flex flex-col sm:flex-row gap-4 justify-center">
+			<a href="{{ path('app_encheres') }}" class="px-6 py-3 border border-border rounded-lg text-foreground hover:bg-secondary transition-colors font-semibold">
+				Continuer les enchères
+			</a>
+		</div>
+	</div>
+{% endblock %}

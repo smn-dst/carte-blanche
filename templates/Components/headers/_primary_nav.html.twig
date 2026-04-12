@@ -1,0 +1,27 @@
+{# Liens principaux (sidebar desktop + tiroir mobile). Variables optionnelles : link_class, wrap_class #}
+{% set nav_items = [
+	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/dashboard_vendeur', label: 'Dashboard', icon: 'dashboard', role: 'ROLE_VENDOR' },
+	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
+	{ path: path('app_map'), label: 'Carte des restaurants', icon: 'map', role: '' },
+	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
+	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
+	{ path: '/admin-refund', label: 'Les remboursements', icon: 'ticket-x', role: 'ROLE_ADMIN' },
+	{ path: '/admin-logs', label: 'Logs IA', icon: 'bot', role: 'ROLE_ADMIN' },
+	{ path: path('app_my_tickets'), label: 'Mes réservations', icon: 'tickets', role: 'ROLE_USER' },
+	{ path: path('app_restaurant_index'), label: 'Mes restaurants', icon: 'megaphone', role: 'ROLE_VENDOR' },
+	{ path: '/favoris', label: 'Favoris', icon: 'heart', role: 'ROLE_USER' },
+	{ path: path('app_profile'), label: 'Profil', icon: 'user', role: '' }
+] %}
+{% set link_class = link_class|default('flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer') %}
+<nav class="{{ wrap_class|default('flex flex-col gap-1') }}" aria-label="{{ nav_aria|default('Navigation principale') }}">
+	{% for item in nav_items %}
+		{% set show = item.role == '' or (item.role == 'ROLE_USER' and is_granted('IS_AUTHENTICATED_FULLY')) or (item.role != '' and item.role != 'ROLE_USER' and is_granted(item.role)) %}
+		{% if show %}
+			<a href="{{ item.path }}" class="{{ link_class }}" aria-label="{{ item.label }}">
+				<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+				<span class="text-sm">{{ item.label }}</span>
+			</a>
+		{% endif %}
+	{% endfor %}
+</nav>
