@@ -38,7 +38,6 @@ services:
     environment:
       DATABASE_URL: postgresql://carte_blanche:carte_blanche@database:5432/carte_blanche?serverVersion=16&charset=utf8
       MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f/messages
-      MAILER_DSN: smtp://mailer:1025
       REDIS_URL: redis://redis:6379
       DEFAULT_URI: http://localhost:8000
       OLLAMA_URL: http://ollama:11434
@@ -64,7 +63,6 @@ services:
     environment:
       DATABASE_URL: postgresql://carte_blanche:carte_blanche@database:5432/carte_blanche?serverVersion=16&charset=utf8
       MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f/messages
-      MAILER_DSN: smtp://mailer:1025
       REDIS_URL: redis://redis:6379
       DEFAULT_URI: http://localhost:8000
     depends_on:

@@ -1,42 +1,22 @@
-{% set nav_items = [
-	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '' },
-	{ path: '/dashboard_vendeur', label: 'Dashboard', icon: 'dashboard', role: 'ROLE_VENDOR' },
-	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
-	{ path: path('app_map'), label: 'Carte des restaurants', icon: 'map', role: '' },
-	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
-	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
-	{ path: '/admin-refund', label: 'Les remboursements', icon: 'ticket-x', role: 'ROLE_ADMIN' },
-	{ path: '/admin-logs', label: 'Logs IA', icon: 'bot', role: 'ROLE_ADMIN' },
-	{ path: '/reservations', label: 'Mes réservations', icon: 'tickets', role: 'ROLE_USER' },
-	{ path: path('app_restaurant_index'), label: 'Mes restaurants', icon: 'megaphone', role: 'ROLE_VENDOR' },
-	{ path: '/calendrier', label: 'Calendrier des enchères', icon: 'calendar-range', role: '' },
-	{ path: '/favoris', label: 'Favoris', icon: 'heart', role: 'ROLE_USER' },
-	{ path: path('app_profile'), label: 'Profil', icon: 'user', role: '' }
-] %}
-
 <aside class="flex-col w-72 min-w-72 max-w-72 border-r border-sidebar-border bg-sidebar sticky h-full flex">
 	<div class="p-6 flex-1 overflow-y-auto">
-		<a href="{{ path('app_home') }}" class="block mb-12">
+		<a href="{{ path('app_home') }}" class="block mb-12 cursor-pointer">
 			<div class="flex items-baseline gap-2">
-				<svg class="h-24 w-48" viewBox="0 0 2956 1007" aria-hidden="true"><use href="#icon-logo-white"/></svg>
+				<svg class="h-24 w-48" viewbox="0 0 2956 1007" aria-hidden="true"><use href="#icon-logo-white"/></svg>
 			</div>
 		</a>
 
-		<nav class="flex flex-col gap-1" aria-label="Navigation principale">
-			{% for item in nav_items %}
-				{% set show = item.role == '' or (item.role == 'ROLE_USER' and is_granted('IS_AUTHENTICATED_FULLY')) or (item.role != '' and item.role != 'ROLE_USER' and is_granted(item.role)) %}
-				{% if show %}
-					<a href="{{ item.path }}" class="flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-secondary" aria-label="{{ item.label }}">
-						<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
-						<span class="text-sm">{{ item.label }}</span>
-					</a>
-				{% endif %}
-			{% endfor %}
-		</nav>
+		{% include 'Components/headers/_primary_nav.html.twig' %}
 
+		{% set cart_count = cart_item_count() %}
 		<div class="mt-8 pt-6 border-t border-sidebar-border">
-			<a href="/panier" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Panier">
-				<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-shopping-cart"/></svg>
+			<a href="{{ path('app_cart') }}" class="relative w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all cursor-pointer" aria-label="Panier{% if cart_count > 0 %} ({{ cart_count }} article{{ cart_count > 1 ? 's' : '' }}){% endif %}">
+				<span class="relative inline-flex shrink-0">
+					<svg class="size-4" aria-hidden="true"><use href="#icon-shopping-cart"/></svg>
+					{% if cart_count > 0 %}
+						<span class="absolute -top-2 -right-2 min-w-[1.125rem] h-[1.125rem] px-0.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground tabular-nums leading-none">{{ cart_count }}</span>
+					{% endif %}
+				</span>
 				<span class="text-sm">Panier</span>
 			</a>
 		</div>
@@ -44,17 +24,17 @@
 
 	<div class="flex flex-col gap-6 p-6 border-t border-sidebar-border">
 		<div>
-				{% if is_granted('IS_AUTHENTICATED_FULLY') %}
-			<a href="/logout" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Déconnexion">
+			{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+				<a href="{{ path('app_logout') }}" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all cursor-pointer" aria-label="Déconnexion">
 					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-out"/></svg>
 					<span class="text-sm">Déconnexion</span>
-			</a>
-				{% else %}
-			<a href="/login" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all" aria-label="Connexion">
+				</a>
+			{% else %}
+				<a href="{{ path('app_login') }}" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all cursor-pointer" aria-label="Connexion">
 					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-log-in"/></svg>
 					<span class="text-sm">Connexion</span>
-			</a>
-				{% endif %}
+				</a>
+			{% endif %}
 		</div>
 		<div class="text-xs text-muted-foreground space-y-1">
 			<p>© 2026 Carte Blanche Platform</p>

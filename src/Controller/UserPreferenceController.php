@@ -27,6 +27,8 @@ class UserPreferenceController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
+        $request->getSession()->remove('registration_pending_email');
+
         $form = $this->createForm(UserPreferenceType::class);
         $form->handleRequest($request);
 

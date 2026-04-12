@@ -45,4 +45,7 @@ tailwindcss-linux-arm64
 *.iws
 out/
 ###< jetbrains ###
-.env
+
+# QR codes générés à l’exécution (ne pas versionner)
+/public/uploads/qrcodes/*
+!/public/uploads/qrcodes/.gitkeep
