@@ -26,11 +26,13 @@
 			with_arrow: true
 		} %}
 
-		{% include 'Components/buttons/buttons-primary.html.twig' with {
-			href: '/dashboard',
-			label: 'Dashboard',
-			variant: 'secondary',
-			with_arrow: false
-		} %}
+		{% if is_granted('IS_AUTHENTICATED_FULLY') %}
+			{% include 'Components/buttons/buttons-primary.html.twig' with {
+				href: is_granted('ROLE_VENDOR') ? '/dashboard_vendeur' : '/',
+				label: 'Dashboard',
+				variant: 'secondary',
+				with_arrow: false
+			} %}
+		{% endif %}
 	</ul>
 </section>
