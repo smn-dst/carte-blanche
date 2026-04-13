@@ -17,7 +17,7 @@ class AiDescriptionService
 
             $response = $agent->chat(
                 new UserMessage($this->buildPrompt($restaurantData))
-            )->getMessage();
+            );
 
             $content = $response->getContent();
 
