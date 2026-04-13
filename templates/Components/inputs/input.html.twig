@@ -4,6 +4,9 @@
     type="{{ type }}"
     name="{{ name|default('') }}"
     value="{{ value|default('') }}"
+    {% if form is defined %}
+        form="{{ form }}"
+    {% endif %}
 
     {% if type != 'range' %}
         placeholder="{{ label|default('') }}"
@@ -16,6 +19,8 @@
         step="{{ step|default(1000) }}"
     {% endif %}
     
-    onchange="this.form.submit()"
+    {% if autosubmit is not defined or autosubmit %}
+        onchange="this.form.submit()"
+    {% endif %}
     class="{{ class|default('') }}"
 >
