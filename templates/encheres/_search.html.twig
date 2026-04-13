@@ -1,42 +1,50 @@
 <div class="sticky lg:top-8 top-10 z-50 mx-8 mt-8 mb-8 p-6 border border-border rounded-xl bg-container/50 backdrop-blur-xl shrink-0">
 
-	<form method="GET" action="{{ path('app_encheres') }}" id="search-form" class="flex flex-col gap-4 w-full">
-		<div class="flex gap-4 items-center w-full">
-			<div class="relative w-2/5 shrink-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none">
-					<path d="m21 21-4.34-4.34"/>
-					<circle cx="11" cy="11" r="8"/>
-				</svg>
+    <form method="GET" action="{{ path('app_encheres') }}" id="search-form" class="flex flex-col gap-4 w-full">
 
-				{% include 'Components/inputs/input.html.twig' with {
-                    type: 'text',
-                    name: 'search',
-                    value: search|default(''),
-                    label: 'Rechercher par nom',
-                    class: 'input',
-                } %}
+        <div class="flex flex-col md:flex-row gap-4 md:items-center w-full">
+            <div class="flex gap-2 w-full md:contents">
+                <div class="relative flex-1 md:w-2/5 md:flex-none md:shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute left-3 top-1/2 -translate-y-1/2 size-5 text-muted-foreground pointer-events-none">
+                        <path d="m21 21-4.34-4.34"/>
+                        <circle cx="11" cy="11" r="8"/>
+                    </svg>
+                    {% include 'Components/inputs/input.html.twig' with {
+                        type: 'text',
+                        name: 'search',
+                        value: search|default(''),
+                        label: 'Rechercher par nom',
+                        class: 'input',
+                    } %}
+                </div>
 
-			</div>
-			<div class="relative flex-1 min-w-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
-					<path d="m6 9 6 6 6-6"/>
-				</svg>
+                <button type="button" id="filters-toggle" class="md:hidden flex items-center gap-2 px-4 py-2 border border-border rounded-lg bg-container text-sm shrink-0">
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-4">
+                        <line x1="4" x2="20" y1="6" y2="6"/>
+                        <line x1="8" x2="16" y1="12" y2="12"/>
+                        <line x1="11" x2="13" y1="18" y2="18"/>
+                    </svg>
+                    Filtres
+                </button>
+            </div>
 
-				{% include 'Components/inputs/select.html.twig' with {
+            <div class="relative hidden md:block md:flex-1 md:min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+                {% include 'Components/inputs/select.html.twig' with {
                     name: 'category',
                     default_label: 'Type de cuisine',
                     selected: categoryId,
                     options: categories|map(c => { value: c.id, label: c.name }),
                     class: 'select',
                 } %}
-
-			</div>
-			<div class="relative flex-1 min-w-0">
-				<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
-					<path d="m6 9 6 6 6-6"/>
-				</svg>
-
-				{% include 'Components/inputs/select.html.twig' with {
+            </div>
+            <div class="relative hidden md:block md:flex-1 md:min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+                {% include 'Components/inputs/select.html.twig' with {
                     name: 'sort',
                     default_label: 'Date d\'enchère',
                     selected: sortBy,
@@ -46,66 +54,63 @@
                     ],
                     class: 'select',
                 } %}
-
             </div>
         </div>
 
-        <div class="flex flex-col gap-4 w-full">
-            <div class="flex gap-4 items-center w-full">
-                <div class="relative flex gap-2 items-center w-2/5 shrink-0 min-w-0">
-                    <span class="text-sm shrink-0" title="Prix de départ minimum">{{ currentMinPrice|number_format(0, '', ' ') }} €</span>
-                    {% include 'Components/inputs/input.html.twig' with {
-                        type:"range",
-                        name: 'minPrice',
-                        min: priceRange.min,
-                        max: priceRange.max,
-                        value: currentMinPrice,
-                        step: 1000,
-                        class: "input-range",
-                    } %}
-                    {% include 'Components/inputs/input.html.twig' with {
-                        type:"range",
-                        name: 'maxPrice',
-                        min: priceRange.min,
-                        max: priceRange.max,
-                        value: currentMaxPrice,
-                        step: 1000,
-                        class: "input-range",
-                    } %}
-                    <span class="text-sm shrink-0" title="Prix de départ maximum">{{ currentMaxPrice|number_format(0, '', ' ') }} €</span>
-                </div>
-                <div class="relative flex-1 min-w-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
-                        <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                    {% include 'Components/inputs/select.html.twig' with {
-                        name: 'priceSort',
-                        default_label: 'Prix de départ',
-                        selected: priceSort,
-                        options: [
-                            { value: 'asc', label: 'Du moins cher au plus cher' },
-                            { value: 'desc', label: 'Du plus cher au moins cher' },
-                        ],
-                        class: 'select',
-                    } %}
-                </div>
-                <div class="relative flex-1 min-w-0">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
-                        <path d="m6 9 6 6 6-6"/>
-                    </svg>
-                    {% include 'Components/inputs/select.html.twig' with {
-                        name: 'revenueSort',
-                        default_label: 'Chiffre d\'affaires',
-                        selected: revenueSort,
-                        options: [
-                            { value: 'asc', label: 'Du plus faible au plus élevé' },
-                            { value: 'desc', label: 'Du plus élevé au plus faible' },
-                        ],
-                        class: 'select',
-                    } %}
-                </div>
-			</div>
-		</div>
+        <div class="hidden md:flex gap-4 items-center w-full">
+            <div class="relative flex gap-2 items-center w-2/5 shrink-0 min-w-0">
+                <span class="text-sm shrink-0" title="Prix de départ minimum">{{ currentMinPrice|number_format(0, '', ' ') }} €</span>
+                {% include 'Components/inputs/input.html.twig' with {
+                    type:"range",
+                    name: 'minPrice',
+                    min: priceRange.min,
+                    max: priceRange.max,
+                    value: currentMinPrice,
+                    step: 1000,
+                    class: "input-range",
+                } %}
+                {% include 'Components/inputs/input.html.twig' with {
+                    type:"range",
+                    name: 'maxPrice',
+                    min: priceRange.min,
+                    max: priceRange.max,
+                    value: currentMaxPrice,
+                    step: 1000,
+                    class: "input-range",
+                } %}
+                <span class="text-sm shrink-0" title="Prix de départ maximum">{{ currentMaxPrice|number_format(0, '', ' ') }} €</span>
+            </div>
+            <div class="relative flex-1 min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+                {% include 'Components/inputs/select.html.twig' with {
+                    name: 'priceSort',
+                    default_label: 'Prix de départ',
+                    selected: priceSort,
+                    options: [
+                        { value: 'asc', label: 'Du moins cher au plus cher' },
+                        { value: 'desc', label: 'Du plus cher au moins cher' },
+                    ],
+                    class: 'select',
+                } %}
+            </div>
+            <div class="relative flex-1 min-w-0">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+                    <path d="m6 9 6 6 6-6"/>
+                </svg>
+                {% include 'Components/inputs/select.html.twig' with {
+                    name: 'revenueSort',
+                    default_label: 'Chiffre d\'affaires',
+                    selected: revenueSort,
+                    options: [
+                        { value: 'asc', label: 'Du plus faible au plus élevé' },
+                        { value: 'desc', label: 'Du plus élevé au plus faible' },
+                    ],
+                    class: 'select',
+                } %}
+            </div>
+        </div>
 
         {% if search or categoryId or sortBy or minPrice or maxPrice or priceSort or revenueSort %}
             <a href="{{ path('app_encheres') }}" class="text-primary hover:text-border no-decoration border-2 border-primary hover:border-border transition-all duration-200 w-fit rounded-md px-2">
@@ -114,4 +119,117 @@
         {% endif %}
 
     </form>
+</div>
+
+<div id="filters-overlay" class="md:hidden fixed inset-0 bg-black/50 z-50 hidden"></div>
+
+<div id="filters-drawer" class="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background border-t border-border rounded-t-2xl p-6 flex flex-col gap-4 translate-y-full transition-transform duration-300">
+    <div class="flex items-center justify-between mb-2">
+        <span class="font-semibold text-base">Filtres</span>
+        <button type="button" id="filters-drawer-close" class="text-muted-foreground">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="size-5">
+                <path d="M18 6 6 18"/><path d="m6 6 12 12"/>
+            </svg>
+        </button>
+    </div>
+
+    <div class="relative w-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>
+        {% include 'Components/inputs/select.html.twig' with {
+            name: 'category',
+            default_label: 'Type de cuisine',
+            selected: categoryId,
+            options: categories|map(c => { value: c.id, label: c.name }),
+            class: 'select',
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+    </div>
+
+    <div class="relative w-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>
+        {% include 'Components/inputs/select.html.twig' with {
+            name: 'sort',
+            default_label: 'Date d\'enchère',
+            selected: sortBy,
+            options: [
+                { value: 'recent', label: 'Plus récentes en premier' },
+                { value: 'old', label: 'Plus anciennes en premier' },
+            ],
+            class: 'select',
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+    </div>
+
+    <div class="relative flex gap-2 items-center w-full">
+        <span class="text-sm shrink-0">{{ currentMinPrice|number_format(0, '', ' ') }} €</span>
+        {% include 'Components/inputs/input.html.twig' with {
+            type:"range",
+            name: 'minPrice',
+            min: priceRange.min,
+            max: priceRange.max,
+            value: currentMinPrice,
+            step: 1000,
+            class: "input-range",
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+        {% include 'Components/inputs/input.html.twig' with {
+            type:"range",
+            name: 'maxPrice',
+            min: priceRange.min,
+            max: priceRange.max,
+            value: currentMaxPrice,
+            step: 1000,
+            class: "input-range",
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+        <span class="text-sm shrink-0">{{ currentMaxPrice|number_format(0, '', ' ') }} €</span>
+    </div>
+
+    <div class="relative w-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>
+        {% include 'Components/inputs/select.html.twig' with {
+            name: 'priceSort',
+            default_label: 'Prix de départ',
+            selected: priceSort,
+            options: [
+                { value: 'asc', label: 'Du moins cher au plus cher' },
+                { value: 'desc', label: 'Du plus cher au moins cher' },
+            ],
+            class: 'select',
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+    </div>
+
+    <div class="relative w-full">
+        <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="absolute right-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground pointer-events-none">
+            <path d="m6 9 6 6 6-6"/>
+        </svg>
+        {% include 'Components/inputs/select.html.twig' with {
+            name: 'revenueSort',
+            default_label: 'Chiffre d\'affaires',
+            selected: revenueSort,
+            options: [
+                { value: 'asc', label: 'Du plus faible au plus élevé' },
+                { value: 'desc', label: 'Du plus élevé au plus faible' },
+            ],
+            class: 'select',
+            form: 'search-form',
+            autosubmit: false,
+        } %}
+    </div>
+
+    <button type="submit" form="search-form" id="filters-drawer-apply" class="w-full py-3 bg-primary text-white rounded-lg font-medium">
+        Appliquer les filtres
+    </button>
 </div>

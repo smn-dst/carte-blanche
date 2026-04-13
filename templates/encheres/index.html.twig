@@ -1,5 +1,10 @@
 {% extends 'base.html.twig' %}
 
+{% block javascripts %}
+	{{ parent() }}
+	{{ importmap('encheres-search-filters') }}
+{% endblock %}
+
 {% block body %}
     <div class="flex flex-col flex-1 min-h-0">
         {% for type, message in app.flashes %}
