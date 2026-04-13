@@ -109,12 +109,14 @@
 				</section>
 
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
-					<h2 class="text-lg font-semibold mb-4">Securite</h2>
-					<ul class="space-y-3 text-sm">
-						{% for action in profile.securityActions %}
-							<li class="rounded-lg border border-border bg-background/60 px-4 py-3">{{ action }}</li>
-						{% endfor %}
-					</ul>
+					<h2 class="text-lg font-semibold mb-4">Sécurité</h2>
+					<div class="space-y-3 text-sm">
+						<a href="{{ path('app_forgot_password') }}"
+						   class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 hover:bg-background transition-colors">
+							<span>Mot de passe oublié ?</span>
+							<span class="text-muted-foreground">→</span>
+						</a>
+					</div>
 				</section>
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<div class="flex items-center justify-between mb-4">
