@@ -38,6 +38,12 @@ compose.override.yaml
 .DS_Store
 tailwindcss-linux-arm64
 
+# Local AI/dev assistant artifacts
+.codex
+.codex/
+.claude/
+.roo/
+.aider*
 ###> jetbrains ###
 .idea/
 *.iml

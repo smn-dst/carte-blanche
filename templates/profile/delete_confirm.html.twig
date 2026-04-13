@@ -1,0 +1,33 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Supprimer mon compte — Carte Blanche{% endblock %}
+
+{% block body %}
+	<section class="p-6 md:p-10 max-w-lg mx-auto space-y-6">
+		<header>
+			<h1 class="text-3xl font-bold text-red-400">Supprimer mon compte</h1>
+			<p class="text-sm text-muted-foreground mt-1">Cette action est irréversible.</p>
+		</header>
+
+		<div class="rounded-xl border border-red-500/30 bg-red-500/10 p-6 space-y-3 text-sm text-red-300">
+			<p class="font-semibold text-red-400">Avant de continuer, veuillez noter que :</p>
+			<ul class="space-y-2 list-disc list-inside">
+				<li>Vos données personnelles (nom, email, téléphone) seront anonymisées et irrécupérables.</li>
+				<li>Vous perdrez immédiatement l'accès à votre compte et à vos réservations.</li>
+				<li>Cette suppression ne peut pas être annulée.</li>
+			</ul>
+		</div>
+
+		<form method="POST" action="{{ path('app_profile_delete') }}">
+			<input type="hidden" name="_token" value="{{ csrf_token('delete_account') }}">
+			<div class="flex gap-3">
+				<a href="{{ path('app_profile') }}" class="secondary-btn">
+					Annuler
+				</a>
+				<button type="submit" class="px-4 py-2 rounded-md bg-red-600 text-white text-sm font-medium hover:bg-red-700 transition-colors">
+					Confirmer la suppression
+				</button>
+			</div>
+		</form>
+	</section>
+{% endblock %}
