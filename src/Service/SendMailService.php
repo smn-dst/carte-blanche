@@ -36,6 +36,42 @@ readonly class SendMailService
         );
     }
 
+    public function sendVendorRequestCreated(User $user): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to($user->getEmail() ?? throw new \InvalidArgumentException('User email is required.'))
+            ->subject('Votre demande vendeur a bien été reçue')
+            ->htmlTemplate('emails/vendor_request_created.html.twig')
+            ->context(['user' => $user]);
+
+        $this->mailer->send($email);
+    }
+
+    public function sendVendorRequestApproved(User $user): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to($user->getEmail() ?? throw new \InvalidArgumentException('User email is required.'))
+            ->subject('Votre demande vendeur a été approuvée')
+            ->htmlTemplate('emails/vendor_request_approved.html.twig')
+            ->context(['user' => $user]);
+
+        $this->mailer->send($email);
+    }
+
+    public function sendVendorRequestRefused(User $user): void
+    {
+        $email = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to($user->getEmail() ?? throw new \InvalidArgumentException('User email is required.'))
+            ->subject('Votre demande vendeur a été refusée')
+            ->htmlTemplate('emails/vendor_request_refused.html.twig')
+            ->context(['user' => $user]);
+
+        $this->mailer->send($email);
+    }
+
     /**
      * @throws TransportExceptionInterface
      */

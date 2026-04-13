@@ -88,21 +88,45 @@
 				</section>
 
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
+					<div class="flex items-center justify-between mb-4">
+						<h2 class="text-lg font-semibold">Mes préférences</h2>
+						<a href="{{ path('app_register_preferences') }}" class="text-xs text-primary hover:underline">
+							Modifier
+						</a>
+					</div>
+
+					{% if app.user.userPreferenceEmbedding %}
+						<div class="rounded-lg border border-border bg-background/60 p-4 text-sm">
+							<p class="text-muted-foreground leading-relaxed">
+								{{ app.user.userPreferenceEmbedding.preferencesText }}
+							</p>
+						</div>
+					{% else %}
+						<div class="rounded-lg border border-dashed border-border p-4 text-center">
+							<p class="text-sm text-muted-foreground mb-3">Aucune préférence définie</p>
+							<a href="{{ path('app_register_preferences') }}" class="text-xs text-primary hover:underline">
+								Définir mes préférences
+							</a>
+						</div>
+					{% endif %}
+				</section>
+
+				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<h2 class="text-lg font-semibold mb-4">Notifications</h2>
 					<ul class="space-y-3">
-                        {#
+                        
 						{% for item in profile.notifications %}
 							<li class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
 								<span>{{ item.label }}</span>
 								<span class="{{ item.enabled ? 'text-green-300' : 'text-muted-foreground' }}">{{ item.enabled ? 'Active' : 'Inactive' }}</span>
 							</li>
 						{% endfor %}
-						#}
+						
 					</ul>
 				</section>
 
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
-					<h2 class="text-lg font-semibold mb-4">Paiement (test)</h2>
+					<h2 class="text-lg font-semibold mb-4">Paiement</h2>
 					<div class="rounded-lg border border-border bg-background/60 p-4 text-sm space-y-1">
 						<p class="text-muted-foreground">{{ profile.payment.label }}</p>
 						<p class="font-medium">{{ profile.payment.details }}</p>
@@ -155,29 +179,7 @@
 						</div>
 					</div>
 				</section>
-				<section class="rounded-xl border border-border bg-secondary/20 p-6">
-					<div class="flex items-center justify-between mb-4">
-						<h2 class="text-lg font-semibold">Mes préférences</h2>
-						<a href="{{ path('app_register_preferences') }}" class="text-xs text-primary hover:underline">
-							Modifier
-						</a>
-					</div>
-
-					{% if app.user.userPreferenceEmbedding %}
-						<div class="rounded-lg border border-border bg-background/60 p-4 text-sm">
-							<p class="text-muted-foreground leading-relaxed">
-								{{ app.user.userPreferenceEmbedding.preferencesText }}
-							</p>
-						</div>
-					{% else %}
-						<div class="rounded-lg border border-dashed border-border p-4 text-center">
-							<p class="text-sm text-muted-foreground mb-3">Aucune préférence définie</p>
-							<a href="{{ path('app_register_preferences') }}" class="text-xs text-primary hover:underline">
-								Définir mes préférences
-							</a>
-						</div>
-					{% endif %}
-				</section>
+				
 			</div>
 		</div>
 	</section>

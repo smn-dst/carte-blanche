@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\UserPreferenceEmbedding;
 use App\Form\UserPreferenceType;
+use App\Service\EmbeddingService;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -20,6 +21,7 @@ class UserPreferenceController extends AbstractController
     public function preferences(
         Request $request,
         EntityManagerInterface $em,
+        EmbeddingService $embeddingService,
     ): Response {
         $user = $this->getUser();
 
@@ -46,6 +48,9 @@ class UserPreferenceController extends AbstractController
             $em->persist($embedding);
             $em->flush();
 
+            // Génère l'embedding vectoriel (erreurs loguées sans bloquer la navigation)
+            $embeddingService->embedUserPreferences($embedding);
+
             $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
 
             return $this->redirectToRoute('app_home');
@@ -61,6 +66,7 @@ class UserPreferenceController extends AbstractController
     public function save(
         Request $request,
         EntityManagerInterface $em,
+        EmbeddingService $embeddingService,
     ): JsonResponse {
         $user = $this->getUser();
 
@@ -84,6 +90,9 @@ class UserPreferenceController extends AbstractController
 
         $em->persist($embedding);
         $em->flush();
+
+        // Génère l'embedding vectoriel (erreurs loguées sans bloquer la navigation)
+        $embeddingService->embedUserPreferences($embedding);
 
         $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
 
