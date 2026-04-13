@@ -523,7 +523,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isNotifNewAuctions(): bool
     {
-        return $this->notifNewAuctions;
+        return $this->notifNewAuctions ?? false;
     }
 
     public function setNotifNewAuctions(bool $notifNewAuctions): static
@@ -535,7 +535,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isNotifReminders(): bool
     {
-        return $this->notifReminders;
+        return $this->notifReminders ?? false;
     }
 
     public function setNotifReminders(bool $notifReminders): static
@@ -547,7 +547,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isNotifResults(): bool
     {
-        return $this->notifResults;
+        return $this->notifResults ?? false;
     }
 
     public function setNotifResults(bool $notifResults): static
@@ -559,7 +559,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
 
     public function isNotifNewsletter(): bool
     {
-        return $this->notifNewsletter;
+        return $this->notifNewsletter ?? false;
     }
 
     public function setNotifNewsletter(bool $notifNewsletter): static
