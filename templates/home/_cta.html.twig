@@ -34,20 +34,31 @@
 						{% endif %}
 					</div>
 					<div class="min-w-0 flex-1 text-left">
-						<div class="flex flex-col gap-3 sm:gap-4">
-							<p class="text-xs font-semibold uppercase tracking-widest text-primary">
-								Vous êtes connecté
-							</p>
-							{% if (cta_user.firstName ?? '')|trim != '' or (cta_user.lastName ?? '')|trim != '' %}
-								<p class="truncate text-base font-medium leading-snug text-foreground sm:text-lg">
-									{{ cta_user.firstName }}
-									{{ cta_user.lastName }}
-								</p>
-							{% endif %}
-							<p class="text-sm leading-relaxed text-muted-foreground sm:text-base sm:leading-relaxed">
-								Poursuivez depuis votre profil ou votre tableau de bord.
-							</p>
-						</div>
+						{% if is_granted('ROLE_VENDOR') %}
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					href: '/restaurants',
+					label: 'Découvrir les enchères',
+					variant: 'primary',
+					with_arrow: true
+				} %}
+			{% elseif hasPendingVendorRequest %}
+				{% include 'Components/buttons/buttons-primary.html.twig' with {
+					as: 'span',
+					label: 'Demande en cours d\'examen…',
+					variant: 'secondary'
+				} %}
+			{% else %}
+				<form action="{{ path('app_vendor_request_create') }}" method="post">
+					<input type="hidden" name="_token" value="{{ csrf_token('vendor_request') }}">
+					{% include 'Components/buttons/buttons-primary.html.twig' with {
+						button_tag: 'button',
+						type: 'submit',
+						label: 'Devenir vendeur',
+						variant: 'primary',
+						with_arrow: true
+					} %}
+				</form>
+			{% endif %}
 					</div>
 				</div>
 			</div>
@@ -115,20 +126,41 @@
 				</div>
 			</div>
 
-			<ul class="relative z-10 mt-12 flex flex-col items-center justify-center gap-4 text-lg font-medium text-white sm:flex-row sm:gap-6">
+	<ul class="flex flex-col sm:flex-row gap-4 text-lg font-medium text-white items-center justify-center mt-8">
+		{% if app.user %}
+			{% if is_granted('ROLE_VENDOR') %}
 				{% include 'Components/buttons/buttons-primary.html.twig' with {
-					href: path('app_register'),
-					label: 'Créer mon compte',
+					href: '/restaurants',
+					label: 'Poster une annonce d\'enchère',
 					variant: 'primary',
-					with_arrow: true,
+					with_arrow: true
 				} %}
+			{% elseif hasPendingVendorRequest %}
 				{% include 'Components/buttons/buttons-primary.html.twig' with {
-					href: path('app_login'),
-					label: 'J’ai déjà un compte',
-					variant: 'secondary',
-					with_arrow: false,
+					as: 'span',
+					label: 'Demande en cours d\'examen…',
+					variant: 'secondary'
 				} %}
-			</ul>
-		</div>
-	</section>
+			{% else %}
+				<form action="{{ path('app_vendor_request_create') }}" method="post">
+					<input type="hidden" name="_token" value="{{ csrf_token('vendor_request') }}">
+					{% include 'Components/buttons/buttons-primary.html.twig' with {
+						button_tag: 'button',
+						type: 'submit',
+						label: 'Devenir vendeur',
+						variant: 'primary',
+						with_arrow: true
+					} %}
+				</form>
+			{% endif %}
+		{% else %}
+			{% include 'Components/buttons/buttons-primary.html.twig' with {
+				href: '/register',
+				label: 'Créer un compte',
+				variant: 'primary',
+				with_arrow: true
+			} %}
+		{% endif %}
+	</ul>
+</div>
 {% endif %}

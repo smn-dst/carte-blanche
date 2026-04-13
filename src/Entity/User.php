@@ -6,6 +6,7 @@ use App\Repository\UserRepository;
 use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\ORM\Mapping as ORM;
+use App\Entity\VendorRequest;
 // use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -101,8 +102,26 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserPreferenceEmbedding::class)]
     private ?UserPreferenceEmbedding $userPreferenceEmbedding = null;
 
+    /**
+     * @var Collection<int, VendorRequest>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: VendorRequest::class)]
+    private Collection $vendorRequests;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifNewAuctions = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifReminders = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifResults = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifNewsletter = null;
 
     /**
      * @var Collection<int, PasswordResetToken>
@@ -124,6 +143,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->favorites = new ArrayCollection();
         $this->aiLogs = new ArrayCollection();
         $this->passwordResetTokens = new ArrayCollection();
+        $this->vendorRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -482,6 +502,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return Collection<int, VendorRequest>
+     */
+    public function getVendorRequests(): Collection
+    {
+        return $this->vendorRequests;
+    }
+
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
@@ -490,6 +518,54 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+    
+    public function isNotifNewAuctions(): bool
+    {
+        return $this->notifNewAuctions;
+    }
+
+    public function setNotifNewAuctions(bool $notifNewAuctions): static
+    {
+        $this->notifNewAuctions = $notifNewAuctions;
+
+        return $this;
+    }
+
+    public function isNotifReminders(): bool
+    {
+        return $this->notifReminders;
+    }
+
+    public function setNotifReminders(bool $notifReminders): static
+    {
+        $this->notifReminders = $notifReminders;
+
+        return $this;
+    }
+
+    public function isNotifResults(): bool
+    {
+        return $this->notifResults;
+    }
+
+    public function setNotifResults(bool $notifResults): static
+    {
+        $this->notifResults = $notifResults;
+
+        return $this;
+    }
+
+    public function isNotifNewsletter(): bool
+    {
+        return $this->notifNewsletter;
+    }
+
+    public function setNotifNewsletter(bool $notifNewsletter): static
+    {
+        $this->notifNewsletter = $notifNewsletter;
 
         return $this;
     }
