@@ -83,19 +83,21 @@
 						</div>
 					</div>
 
-					<button class="primary-btn" type="submit">Enregistrer</button>
+					<button class="primary-btn cursor-pointer" type="submit">Enregistrer</button>
 					{{ form_end(form) }}
 				</section>
 
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<h2 class="text-lg font-semibold mb-4">Notifications</h2>
 					<ul class="space-y-3">
+                        {#
 						{% for item in profile.notifications %}
 							<li class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
 								<span>{{ item.label }}</span>
 								<span class="{{ item.enabled ? 'text-green-300' : 'text-muted-foreground' }}">{{ item.enabled ? 'Active' : 'Inactive' }}</span>
 							</li>
 						{% endfor %}
+						#}
 					</ul>
 				</section>
 
@@ -109,12 +111,49 @@
 				</section>
 
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
-					<h2 class="text-lg font-semibold mb-4">Securite</h2>
-					<ul class="space-y-3 text-sm">
-						{% for action in profile.securityActions %}
-							<li class="rounded-lg border border-border bg-background/60 px-4 py-3">{{ action }}</li>
-						{% endfor %}
-					</ul>
+					<h2 class="text-lg font-semibold mb-4">Sécurité</h2>
+					<div class="space-y-6">
+
+						{{ form_start(changePasswordForm, {
+							'action': path('app_profile_change_password'),
+							'method': 'POST',
+							'attr': {'class': 'space-y-4'}
+						}) }}
+						<div class="grid gap-4 md:grid-cols-3">
+							<div>
+								{{ form_label(changePasswordForm.currentPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+								{{ form_widget(changePasswordForm.currentPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.currentPassword) }}</div>
+							</div>
+							<div>
+								{{ form_label(changePasswordForm.newPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+								{{ form_widget(changePasswordForm.newPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.newPassword) }}</div>
+							</div>
+							<div>
+								{{ form_label(changePasswordForm.confirmPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
+								{{ form_widget(changePasswordForm.confirmPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
+								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.confirmPassword) }}</div>
+							</div>
+						</div>
+						<button class="primary-btn cursor-pointer" type="submit">Changer le mot de passe</button>
+						{{ form_end(changePasswordForm) }}
+
+						<div class="border-t border-border pt-4 space-y-3 text-sm">
+                            {#
+							<a href="{{ path('app_forgot_password') }}"
+							   class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 hover:bg-background transition-colors">
+								<span>Mot de passe oublié ?</span>
+								<span class="text-muted-foreground">→</span>
+							</a>
+                            #}
+							<a href="{{ path('app_profile_delete_confirm') }}"
+							   class="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 hover:bg-red-500/10 transition-colors text-red-400">
+								<span>Supprimer mon compte</span>
+								<span>→</span>
+							</a>
+						</div>
+					</div>
 				</section>
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<div class="flex items-center justify-between mb-4">

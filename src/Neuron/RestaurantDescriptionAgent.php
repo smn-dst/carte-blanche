@@ -2,7 +2,7 @@
 
 namespace App\Neuron;
 
-use NeuronAI\Agent\Agent;
+use NeuronAI\Agent;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
 

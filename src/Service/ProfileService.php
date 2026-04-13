@@ -2,17 +2,21 @@
 
 namespace App\Service;
 
+use App\Dto\ChangePasswordInputDto;
 use App\Dto\ProfileUpdateInputDto;
 use App\Entity\User;
+use App\Exception\InvalidCurrentPasswordException;
 use App\Exception\ProfileEmailAlreadyUsedException;
 use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
-final readonly class ProfileService
+readonly class ProfileService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
         private UserRepository $userRepository,
+        private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
 
@@ -34,11 +38,10 @@ final readonly class ProfileService
      *     isVerified: bool,
      *     email: string,
      *     phoneNumber: string,
-     *     createdAt: \DateTimeImmutable|null,
-     *     updatedAt: \DateTimeImmutable|null,
+     *     createdAt: \DateTimeInterface|null,
+     *     updatedAt: \DateTimeInterface|null,
      *     notifications: list<array{label: string, enabled: bool}>,
-     *     payment: array{label: string, details: string, buttonLabel: string},
-     *     securityActions: list<string>
+     *     payment: array{label: string, details: string, buttonLabel: string}
      * }
      */
     public function getProfileViewData(User $user): array
@@ -63,12 +66,39 @@ final readonly class ProfileService
                 'details' => '**** **** **** 4242',
                 'buttonLabel' => 'Gérer les moyens de paiement',
             ],
-            'securityActions' => [
-                'Changer mon mot de passe',
-                "Configurer l'authentification a deux facteurs",
-                'Supprimer mon compte',
-            ],
         ];
+    }
+
+    /**
+     * @throws InvalidCurrentPasswordException
+     */
+    public function changePassword(User $user, ChangePasswordInputDto $dto): void
+    {
+        if (!$this->passwordHasher->isPasswordValid($user, $dto->currentPassword)) {
+            throw new InvalidCurrentPasswordException();
+        }
+
+        $user->setPassword($this->passwordHasher->hashPassword($user, $dto->newPassword));
+        $user->setUpdatedAt(new \DateTimeImmutable());
+
+        $this->entityManager->flush();
+    }
+
+    public function deleteAccount(User $user): void
+    {
+        $user->setEmail('deleted_'.$user->getId().'@deleted.local');
+        $user->setFirstName('');
+        $user->setLastName('');
+        $user->setPhoneNumber(null);
+        $user->setPassword('');
+        $user->setRoles([]);
+        $user->setIsSuspended(true);
+
+        foreach ($user->getPasswordResetTokens() as $token) {
+            $this->entityManager->remove($token);
+        }
+
+        $this->entityManager->flush();
     }
 
     /**
