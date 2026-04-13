@@ -32,7 +32,7 @@ class EncheresController extends AbstractController
         // 1. Filtre : données pour les filtres (catégories)
         $categories = $categoryRepository->findAll();
 
-        $perPage = 25;
+        $perPage = 10;
         $page = max(1, (int) $request->query->get('page', 1));
 
         // 2. Pagination : total + fourchette de prix (une requête)

@@ -1,25 +1,40 @@
 {# Liens principaux (sidebar desktop + tiroir mobile). Variables optionnelles : link_class, wrap_class #}
+{% set admin_badges = admin_pending_counts() %}
 {% set nav_items = [
-	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '' },
+	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '', hide_admin: true },
 	{ path: '/dashboard_vendeur', label: 'Dashboard', icon: 'dashboard', role: 'ROLE_VENDOR' },
-	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '' },
-	{ path: path('app_map'), label: 'Carte des restaurants', icon: 'map', role: '' },
-	{ path: '/admin-users', label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
-	{ path: '/admin-sales', label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
-	{ path: '/admin-refund', label: 'Les remboursements', icon: 'ticket-x', role: 'ROLE_ADMIN' },
+	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '', hide_admin: true },
+	{ path: path('app_map'), label: 'Carte des restaurants', icon: 'map', role: '', hide_admin: true },
+	{ path: path('app_admin_users'), label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
+	{ path: path('app_admin_sales'), label: 'Les ventes', icon: 'euro', role: 'ROLE_ADMIN' },
+	{ path: path('app_admin_refunds'), label: 'Les remboursements', icon: 'ticket-x', role: 'ROLE_ADMIN', badge_key: 'refunds' },
+	{ path: path('app_admin_restaurants'), label: 'Annonces restaurants', icon: 'gavel', role: 'ROLE_ADMIN', badge_key: 'restaurant_moderation' },
+	{ path: path('app_admin_vendor_requests'), label: 'Demandes vendeur', icon: 'store', role: 'ROLE_ADMIN', badge_key: 'vendor_requests' },
 	{ path: '/admin-logs', label: 'Logs IA', icon: 'bot', role: 'ROLE_ADMIN' },
-	{ path: path('app_my_tickets'), label: 'Mes réservations', icon: 'tickets', role: 'ROLE_USER' },
+	{ path: path('app_my_tickets'), label: 'Mes réservations', icon: 'tickets', role: 'ROLE_USER', hide_admin: true },
 	{ path: path('app_restaurant_index'), label: 'Mes restaurants', icon: 'megaphone', role: 'ROLE_VENDOR' },
-	{ path: '/favoris', label: 'Favoris', icon: 'heart', role: 'ROLE_USER' },
+	{ path: '/favoris', label: 'Favoris', icon: 'heart', role: 'ROLE_USER', hide_admin: true },
 	{ path: path('app_profile'), label: 'Profil', icon: 'user', role: '' }
 ] %}
 {% set link_class = link_class|default('flex items-center gap-3 px-4 py-3 rounded-lg transition-all text-muted-foreground hover:text-foreground hover:bg-secondary cursor-pointer') %}
 <nav class="{{ wrap_class|default('flex flex-col gap-1') }}" aria-label="{{ nav_aria|default('Navigation principale') }}">
 	{% for item in nav_items %}
-		{% set show = item.role == '' or (item.role == 'ROLE_USER' and is_granted('IS_AUTHENTICATED_FULLY')) or (item.role != '' and item.role != 'ROLE_USER' and is_granted(item.role)) %}
+		{% set is_admin = is_granted('ROLE_ADMIN') %}
+		{% set hidden_for_admin = item.hide_admin is defined and item.hide_admin and is_admin %}
+		{% set show = not hidden_for_admin and (
+			item.role == ''
+			or (item.role == 'ROLE_USER' and is_granted('IS_AUTHENTICATED_FULLY'))
+			or (item.role != '' and item.role != 'ROLE_USER' and is_granted(item.role))
+		) %}
 		{% if show %}
-			<a href="{{ item.path }}" class="{{ link_class }}" aria-label="{{ item.label }}">
-				<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+			{% set badge_count = item.badge_key is defined ? (admin_badges[item.badge_key] ?? 0) : 0 %}
+			<a href="{{ item.path }}" class="{{ link_class }}" aria-label="{{ item.label }}{% if badge_count > 0 %} ({{ badge_count }} en attente){% endif %}">
+				<span class="relative inline-flex shrink-0">
+					<svg class="size-4 shrink-0" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+					{% if badge_count > 0 %}
+						<span class="absolute -top-2 -right-2 min-w-[1.125rem] h-[1.125rem] px-0.5 flex items-center justify-center rounded-full bg-primary text-[10px] font-bold text-primary-foreground tabular-nums leading-none">{{ badge_count }}</span>
+					{% endif %}
+				</span>
 				<span class="text-sm">{{ item.label }}</span>
 			</a>
 		{% endif %}

@@ -3,6 +3,8 @@
 namespace App\Service;
 
 use App\Entity\Order;
+use App\Entity\Refund;
+use App\Entity\Restaurant;
 use App\Entity\User;
 use App\Security\EmailVerifier;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -75,14 +77,17 @@ readonly class SendMailService
     /**
      * @throws TransportExceptionInterface
      */
-    public function sendPasswordResetEmail(string $email, string $resetUrl): void
+    public function sendPasswordResetEmail(string $email, string $resetUrl, ?string $firstName = null): void
     {
         $message = new TemplatedEmail()
             ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
             ->to($email)
-            ->subject('Réinitialisation de votre mot de passe')
+            ->subject('Réinitialisez votre mot de passe — Carte Blanche')
             ->htmlTemplate('emails/password_reset_email.html.twig')
-            ->context(['resetUrl' => $resetUrl]);
+            ->context([
+                'resetUrl' => $resetUrl,
+                'firstName' => $firstName,
+            ]);
 
         $this->mailer->send($message);
     }
@@ -120,6 +125,88 @@ readonly class SendMailService
                 // PDF optionnel : l’e-mail HTML part quand même
             }
         }
+
+        $this->mailer->send($message);
+    }
+
+    public function sendRefundApproved(User $user, Refund $refund): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject('Votre remboursement a été approuvé — Carte Blanche')
+            ->htmlTemplate('emails/refund_approved.html.twig')
+            ->context([
+                'user' => $user,
+                'refund' => $refund,
+                'order' => $refund->getOrder(),
+            ]);
+
+        $this->mailer->send($message);
+    }
+
+    public function sendRefundRejected(User $user, Refund $refund): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject('Votre demande de remboursement — Carte Blanche')
+            ->htmlTemplate('emails/refund_rejected.html.twig')
+            ->context([
+                'user' => $user,
+                'refund' => $refund,
+                'order' => $refund->getOrder(),
+            ]);
+
+        $this->mailer->send($message);
+    }
+
+    public function sendRestaurantApproved(User $user, Restaurant $restaurant): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject(sprintf('Votre restaurant "%s" a été publié — Carte Blanche', $restaurant->getName()))
+            ->htmlTemplate('emails/restaurant_approved.html.twig')
+            ->context([
+                'user' => $user,
+                'restaurant' => $restaurant,
+            ]);
+
+        $this->mailer->send($message);
+    }
+
+    public function sendRestaurantRejected(User $user, Restaurant $restaurant): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject(sprintf('Votre annonce "%s" nécessite des modifications — Carte Blanche', $restaurant->getName()))
+            ->htmlTemplate('emails/restaurant_rejected.html.twig')
+            ->context([
+                'user' => $user,
+                'restaurant' => $restaurant,
+            ]);
 
         $this->mailer->send($message);
     }

@@ -20,19 +20,25 @@ final class ForgotPasswordController extends AbstractController
         $form = $this->createForm(ForgotPasswordRequestFormType::class);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var RequestPasswordInputDto $dto */
-            $dto = $form->getData();
-            try {
-                $passwordResetService->requestReset($dto->email);
-            } catch (\Throwable) {
-                $this->addFlash('error', 'Unable to send reset instructions right now. Please try again.');
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                /** @var RequestPasswordInputDto $dto */
+                $dto = $form->getData();
+                try {
+                    $passwordResetService->requestReset($dto->email);
+                } catch (\Throwable) {
+                    $this->addFlash('error', 'Impossible d’envoyer l’e-mail pour le moment. Réessayez plus tard.');
+
+                    return $this->redirectToRoute('app_forgot_password');
+                }
+                $this->addFlash('success', 'Si un compte existe avec cette adresse, un lien de réinitialisation vient d’être envoyé.');
 
                 return $this->redirectToRoute('app_forgot_password');
             }
-            $this->addFlash('success', 'If an account with that email exists, a password reset link has been sent.');
 
-            return $this->redirectToRoute('app_home');
+            return $this->render('forgot_password/index.html.twig', [
+                'requestForm' => $form,
+            ], new Response('', Response::HTTP_UNPROCESSABLE_ENTITY));
         }
 
         return $this->render('forgot_password/index.html.twig', [
