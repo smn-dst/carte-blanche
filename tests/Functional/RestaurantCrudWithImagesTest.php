@@ -319,6 +319,10 @@ class RestaurantCrudWithImagesTest extends WebTestCase
         preg_match('#^/restaurant/(\d+)/modifier$#', $path, $matches);
         self::assertArrayHasKey(1, $matches);
 
+        if (1 !== preg_match('#^/restaurant/(\d+)/modifier$#', $path, $matches)) {
+            self::fail(sprintf('URL inattendue, impossible d’extraire l’ID : "%s"', $path));
+        }
+
         return (int) $matches[1];
     }
 
