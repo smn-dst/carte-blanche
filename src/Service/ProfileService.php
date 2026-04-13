@@ -30,6 +30,20 @@ readonly class ProfileService
         );
     }
 
+    /**
+     * @return array{
+     *     fullName: string,
+     *     avatarInitials: string,
+     *     membershipLabel: string,
+     *     isVerified: bool,
+     *     email: string,
+     *     phoneNumber: string,
+     *     createdAt: \DateTimeInterface|null,
+     *     updatedAt: \DateTimeInterface|null,
+     *     notifications: list<array{label: string, enabled: bool}>,
+     *     payment: array{label: string, details: string, buttonLabel: string}
+     * }
+     */
     public function getProfileViewData(User $user): array
     {
         return [

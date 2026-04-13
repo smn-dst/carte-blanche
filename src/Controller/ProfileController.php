@@ -102,7 +102,9 @@ final class ProfileController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        if (!$this->isCsrfTokenValid('delete_account', $request->request->get('_token'))) {
+        $csrfToken = $request->request->getString('_token');
+
+        if (!$this->isCsrfTokenValid('delete_account', '' !== $csrfToken ? $csrfToken : null)) {
             $this->addFlash('error', 'Token invalide.');
 
             return $this->redirectToRoute('app_profile_delete_confirm');
