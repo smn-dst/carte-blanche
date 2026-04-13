@@ -44,7 +44,6 @@ tailwindcss-linux-arm64
 .claude/
 .roo/
 .aider*
-
 ###> jetbrains ###
 .idea/
 *.iml
