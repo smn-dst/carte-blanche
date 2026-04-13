@@ -26,7 +26,7 @@ class VendorRequestController extends AbstractController
     #[IsGranted('ROLE_USER')]
     public function create(Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('vendor_request', $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('vendor_request', $request->request->getString('_token'))) {
             $this->addFlash('error', 'Token invalide.');
 
             return $this->redirectToRoute('app_home');
@@ -85,7 +85,7 @@ class VendorRequestController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function approve(VendorRequest $vendorRequest, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('vendor_request_action_'.$vendorRequest->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('vendor_request_action_'.$vendorRequest->getId(), $request->request->getString('_token'))) {
             $this->addFlash('error', 'Token invalide.');
 
             return $this->redirectToRoute('app_admin_vendor_requests');
@@ -100,6 +100,12 @@ class VendorRequestController extends AbstractController
         /** @var \App\Entity\User $admin */
         $admin = $this->getUser();
         $user = $vendorRequest->getUser();
+
+        if (null === $user) {
+            $this->addFlash('error', 'Utilisateur introuvable.');
+
+            return $this->redirectToRoute('app_admin_vendor_requests');
+        }
 
         $vendorRequest->setStatus(StatusVendorRequestEnum::APPROUVE);
         $vendorRequest->setProcessedAt(new \DateTimeImmutable());
@@ -120,7 +126,7 @@ class VendorRequestController extends AbstractController
     #[IsGranted('ROLE_ADMIN')]
     public function refuse(VendorRequest $vendorRequest, Request $request): Response
     {
-        if (!$this->isCsrfTokenValid('vendor_request_action_'.$vendorRequest->getId(), $request->request->get('_token'))) {
+        if (!$this->isCsrfTokenValid('vendor_request_action_'.$vendorRequest->getId(), $request->request->getString('_token'))) {
             $this->addFlash('error', 'Token invalide.');
 
             return $this->redirectToRoute('app_admin_vendor_requests');
@@ -135,6 +141,12 @@ class VendorRequestController extends AbstractController
         /** @var \App\Entity\User $admin */
         $admin = $this->getUser();
         $user = $vendorRequest->getUser();
+
+        if (null === $user) {
+            $this->addFlash('error', 'Utilisateur introuvable.');
+
+            return $this->redirectToRoute('app_admin_vendor_requests');
+        }
 
         $vendorRequest->setStatus(StatusVendorRequestEnum::REFUSE);
         $vendorRequest->setProcessedAt(new \DateTimeImmutable());
