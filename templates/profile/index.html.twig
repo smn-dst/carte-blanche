@@ -90,12 +90,14 @@
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<h2 class="text-lg font-semibold mb-4">Notifications</h2>
 					<ul class="space-y-3">
+                        {#
 						{% for item in profile.notifications %}
 							<li class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 text-sm">
 								<span>{{ item.label }}</span>
 								<span class="{{ item.enabled ? 'text-green-300' : 'text-muted-foreground' }}">{{ item.enabled ? 'Active' : 'Inactive' }}</span>
 							</li>
 						{% endfor %}
+						#}
 					</ul>
 				</section>
 
@@ -134,15 +136,17 @@
 								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.confirmPassword) }}</div>
 							</div>
 						</div>
-						<button class="primary-btn" type="submit">Changer le mot de passe</button>
+						<button class="primary-btn cursor-pointer" type="submit">Changer le mot de passe</button>
 						{{ form_end(changePasswordForm) }}
 
 						<div class="border-t border-border pt-4 space-y-3 text-sm">
+                            {#
 							<a href="{{ path('app_forgot_password') }}"
 							   class="flex items-center justify-between rounded-lg border border-border bg-background/60 px-4 py-3 hover:bg-background transition-colors">
 								<span>Mot de passe oublié ?</span>
 								<span class="text-muted-foreground">→</span>
 							</a>
+                            #}
 							<a href="{{ path('app_profile_delete_confirm') }}"
 							   class="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 hover:bg-red-500/10 transition-colors text-red-400">
 								<span>Supprimer mon compte</span>
