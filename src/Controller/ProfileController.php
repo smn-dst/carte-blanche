@@ -49,6 +49,7 @@ final class ProfileController extends AbstractController
         }
 
         $changePasswordForm = $this->createForm(ChangePasswordType::class);
+
         return $this->render('profile/index.html.twig', [
             'profile' => $this->profileService->getProfileViewData($user),
             'user' => $user,
