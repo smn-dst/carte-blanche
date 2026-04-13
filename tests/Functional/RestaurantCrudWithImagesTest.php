@@ -315,8 +315,13 @@ class RestaurantCrudWithImagesTest extends WebTestCase
         self::assertIsString($path);
         self::assertMatchesRegularExpression('#^/restaurant/(\d+)/modifier$#', $path);
 
+        /* @var array{0: string, 1: string} $matches */
         preg_match('#^/restaurant/(\d+)/modifier$#', $path, $matches);
         self::assertArrayHasKey(1, $matches);
+
+        if (1 !== preg_match('#^/restaurant/(\d+)/modifier$#', $path, $matches)) {
+            self::fail(sprintf('URL inattendue, impossible d’extraire l’ID : "%s"', $path));
+        }
 
         return (int) $matches[1];
     }

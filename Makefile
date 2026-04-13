@@ -67,6 +67,9 @@ up:
 down:
 	docker compose down
 
+restart: 
+	docker compose restart
+
 build:
 	docker compose up -d --build
 
@@ -99,3 +102,10 @@ setup-hooks:
 	git config core.hooksPath .githooks
 	npm install
 	@echo "Hooks et dependances configures !"
+
+pull-models:
+	docker compose exec ollama ollama pull nomic-embed-text
+	docker compose exec ollama ollama create recommendation-explainer -f /models/Modelfile.recommendation
+
+embeddings:
+	docker compose exec -it php php bin/console app:generate-restaurant-embeddings
