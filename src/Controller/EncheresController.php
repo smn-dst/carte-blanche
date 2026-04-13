@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Repository\CategoryRepository;
 use App\Repository\FavoriteRepository;
 use App\Repository\RestaurantRepository;
+use App\Service\RecommendationService;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
@@ -13,7 +14,7 @@ use Symfony\Component\Routing\Attribute\Route;
 class EncheresController extends AbstractController
 {
     #[Route('/encheres', name: 'app_encheres', methods: ['GET'])]
-    public function index(Request $request, RestaurantRepository $restaurantRepository, CategoryRepository $categoryRepository, FavoriteRepository $favoriteRepository): Response
+    public function index(Request $request, RestaurantRepository $restaurantRepository, CategoryRepository $categoryRepository, FavoriteRepository $favoriteRepository, RecommendationService $recommendationService): Response
     {
         $search = $request->query->get('search', '');
         $categoryParam = $request->query->get('category', '');
@@ -69,13 +70,16 @@ class EncheresController extends AbstractController
         );
 
         $favoriteRestaurantIds = [];
+        $recommendations = [];
         $user = $this->getUser();
         if ($user instanceof \App\Entity\User) {
             $favoriteRestaurantIds = $favoriteRepository->findRestaurantIdsByUser($user);
+            $recommendations = $recommendationService->getTopRecommendations($user, 3);
         }
 
         return $this->render('encheres/index.html.twig', [
             'restaurants' => $restaurants,
+            'recommendations' => $recommendations,
             'favoriteRestaurantIds' => $favoriteRestaurantIds,
             'categories' => $categories,
             'search' => $search,
