@@ -26,6 +26,16 @@ class EncheresController extends AbstractController
         $maxPriceParam = $request->query->get('maxPrice', '');
         $minPrice = '' !== $minPriceParam ? (float) $minPriceParam : null;
         $maxPrice = '' !== $maxPriceParam ? (float) $maxPriceParam : null;
+        $globalPriceRange = $restaurantRepository->getPriceRange();
+
+        // Le slider utilise un pas de 1000: une valeur "max" par défaut peut
+        // être légèrement inférieure au vrai max et exclure 1 restaurant.
+        if (null !== $minPrice && $minPrice <= $globalPriceRange['min']) {
+            $minPrice = null;
+        }
+        if (null !== $maxPrice && $maxPrice >= ($globalPriceRange['max'] - 1000)) {
+            $maxPrice = null;
+        }
 
         $revenueSort = $request->query->get('revenueSort', '');
 

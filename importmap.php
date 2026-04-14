@@ -39,6 +39,10 @@ return [
         'path' => './assets/js/encheres/auction-ticket-stepper.js',
         'entrypoint' => true,
     ],
+    'encheres-search-filters' => [
+        'path' => './assets/js/encheres/search-filters.js',
+        'entrypoint' => true,
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
