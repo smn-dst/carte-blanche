@@ -121,6 +121,7 @@ class CheckoutController extends AbstractController
                 $order = $this->checkoutService->fulfillOrder($session->id);
             } catch (\Throwable $e) {
                 error_log('WEBHOOK FULFILL ERROR: '.$e::class.': '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine());
+
                 return new JsonResponse(['error' => $e->getMessage()], 500);
             }
 
