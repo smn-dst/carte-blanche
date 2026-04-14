@@ -17,19 +17,21 @@ class TicketRepository extends ServiceEntityRepository
         parent::__construct($registry, Ticket::class);
     }
 
+    /**
+     * @return Ticket[]
+     */
     public function findByUser(User $user, ?string $status = null): array
-{
-    $qb = $this->createQueryBuilder('t')
-        ->innerJoin('t.order', 'o')
-        ->where('o.buyer = :user')
-        ->setParameter('user', $user)
-        ->orderBy('t.createdAt', 'DESC');
+    {
+        $qb = $this->createQueryBuilder('t')
+            ->innerJoin('t.order', 'o')
+            ->where('o.buyer = :user')
+            ->setParameter('user', $user)
+            ->orderBy('t.createdAt', 'DESC');
+        if ('all' !== $status) {
+            $qb->andWhere('t.status = :status')
+                ->setParameter('status', $status);
+        }
 
-    if ($status !== 'all') {
-        $qb->andWhere('t.status = :status')
-           ->setParameter('status', $status);
+        return $qb->getQuery()->getResult();
     }
-
-    return $qb->getQuery()->getResult();
-}
 }
