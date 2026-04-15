@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\User;
+use App\Enum\StatusOrderEnum;
 use App\Repository\OrderRepository;
 use App\Service\CheckoutService;
 use App\Service\SendMailService;
@@ -55,7 +56,7 @@ class CheckoutController extends AbstractController
     }
 
     #[Route('/checkout/success', name: 'app_checkout_success', methods: ['GET'])]
-    public function success(Request $request, OrderRepository $orderRepository): Response
+    public function success(Request $request, OrderRepository $orderRepository, SendMailService $sendMailService): Response
     {
         $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
 
@@ -64,8 +65,25 @@ class CheckoutController extends AbstractController
             return $this->redirectToRoute('app_cart');
         }
 
-        // Chercher l'order par session Stripe
         $order = $orderRepository->findOneBy(['stripeSessionId' => $sessionId]);
+
+        // Fallback : si le webhook n'a pas encore traité la commande (dev local, race condition)
+        if (null !== $order && StatusOrderEnum::EN_ATTENTE === $order->getStatus()) {
+            try {
+                $order = $this->checkoutService->fulfillOrder($sessionId);
+            } catch (\Throwable $e) {
+                error_log('FULFILL ERROR in success: '.$e::class.': '.$e->getMessage());
+            }
+
+            $buyer = $order->getBuyer();
+            if (null !== $buyer) {
+                try {
+                    $sendMailService->sendOrderConfirmationEmail($buyer, $order);
+                } catch (\Throwable $e) {
+                    error_log('EMAIL ERROR in success: '.$e::class.': '.$e->getMessage());
+                }
+            }
+        }
 
         return $this->render('checkout/success.html.twig', [
             'order' => $order,
@@ -101,17 +119,19 @@ class CheckoutController extends AbstractController
 
             try {
                 $order = $this->checkoutService->fulfillOrder($session->id);
-
-                // Envoyer le mail de confirmation
-                $buyer = $order->getBuyer();
-                if (null !== $buyer) {
-                    $sendMailService->sendOrderConfirmationEmail($buyer, $order);
-                }
             } catch (\Throwable $e) {
-                // \Throwable : TypeError (ex. typage strict) n’hérite pas de \Exception
-                error_log('WEBHOOK ERROR: '.$e::class.': '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine());
+                error_log('WEBHOOK FULFILL ERROR: '.$e::class.': '.$e->getMessage().' | '.$e->getFile().':'.$e->getLine());
 
                 return new JsonResponse(['error' => $e->getMessage()], 500);
+            }
+
+            $buyer = $order->getBuyer();
+            if (null !== $buyer) {
+                try {
+                    $sendMailService->sendOrderConfirmationEmail($buyer, $order);
+                } catch (\Throwable $e) {
+                    error_log('WEBHOOK EMAIL ERROR: '.$e::class.': '.$e->getMessage());
+                }
             }
         }
 
