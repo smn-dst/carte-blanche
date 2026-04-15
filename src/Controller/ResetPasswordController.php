@@ -21,7 +21,7 @@ final class ResetPasswordController extends AbstractController
         try {
             $passwordResetService->tokenExists($token);
         } catch (\RuntimeException) {
-            $this->addFlash('error', 'This reset link is invalid or has expired.');
+            $this->addFlash('error', 'Ce lien de réinitialisation est invalide ou a expiré.');
 
             return $this->redirectToRoute('app_forgot_password');
         }
@@ -29,20 +29,26 @@ final class ResetPasswordController extends AbstractController
         $form = $this->createForm(ResetPasswordFormType::class);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            /** @var ResetPasswordInputDto $data */
-            $data = $form->getData();
-            try {
-                $passwordResetService->resetPassword($token, $data->plainPassword);
-            } catch (\RuntimeException) {
-                $this->addFlash('error', 'This reset link is invalid or has expired.');
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                /** @var ResetPasswordInputDto $data */
+                $data = $form->getData();
+                try {
+                    $passwordResetService->resetPassword($token, $data->plainPassword);
+                } catch (\RuntimeException) {
+                    $this->addFlash('error', 'Ce lien de réinitialisation est invalide ou a expiré.');
 
-                return $this->redirectToRoute('app_forgot_password');
+                    return $this->redirectToRoute('app_forgot_password');
+                }
+
+                $this->addFlash('success', 'Votre mot de passe a été mis à jour. Vous pouvez vous connecter.');
+
+                return $this->redirectToRoute('app_login');
             }
 
-            $this->addFlash('success', 'Your password has been reset successfully. You can now log in with your new password.');
-
-            return $this->redirectToRoute('app_login');
+            return $this->render('reset_password/index.html.twig', [
+                'resetForm' => $form,
+            ], new Response('', Response::HTTP_UNPROCESSABLE_ENTITY));
         }
 
         return $this->render('reset_password/index.html.twig', [

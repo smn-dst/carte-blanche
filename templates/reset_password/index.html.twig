@@ -1,15 +1,83 @@
 {% extends 'base.html.twig' %}
 
-{% block title %}Reset Password{% endblock %}
+{% block title %}Nouveau mot de passe
+{% endblock %}
 
 {% block body %}
-    <h1>Reset Password</h1>
-    {% for message in app.flashes('error') %}
-        <div class="flash flash-error">{{ message }}</div>
-    {% endfor %}
-    {{ form_start(resetForm) }}
-        {{ form_row(resetForm.plainPassword) }}
-        {{ form_row(resetForm.confirmPassword) }}
-        <button type="submit" class="btn">Update password</button>
-    {{ form_end(resetForm) }}
+	<div class="min-h-screen flex items-center justify-center relative overflow-hidden py-12">
+
+		<div class="absolute inset-0 from-primary/10 via-background to-background">
+			<div class="absolute inset-0 opacity-30">
+				<div class="absolute top-1/4 left-1/4 w-96 h-96 bg-primary/20 rounded-full blur-3xl animate-pulse"></div>
+				<div class="absolute bottom-1/4 right-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl animate-pulse delay-700"></div>
+			</div>
+		</div>
+
+		<div class="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+			<div class="max-w-md mx-auto">
+
+				<div class="text-center mb-8">
+					<a href="{{ path('app_home') }}" class="inline-flex items-baseline gap-2 mb-6">
+						<span class="text-3xl font-bold">Carte blanche.</span>
+						<div class="w-2 h-2 rounded-full bg-primary"></div>
+					</a>
+					<h1 class="text-3xl sm:text-4xl font-bold mb-2">Nouveau mot de passe</h1>
+					<p class="text-muted-foreground text-sm sm:text-base">
+						Choisissez un mot de passe sécurisé pour votre compte.
+					</p>
+				</div>
+
+				{% for message in app.flashes('error') %}
+					<div class="mb-4 p-4 bg-red-500/10 border border-red-500/30 rounded-lg text-red-400 text-sm">
+						{{ message }}
+					</div>
+				{% endfor %}
+
+				<div class="p-8 bg-card border border-border rounded-xl shadow-lg">
+
+					{{ form_start(resetForm, { attr: { class: 'space-y-6', novalidate: 'novalidate' } }) }}
+
+					<div>
+						{{ form_label(resetForm.plainPassword, null, { label_attr: { class: 'block text-sm mb-2 font-medium' } }) }}
+						{{ form_widget(resetForm.plainPassword, {
+                            attr: {
+                                class: 'w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors',
+                                placeholder: '••••••••'
+                            }
+                        }) }}
+						{{ form_errors(resetForm.plainPassword) }}
+					</div>
+
+					<div>
+						{{ form_label(resetForm.confirmPassword, null, { label_attr: { class: 'block text-sm mb-2 font-medium' } }) }}
+						{{ form_widget(resetForm.confirmPassword, {
+                            attr: {
+                                class: 'w-full px-4 py-2.5 rounded-lg border border-border bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-colors',
+                                placeholder: 'Confirmer le mot de passe'
+                            }
+                        }) }}
+						{{ form_errors(resetForm.confirmPassword) }}
+					</div>
+
+					<div class="flex items-center">
+						{% include 'Components/buttons/buttons-primary.html.twig' with {
+                            button_tag: 'button',
+                            label: 'Enregistrer le mot de passe',
+                            variant: 'primary',
+                            with_arrow: true,
+                            extra_classes: 'flex w-full group-hover:bg-white group-hover:text-primary [&_svg]:transition-transform [&_svg]:duration-300 [&_svg]:group-hover:translate-x-1 hover:cursor-pointer'
+                        } %}
+					</div>
+
+					{{ form_end(resetForm) }}
+
+					<div class="mt-8 text-center">
+						<a href="{{ path('app_login') }}" class="text-sm text-primary hover:underline font-medium">
+							← Retour à la connexion
+						</a>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
 {% endblock %}

@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Enum\StatusVendorRequestEnum;
 use App\Repository\VendorRequestRepository;
+use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: VendorRequestRepository::class)]
@@ -22,6 +23,14 @@ class VendorRequest
 
     #[ORM\Column(nullable: true)]
     private ?\DateTimeImmutable $processedAt = null;
+
+    /** Pourquoi l'utilisateur veut devenir vendeur */
+    #[ORM\Column(type: Types::TEXT, nullable: true)]
+    private ?string $motivation = null;
+
+    /** Nom du fichier pièce d'identité uploadé */
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $idCardFileName = null;
 
     #[ORM\ManyToOne(inversedBy: 'vendorRequests')]
     #[ORM\JoinColumn(name: 'user_id', referencedColumnName: 'id', nullable: false)]
@@ -73,6 +82,30 @@ class VendorRequest
     public function setProcessedAt(?\DateTimeImmutable $processedAt): static
     {
         $this->processedAt = $processedAt;
+
+        return $this;
+    }
+
+    public function getMotivation(): ?string
+    {
+        return $this->motivation;
+    }
+
+    public function setMotivation(?string $motivation): static
+    {
+        $this->motivation = $motivation;
+
+        return $this;
+    }
+
+    public function getIdCardFileName(): ?string
+    {
+        return $this->idCardFileName;
+    }
+
+    public function setIdCardFileName(?string $idCardFileName): static
+    {
+        $this->idCardFileName = $idCardFileName;
 
         return $this;
     }

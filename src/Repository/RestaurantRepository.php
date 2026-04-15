@@ -50,19 +50,27 @@ class RestaurantRepository extends ServiceEntityRepository
     public function searchByNameAndCategory(?string $search, ?int $categoryId, ?string $sortBy = null, ?float $minPrice = null, ?float $maxPrice = null, ?string $priceSort = null, ?string $revenueSort = null, ?int $limit = null, int $offset = 0): array
     {
         if (null !== $limit) {
-            $subQb = $this->createIdsQueryBuilder($search, $categoryId, $sortBy, $minPrice, $maxPrice, $priceSort, $revenueSort, 'sub', 'subCat');
-            $subQb->setMaxResults($limit)->setFirstResult($offset);
+            // Requête d’IDs seule : LIMIT/OFFSET dans une sous-requête IN() est souvent ignoré par le SQL généré → pages dupliquées.
+            $idsQuery = $this->createIdsQueryBuilder($search, $categoryId, $sortBy, $minPrice, $maxPrice, $priceSort, $revenueSort, 'sub', 'subCat')
+                ->getQuery()
+                ->setMaxResults($limit)
+                ->setFirstResult($offset);
+
+            $ids = $idsQuery->getSingleColumnResult();
+            if ([] === $ids) {
+                return [];
+            }
 
             $qb = $this->createQueryBuilder('r')
                 ->leftJoin('r.categories', 'c')->addSelect('c')
                 ->leftJoin('r.images', 'i')->addSelect('i')
-                ->where('r.id IN ('.$subQb->getDQL().')');
-            foreach ($subQb->getParameters() as $param) {
-                $qb->setParameter($param->getName(), $param->getValue());
-            }
-            $this->applySearchOrder($qb, $sortBy, $priceSort, $revenueSort);
+                ->where('r.id IN (:ids)')
+                ->setParameter('ids', $ids);
 
-            return $qb->getQuery()->getResult();
+            $restaurants = $qb->getQuery()->getResult();
+            usort($restaurants, static fn (Restaurant $a, Restaurant $b): int => array_search($a->getId(), $ids, true) <=> array_search($b->getId(), $ids, true));
+
+            return $restaurants;
         }
 
         $qb = $this->createQueryBuilder('r')
@@ -177,9 +185,24 @@ class RestaurantRepository extends ServiceEntityRepository
             $qb->setParameter('maxPrice', sprintf('%.2f', round($maxPrice, 2)));
         }
 
-        if (!empty($conditions)) {
-            $qb->where(implode(' AND ', $conditions));
-        }
+        $conditions[] = $rootAlias.'.status IN (:auctionStatuses)';
+        $qb->setParameter('auctionStatuses', self::statusesVisibleOnEncheresList());
+
+        $qb->where(implode(' AND ', $conditions));
+    }
+
+    /**
+     * Enchères encore « actives » : à venir, publiées ou en cours — pas terminées ni vendues.
+     *
+     * @return list<StatusRestaurantEnum>
+     */
+    private static function statusesVisibleOnEncheresList(): array
+    {
+        return [
+            StatusRestaurantEnum::PUBLIE,
+            StatusRestaurantEnum::PROGRAMME,
+            StatusRestaurantEnum::EN_COURS,
+        ];
     }
 
     /**
@@ -253,5 +276,61 @@ class RestaurantRepository extends ServiceEntityRepository
         usort($restaurants, fn (Restaurant $a, Restaurant $b): int => array_search($a->getId(), $ids, true) <=> array_search($b->getId(), $ids, true));
 
         return $restaurants;
+    }
+
+    /**
+     * Nombre de restaurants en attente de validation admin (statut EN_MODERATION).
+     */
+    public function countPendingValidation(): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.status = :status')
+            ->setParameter('status', StatusRestaurantEnum::EN_MODERATION)
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
+     * Restaurants en attente de validation admin (statut EN_MODERATION).
+     * Les plus anciens en premier (FIFO).
+     *
+     * @return list<Restaurant>
+     */
+    public function findPendingValidation(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.owner', 'u')->addSelect('u')
+            ->leftJoin('r.categories', 'c')->addSelect('c')
+            ->leftJoin('r.images', 'i')->addSelect('i')
+            ->where('r.status = :status')
+            ->setParameter('status', StatusRestaurantEnum::EN_MODERATION)
+            ->orderBy('r.updatedAt', 'ASC')
+            ->getQuery()
+            ->getResult();
+    }
+
+    /**
+     * Restaurants récemment approuvés ou refusés (30 derniers).
+     *
+     * @return Restaurant[]
+     */
+    public function findRecentlyProcessed(): array
+    {
+        return $this->createQueryBuilder('r')
+            ->leftJoin('r.owner', 'u')->addSelect('u')
+            ->leftJoin('r.categories', 'c')->addSelect('c')
+            ->leftJoin('r.images', 'i')->addSelect('i')
+            ->where('r.status IN (:statuses)')
+            ->setParameter('statuses', [
+                StatusRestaurantEnum::PUBLIE,
+                StatusRestaurantEnum::PROGRAMME,
+                StatusRestaurantEnum::BROUILLON,
+                StatusRestaurantEnum::ANNULE,
+            ])
+            ->orderBy('r.updatedAt', 'DESC')
+            ->setMaxResults(30)
+            ->getQuery()
+            ->getResult();
     }
 }

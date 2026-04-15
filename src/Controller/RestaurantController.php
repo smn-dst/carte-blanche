@@ -4,6 +4,7 @@ namespace App\Controller;
 
 use App\Dto\RestaurantInputDto;
 use App\Entity\User;
+use App\Enum\StatusRestaurantEnum;
 use App\Exception\RestaurantNotFoundException;
 use App\Form\RestaurantFormType;
 use App\Repository\FavoriteRepository;
@@ -11,6 +12,7 @@ use App\Repository\RestaurantRepository;
 use App\Security\Voter\RestaurantVoter;
 use App\Service\AiDescriptionService;
 use App\Service\RestaurantService;
+use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
@@ -21,6 +23,7 @@ class RestaurantController extends AbstractController
 {
     public function __construct(
         private readonly RestaurantService $restaurantService,
+        private readonly EntityManagerInterface $em,
     ) {
     }
 
@@ -143,6 +146,41 @@ class RestaurantController extends AbstractController
         $this->addFlash('success', 'Restaurant supprimé.');
 
         return $this->redirectToRoute('app_restaurant_index');
+    }
+
+    #[Route('/restaurant/{id}/soumettre', name: 'app_restaurant_submit', requirements: ['id' => '\d+'], methods: ['POST'])]
+    public function submit(int $id, Request $request): Response
+    {
+        $this->denyAccessUnlessGranted('IS_AUTHENTICATED_FULLY');
+
+        try {
+            $restaurant = $this->restaurantService->findOrFail($id);
+        } catch (RestaurantNotFoundException) {
+            throw $this->createNotFoundException('Restaurant non trouvé.');
+        }
+
+        $this->denyAccessUnlessGranted(RestaurantVoter::EDIT, $restaurant);
+
+        if (!$this->isCsrfTokenValid('submit_restaurant_'.$id, $request->request->getString('_token'))) {
+            $this->addFlash('error', 'Token CSRF invalide.');
+
+            return $this->redirectToRoute('app_restaurant_edit', ['id' => $id]);
+        }
+
+        // Seuls les restaurants en brouillon peuvent être soumis
+        if (StatusRestaurantEnum::BROUILLON !== $restaurant->getStatus()) {
+            $this->addFlash('info', 'Ce restaurant a déjà été soumis ou publié.');
+
+            return $this->redirectToRoute('app_restaurant_edit', ['id' => $id]);
+        }
+
+        $restaurant->setStatus(StatusRestaurantEnum::EN_MODERATION);
+        $restaurant->setUpdatedAt(new \DateTimeImmutable());
+        $this->em->flush();
+
+        $this->addFlash('success', 'Votre restaurant a été soumis pour validation. Vous recevrez un email dès qu\'il sera examiné par notre équipe.');
+
+        return $this->redirectToRoute('app_restaurant_edit', ['id' => $id]);
     }
 
     #[Route('/restaurant/{restaurantId}/image/{imageId}/supprimer', name: 'app_restaurant_image_delete', requirements: ['restaurantId' => '\d+', 'imageId' => '\d+'], methods: ['POST'])]

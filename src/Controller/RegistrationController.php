@@ -42,17 +42,24 @@ class RegistrationController extends AbstractController
         $form = $this->createForm(RegistrationFormType::class);
         $form->handleRequest($request);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $dto = $form->getData();
-            $user = $this->registrationManagerService->register($dto);
+        if ($form->isSubmitted()) {
+            if ($form->isValid()) {
+                $dto = $form->getData();
+                $user = $this->registrationManagerService->register($dto);
 
-            $security->login($user, 'form_login', 'main');
-            $email = $user->getEmail();
-            if (\is_string($email) && '' !== $email) {
-                $request->getSession()->set('registration_pending_email', $email);
+                $security->login($user, 'form_login', 'main');
+                $email = $user->getEmail();
+                if (\is_string($email) && '' !== $email) {
+                    $request->getSession()->set('registration_pending_email', $email);
+                }
+
+                return $this->redirectToRoute('app_register_confirmation');
             }
 
-            return $this->redirectToRoute('app_register_confirmation');
+            // Turbo : une réponse 200 sur POST invalide déclenche « Form responses must redirect »
+            return $this->render('registration/register.html.twig', [
+                'registrationForm' => $form->createView(),
+            ], new Response('', Response::HTTP_UNPROCESSABLE_ENTITY));
         }
 
         if ($this->getUser()) {

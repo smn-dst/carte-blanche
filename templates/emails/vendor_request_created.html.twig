@@ -1,15 +1,64 @@
-<h1>Bonjour, {{ user.firstName }} !</h1>
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
 
-<p>
-    Nous avons bien reçu votre demande pour devenir vendeur sur <strong>Carte Blanche</strong>.
-</p>
+		<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:40px 20px;">
+			<tr>
+				<td align="center">
+					<table width="600" cellpadding="0" cellspacing="0" style="background-color:#151515;border-radius:12px;border:1px solid #2a2a2a;max-width:600px;">
 
-<p>
-    Notre équipe va l'examiner dans les plus brefs délais. Vous recevrez un email dès qu'une décision sera prise.
-</p>
+						<tr>
+							<td style="padding:40px 40px 20px;text-align:center;border-bottom:1px solid #2a2a2a;">
+								<h1 style="color:#6366F9;font-size:24px;margin:0;letter-spacing:-0.02em;">Carte Blanche</h1>
+								<p style="color:#666;font-size:11px;margin:8px 0 0;text-transform:uppercase;letter-spacing:0.12em;">Demande vendeur</p>
+							</td>
+						</tr>
 
-<p>
-    À très bientôt sur la plateforme !
-</p>
+						<tr>
+							<td style="padding:40px;">
+								<div style="text-align:center;margin-bottom:28px;">
+									<div style="width:4px;height:40px;background:linear-gradient(180deg,#6366F9,#6366F9 40%,transparent);border-radius:2px;margin:0 auto;"></div>
+								</div>
 
-<p>— L'équipe Carte Blanche</p>
+								<h2 style="color:#ffffff;font-size:22px;text-align:center;margin:0 0 12px;font-weight:700;">
+									Demande bien reçue
+								</h2>
+								<p style="color:#a1a1a1;text-align:center;margin:0 0 24px;font-size:15px;line-height:1.55;">
+									Bonjour{% if user.firstName %}
+										{{ user.firstName }}{% endif %},<br>
+									nous avons bien enregistré votre demande pour devenir <strong style="color:#e5e5e5;">vendeur</strong> sur Carte Blanche.
+								</p>
+
+								<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:28px;">
+									<tr>
+										<td style="padding:20px 24px;">
+											<p style="color:#a1a1a1;font-size:14px;margin:0;line-height:1.6;">
+												Notre équipe l’examine dans les plus brefs délais. Vous recevrez un e-mail dès qu’une décision sera prise.
+											</p>
+										</td>
+									</tr>
+								</table>
+
+								<p style="color:#525252;font-size:12px;text-align:center;margin:0;line-height:1.5;">
+									Merci pour votre confiance.
+								</p>
+							</td>
+						</tr>
+
+						<tr>
+							<td style="padding:20px 40px;border-top:1px solid #2a2a2a;text-align:center;">
+								<p style="color:#666;font-size:11px;margin:0;">© 2026 Carte Blanche — Tous droits réservés</p>
+							</td>
+						</tr>
+
+					</table>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>
