@@ -13,7 +13,8 @@
 			</p>
 
 			<h2 id="cta-dashboard-heading" class="mt-6 max-w-200 text-5xl font-bold leading-none tracking-tight md:text-6xl">
-				Pilotez vos <span class="text-gradient">opportunités</span>
+				Pilotez vos
+				<span class="text-gradient">opportunités</span>
 			</h2>
 
 			<p class="mt-5 max-w-2xl px-4 text-xl leading-relaxed text-muted-foreground sm:text-2xl">
@@ -35,29 +36,22 @@
 					</div>
 					<div class="min-w-0 flex-1 text-left">
 						{% if is_granted('ROLE_VENDOR') %}
-				{% include 'Components/buttons/buttons-primary.html.twig' with {
+							{% include 'Components/buttons/buttons-primary.html.twig' with {
 					href: '/restaurants',
 					label: 'Découvrir les enchères',
 					variant: 'primary',
 					with_arrow: true
 				} %}
-			{% elseif hasPendingVendorRequest %}
-				{% include 'Components/buttons/buttons-primary.html.twig' with {
+						{% elseif hasPendingVendorRequest %}
+							{% include 'Components/buttons/buttons-primary.html.twig' with {
 					as: 'span',
 					label: 'Demande en cours d\'examen…',
 					variant: 'secondary'
 				} %}
 			{% else %}
-				<form action="{{ path('app_vendor_request_create') }}" method="post">
-					<input type="hidden" name="_token" value="{{ csrf_token('vendor_request') }}">
-					{% include 'Components/buttons/buttons-primary.html.twig' with {
-						button_tag: 'button',
-						type: 'submit',
-						label: 'Devenir vendeur',
-						variant: 'primary',
-						with_arrow: true
-					} %}
-				</form>
+				<a href="{{ path('app_vendor_request_wizard') }}" class="primary-btn">
+					Devenir vendeur →
+				</a>
 			{% endif %}
 					</div>
 				</div>
@@ -135,23 +129,16 @@
 					variant: 'primary',
 					with_arrow: true
 				} %}
-			{% elseif hasPendingVendorRequest %}
-				{% include 'Components/buttons/buttons-primary.html.twig' with {
+						{% elseif hasPendingVendorRequest %}
+							{% include 'Components/buttons/buttons-primary.html.twig' with {
 					as: 'span',
 					label: 'Demande en cours d\'examen…',
 					variant: 'secondary'
 				} %}
 			{% else %}
-				<form action="{{ path('app_vendor_request_create') }}" method="post">
-					<input type="hidden" name="_token" value="{{ csrf_token('vendor_request') }}">
-					{% include 'Components/buttons/buttons-primary.html.twig' with {
-						button_tag: 'button',
-						type: 'submit',
-						label: 'Devenir vendeur',
-						variant: 'primary',
-						with_arrow: true
-					} %}
-				</form>
+				<a href="{{ path('app_vendor_request_wizard') }}" class="primary-btn">
+					Devenir vendeur →
+				</a>
 			{% endif %}
 		{% else %}
 			{% include 'Components/buttons/buttons-primary.html.twig' with {

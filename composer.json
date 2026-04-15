@@ -93,6 +93,7 @@
     },
     "scripts": {
         "cs-check": "php-cs-fixer fix --dry-run --diff",
+        "cs-fix": "php-cs-fixer fix",
         "phpstan": "phpstan analyse --memory-limit=512M",
         "phpunit": "php bin/phpunit",
         "phpunit:unit": "php bin/phpunit --testsuite Unit",

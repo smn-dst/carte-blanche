@@ -1,0 +1,259 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Validation des restaurants — Admin{% endblock %}
+
+{% block body %}
+<div class="p-6 md:p-10 space-y-10">
+
+    {# ── En-tête ── #}
+    <div>
+        <p class="text-xs text-primary uppercase tracking-widest font-semibold mb-1">Administration</p>
+        <h1 class="text-3xl sm:text-4xl font-bold text-foreground">Validation des restaurants</h1>
+        <p class="text-muted-foreground mt-1">
+            {{ pending|length }} annonce{{ pending|length > 1 ? 's' : '' }} en attente
+            · {{ recent|length }} récemment traitée{{ recent|length > 1 ? 's' : '' }}
+        </p>
+    </div>
+
+    {# ── Flashes ── #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="p-4 rounded-lg border text-sm
+                {{ type == 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ════════════════════════════════════════
+       SECTION 1 — EN ATTENTE DE VALIDATION
+    ════════════════════════════════════════ #}
+    <section>
+        <h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-yellow-400 inline-block"></span>
+            En attente de validation
+            {% if pending|length > 0 %}
+                <span class="px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/15 text-yellow-400 border border-yellow-500/20">
+                    {{ pending|length }}
+                </span>
+            {% endif %}
+        </h2>
+
+        {% if pending is empty %}
+            <div class="flex items-center gap-3 p-5 rounded-xl border border-border bg-secondary/10 text-muted-foreground text-sm">
+                <svg class="size-5 shrink-0 opacity-50" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12.75 11.25 15 15 9.75M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z"/>
+                </svg>
+                Aucune annonce en attente de validation.
+            </div>
+        {% else %}
+            <div class="space-y-4">
+                {% for restaurant in pending %}
+                    {% set owner = restaurant.owner %}
+                    {% set firstImage = restaurant.firstImage %}
+
+                    <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-5 space-y-4">
+                        <div class="flex flex-col md:flex-row gap-5">
+
+                            {# Image #}
+                            <div class="shrink-0 w-full md:w-40 h-28 rounded-lg overflow-hidden bg-secondary/30">
+                                {% if firstImage %}
+                                    <img src="{{ asset('uploads/restaurants/' ~ firstImage.fileName) }}"
+                                         alt="{{ restaurant.name }}"
+                                         class="w-full h-full object-cover">
+                                {% else %}
+                                    <div class="w-full h-full flex items-center justify-center text-muted-foreground text-xs">
+                                        Pas d'image
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            {# Infos principales #}
+                            <div class="flex-1 min-w-0 space-y-2">
+                                <div class="flex flex-wrap items-start justify-between gap-2">
+                                    <div>
+                                        {% if restaurant.categories is not empty %}
+                                            <span class="text-[10px] text-primary uppercase tracking-wider font-semibold">
+                                                {{ restaurant.categories|map(c => c.name)|join(', ') }}
+                                            </span>
+                                        {% endif %}
+                                        <h3 class="text-lg font-bold text-foreground">{{ restaurant.name }}</h3>
+                                        <p class="text-sm text-muted-foreground">{{ restaurant.address }}</p>
+                                    </div>
+                                    <span class="text-xl font-bold text-primary tabular-nums shrink-0">
+                                        {{ restaurant.askingPrice|number_format(0, ',', ' ') }} €
+                                    </span>
+                                </div>
+
+                                {# Grille de métadonnées #}
+                                <div class="flex flex-wrap gap-x-6 gap-y-1 text-xs text-muted-foreground">
+                                    <span>{{ restaurant.capacity }} couverts</span>
+                                    {% if restaurant.annualRevenue %}
+                                        <span>CA : {{ restaurant.annualRevenue|number_format(0, ',', ' ') }} €/an</span>
+                                    {% endif %}
+                                    {% if restaurant.ticketPrice %}
+                                        <span>Ticket : {{ restaurant.ticketPrice|number_format(0, ',', ' ') }} €</span>
+                                    {% endif %}
+                                    {% if restaurant.auctionDate %}
+                                        <span class="text-primary font-medium">
+                                            Enchère le {{ restaurant.auctionDate|date('d/m/Y') }}
+                                            {% if restaurant.auctionTime %} à {{ restaurant.auctionTime|date('H:i') }}{% endif %}
+                                        </span>
+                                    {% else %}
+                                        <span class="text-yellow-500">Pas de date d'enchère</span>
+                                    {% endif %}
+                                    <span>Soumis le {{ restaurant.updatedAt ? restaurant.updatedAt|date('d/m/Y à H:i') : '—' }}</span>
+                                </div>
+
+                                {# Vendeur #}
+                                {% if owner %}
+                                    <div class="flex items-center gap-2 pt-1">
+                                        <div class="w-6 h-6 rounded-full bg-primary/20 flex items-center justify-center text-primary text-[10px] font-bold shrink-0">
+                                            {{ owner.firstName|slice(0,1)|upper }}{{ owner.lastName|slice(0,1)|upper }}
+                                        </div>
+                                        <span class="text-xs text-muted-foreground">
+                                            <span class="text-foreground font-medium">{{ owner.firstName }} {{ owner.lastName }}</span>
+                                            · {{ owner.email }}
+                                        </span>
+                                    </div>
+                                {% endif %}
+
+                                {# Description (tronquée) #}
+                                {% if restaurant.description %}
+                                    <p class="text-xs text-muted-foreground line-clamp-2 mt-1">{{ restaurant.description }}</p>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        {# ─ Boutons ─ #}
+                        <div class="flex flex-col sm:flex-row gap-3 pt-1 border-t border-yellow-500/10">
+
+                            <a href="{{ path('app_restaurant_show', { id: restaurant.id }) }}"
+                               target="_blank"
+                               class="sm:mr-auto flex items-center justify-center gap-2 px-4 py-2 rounded-lg border border-border text-muted-foreground hover:text-foreground hover:border-border/80 text-sm transition-colors">
+                                <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25"/>
+                                </svg>
+                                Prévisualiser
+                            </a>
+
+                            <form method="post"
+                                  action="{{ path('app_admin_restaurant_approve', { id: restaurant.id }) }}"
+                                  onsubmit="return confirm('Approuver et publier \"{{ restaurant.name }}\" ? Un email sera envoyé au vendeur.')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_restaurant_' ~ restaurant.id) }}">
+                                <button type="submit"
+                                    class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg bg-green-600 hover:bg-green-500 text-white text-sm font-semibold transition-colors">
+                                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/>
+                                    </svg>
+                                    Approuver et publier
+                                </button>
+                            </form>
+
+                            <form method="post"
+                                  action="{{ path('app_admin_restaurant_reject', { id: restaurant.id }) }}"
+                                  onsubmit="return confirm('Refuser \"{{ restaurant.name }}\" et renvoyer le vendeur en brouillon ?')">
+                                <input type="hidden" name="_token" value="{{ csrf_token('admin_restaurant_' ~ restaurant.id) }}">
+                                <button type="submit"
+                                    class="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2.5 rounded-lg border border-red-500/30 text-red-400 hover:bg-red-500/10 text-sm font-semibold transition-colors">
+                                    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                    </svg>
+                                    Refuser — Renvoyer en brouillon
+                                </button>
+                            </form>
+
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    </section>
+
+    {# ════════════════════════════════════════
+       SECTION 2 — RÉCEMMENT TRAITÉS
+    ════════════════════════════════════════ #}
+    <section>
+        <h2 class="text-xl font-bold text-foreground mb-4 flex items-center gap-2">
+            <span class="w-2 h-2 rounded-full bg-muted-foreground inline-block"></span>
+            Récemment traités
+        </h2>
+
+        {% if recent is empty %}
+            <p class="text-muted-foreground text-sm">Aucun restaurant traité pour le moment.</p>
+        {% else %}
+            <div class="overflow-x-auto rounded-xl border border-border">
+                <table class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b border-border bg-secondary/30 text-left">
+                            <th class="px-4 py-3 font-semibold text-muted-foreground">Restaurant</th>
+                            <th class="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Vendeur</th>
+                            <th class="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Prix</th>
+                            <th class="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Date enchère</th>
+                            <th class="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Mis à jour</th>
+                            <th class="px-4 py-3 font-semibold text-muted-foreground">Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-border">
+                        {% for restaurant in recent %}
+                            {% set owner = restaurant.owner %}
+                            <tr class="hover:bg-secondary/20 transition-colors">
+
+                                <td class="px-4 py-3">
+                                    <p class="font-medium text-foreground">{{ restaurant.name }}</p>
+                                    <p class="text-xs text-muted-foreground truncate max-w-[180px]">{{ restaurant.address }}</p>
+                                </td>
+
+                                <td class="px-4 py-3 hidden md:table-cell text-muted-foreground">
+                                    {% if owner %}
+                                        {{ owner.firstName }} {{ owner.lastName }}
+                                    {% else %}—{% endif %}
+                                </td>
+
+                                <td class="px-4 py-3 hidden lg:table-cell font-semibold text-foreground tabular-nums">
+                                    {{ restaurant.askingPrice|number_format(0, ',', ' ') }} €
+                                </td>
+
+                                <td class="px-4 py-3 hidden lg:table-cell text-muted-foreground">
+                                    {% if restaurant.auctionDate %}
+                                        {{ restaurant.auctionDate|date('d/m/Y') }}
+                                    {% else %}—{% endif %}
+                                </td>
+
+                                <td class="px-4 py-3 hidden md:table-cell text-muted-foreground">
+                                    {{ restaurant.updatedAt ? restaurant.updatedAt|date('d/m/Y') : '—' }}
+                                </td>
+
+                                <td class="px-4 py-3">
+                                    {% if restaurant.status.value == 'publie' %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
+                                            Publié
+                                        </span>
+                                    {% elseif restaurant.status.value == 'programme' %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/10 text-primary border border-primary/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-primary inline-block"></span>
+                                            Programmé
+                                        </span>
+                                    {% elseif restaurant.status.value == 'brouillon' %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-red-500/10 text-red-400 border border-red-500/20">
+                                            <span class="w-1.5 h-1.5 rounded-full bg-red-400 inline-block"></span>
+                                            Refusé
+                                        </span>
+                                    {% else %}
+                                        <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary text-muted-foreground">
+                                            {{ restaurant.status.value }}
+                                        </span>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </section>
+
+</div>
+{% endblock %}

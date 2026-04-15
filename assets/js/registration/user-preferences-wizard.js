@@ -47,8 +47,17 @@ function boot() {
         return;
     }
 
+    function progressPercentForStep(step) {
+        const n = state.totalSteps;
+        if (n <= 1) {
+            return 100;
+        }
+        // Aligne la fin de la barre sur le point de l’étape (points à 0 %, 33 %, 66 %, 100 % pour 4 étapes)
+        return ((step - 1) / (n - 1)) * 100;
+    }
+
     function updateProgress() {
-        const pct = Math.round(((state.currentStep - 1) / state.totalSteps) * 100);
+        const pct = Math.round(progressPercentForStep(state.currentStep));
         progressBar.style.width = `${pct}%`;
         stepNum.textContent = String(state.currentStep);
         stepPercent.textContent = `${pct}%`;
