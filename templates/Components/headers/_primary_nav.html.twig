@@ -1,8 +1,7 @@
 {# Liens principaux (sidebar desktop + tiroir mobile). Variables optionnelles : link_class, wrap_class #}
 {% set admin_badges = admin_pending_counts() %}
 {% set nav_items = [
-	{ path: '/', label: 'Dashboard', icon: 'dashboard', role: '', hide_admin: true },
-	{ path: '/dashboard_vendeur', label: 'Dashboard', icon: 'dashboard', role: 'ROLE_VENDOR' },
+	{ path: path('app_home'), label: 'Dashboard', icon: 'dashboard', role: '', hide_admin: true },
 	{ path: '/encheres', label: 'Les enchères', icon: 'gavel', role: '', hide_admin: true },
 	{ path: path('app_map'), label: 'Carte des restaurants', icon: 'map', role: '', hide_admin: true },
 	{ path: path('app_admin_users'), label: 'Utilisateurs', icon: 'users', role: 'ROLE_ADMIN' },
