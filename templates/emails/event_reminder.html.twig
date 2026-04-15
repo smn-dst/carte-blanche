@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="UTF-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	</head>
+	<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+		<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:40px 20px;">
+			<tr>
+				<td align="center">
+					<table width="600" cellpadding="0" cellspacing="0" style="background-color:#151515;border-radius:12px;border:1px solid #2a2a2a;">
+
+						{# Header #}
+						<tr>
+							<td style="padding:40px 40px 20px;text-align:center;border-bottom:1px solid #2a2a2a;">
+								<h1 style="color:#6366F9;font-size:24px;margin:0;">Carte Blanche</h1>
+							</td>
+						</tr>
+
+						{# Corps #}
+						<tr>
+							<td style="padding:40px;">
+
+								<table width="100%" cellpadding="0" cellspacing="0">
+									<tr>
+										<td align="center" style="padding-bottom:20px;">
+											<table cellpadding="0" cellspacing="0">
+												<tr>
+													<td style="width:60px;height:60px;border-radius:30px;background-color:#1e1b4b;text-align:center;vertical-align:middle;font-size:28px;">
+														📅
+													</td>
+												</tr>
+											</table>
+										</td>
+									</tr>
+								</table>
+
+								<h2 style="color:#ffffff;font-size:22px;text-align:center;margin:0 0 10px;">Votre expérience approche !</h2>
+								<p style="color:#a1a1a1;text-align:center;margin:0 0 30px;font-size:15px;">
+									Bonjour {{ user.firstName }}, votre événement a lieu dans <strong style="color:#6366F9;">7 jours</strong>.
+								</p>
+
+								{# Détail de l'événement #}
+								{% if restaurant %}
+									<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:30px;">
+										<tr>
+											<td style="padding:24px;">
+
+												<p style="color:#6366F9;font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;font-weight:600;">
+													{% if restaurant.categories is not empty %}
+														{{ restaurant.categories|first.name }}
+													{% else %}
+														Expérience
+													{% endif %}
+												</p>
+
+												<h3 style="color:#ffffff;font-size:20px;margin:0 0 16px;">{{ restaurant.name }}</h3>
+
+												<table width="100%" cellpadding="0" cellspacing="0">
+													{% if restaurant.auctionDate %}
+														<tr>
+															<td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;width:30%;">Date</td>
+															<td style="color:#ffffff;font-size:13px;font-weight:600;padding-bottom:10px;">
+																{{ restaurant.auctionDate|date('l d MMMM Y')|capitalize }}
+																{% if restaurant.auctionTime %}
+																	à {{ restaurant.auctionTime|date('H:i') }}
+																{% endif %}
+															</td>
+														</tr>
+													{% endif %}
+													{% if restaurant.auctionLocation %}
+														<tr>
+															<td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Lieu</td>
+															<td style="color:#ffffff;font-size:13px;padding-bottom:10px;">{{ restaurant.auctionLocation }}</td>
+														</tr>
+													{% endif %}
+													{% if restaurant.address %}
+														<tr>
+															<td style="color:#a1a1a1;font-size:13px;padding-bottom:4px;">Adresse</td>
+															<td style="color:#ffffff;font-size:13px;padding-bottom:4px;">{{ restaurant.address }}</td>
+														</tr>
+													{% endif %}
+												</table>
+
+											</td>
+										</tr>
+									</table>
+								{% endif %}
+
+								{# Conseil pratique #}
+								<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:30px;">
+									<tr>
+										<td style="padding:16px 20px;">
+											<p style="color:#a1a1a1;font-size:13px;margin:0;line-height:1.6;">
+												Pensez à télécharger votre QR code avant l'événement. Il vous sera demandé à l'entrée — pas besoin de connexion internet sur place.
+											</p>
+										</td>
+									</tr>
+								</table>
+
+								{# CTA #}
+								<table width="100%" cellpadding="0" cellspacing="0" style="margin-top:28px;">
+									<tr>
+										<td align="center">
+											<a href="{{ url('app_my_tickets') }}" style="display:inline-block;background-color:#6366F9;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+												Afficher mon ticket
+											</a>
+										</td>
+									</tr>
+								</table>
+
+								<p style="color:#a1a1a1;font-size:12px;text-align:center;margin:24px 0 0;line-height:1.5;">
+									Présentez votre QR code à l'entrée le jour de l'événement.
+								</p>
+
+							</td>
+						</tr>
+
+						{# Footer #}
+						<tr>
+							<td style="padding:20px 40px;border-top:1px solid #2a2a2a;text-align:center;">
+								<p style="color:#666;font-size:11px;margin:0 0 6px;">© 2026 Carte Blanche Platform — Tous droits réservés</p>
+								<p style="color:#444;font-size:11px;margin:0;">
+									<a href="{{ url('app_profile') }}" style="color:#444;text-decoration:underline;">Gérer mes préférences de notification</a>
+								</p>
+							</td>
+						</tr>
+
+					</table>
+				</td>
+			</tr>
+		</table>
+
+	</body>
+</html>

@@ -15,4 +15,23 @@ class CartRepository extends ServiceEntityRepository
     {
         parent::__construct($registry, Cart::class);
     }
+
+    /**
+     * Retourne les paniers non vides, non modifiés depuis $abandonedBefore,
+     * dont l'email d'abandon n'a pas encore été envoyé.
+     *
+     * @return Cart[]
+     */
+    public function findAbandonedCarts(\DateTimeImmutable $abandonedBefore): array
+    {
+        return $this->createQueryBuilder('c')
+            ->innerJoin('c.cartItems', 'ci')
+            ->innerJoin('c.user', 'u')
+            ->where('c.updatedAt < :before')
+            ->andWhere('c.abandonedCartEmailSentAt IS NULL')
+            ->andWhere('u.notifNewAuctions = true')
+            ->setParameter('before', $abandonedBefore)
+            ->getQuery()
+            ->getResult();
+    }
 }

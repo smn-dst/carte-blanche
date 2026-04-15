@@ -2,7 +2,9 @@
 
 namespace App\Service;
 
+use App\Entity\Cart;
 use App\Entity\Order;
+use App\Entity\Ticket;
 use App\Entity\User;
 use App\Security\EmailVerifier;
 use Symfony\Bridge\Twig\Mime\TemplatedEmail;
@@ -83,6 +85,56 @@ readonly class SendMailService
             ->subject('Réinitialisation de votre mot de passe')
             ->htmlTemplate('emails/password_reset_email.html.twig')
             ->context(['resetUrl' => $resetUrl]);
+
+        $this->mailer->send($message);
+    }
+
+    public function sendAbandonedCartEmail(User $user, Cart $cart): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $total = 0;
+        foreach ($cart->getCartItems() as $item) {
+            $restaurant = $item->getRestaurant();
+            if (null !== $restaurant) {
+                $total += ((float) ($restaurant->getTicketPrice() ?? 0)) * $item->getQuantity();
+            }
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject('Vous avez oublié quelque chose dans votre panier !')
+            ->htmlTemplate('emails/abandoned_cart.html.twig')
+            ->context([
+                'user' => $user,
+                'cartItems' => $cart->getCartItems(),
+                'total' => $total,
+            ]);
+
+        $this->mailer->send($message);
+    }
+
+    public function sendEventReminderEmail(User $user, Ticket $ticket): void
+    {
+        $email = $user->getEmail();
+        if (null === $email) {
+            return;
+        }
+
+        $message = (new TemplatedEmail())
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to(new Address($email, ($user->getFirstName() ?? '').' '.($user->getLastName() ?? '')))
+            ->subject('Rappel qu\une enchère va avoir lieu dans 7 jours !')
+            ->htmlTemplate('emails/event_reminder.html.twig')
+            ->context([
+                'user' => $user,
+                'ticket' => $ticket,
+                'restaurant' => $ticket->getRestaurant(),
+            ]);
 
         $this->mailer->send($message);
     }

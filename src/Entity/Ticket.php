@@ -23,6 +23,9 @@ class Ticket
     #[ORM\Column]
     private ?\DateTimeImmutable $createdAt = null;
 
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $reminderEmailSentAt = null;
+
     #[ORM\ManyToOne(inversedBy: 'tickets')]
     #[ORM\JoinColumn(name: 'restaurant_id', referencedColumnName: 'id', nullable: false)]
     private ?Restaurant $restaurant = null;
@@ -68,6 +71,18 @@ class Ticket
     public function setCreatedAt(\DateTimeImmutable $createdAt): static
     {
         $this->createdAt = $createdAt;
+
+        return $this;
+    }
+
+    public function getReminderEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->reminderEmailSentAt;
+    }
+
+    public function setReminderEmailSentAt(?\DateTimeImmutable $reminderEmailSentAt): static
+    {
+        $this->reminderEmailSentAt = $reminderEmailSentAt;
 
         return $this;
     }

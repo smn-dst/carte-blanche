@@ -28,6 +28,12 @@ class Cart
     /**
      * @var Collection<int, CartItem>
      */
+    #[ORM\Column(nullable: true)]
+    private ?\DateTimeImmutable $abandonedCartEmailSentAt = null;
+
+    /**
+     * @var Collection<int, CartItem>
+     */
     #[ORM\OneToMany(mappedBy: 'cart', targetEntity: CartItem::class)]
     private Collection $cartItems;
 
@@ -83,6 +89,18 @@ class Cart
     public function getCartItems(): Collection
     {
         return $this->cartItems;
+    }
+
+    public function getAbandonedCartEmailSentAt(): ?\DateTimeImmutable
+    {
+        return $this->abandonedCartEmailSentAt;
+    }
+
+    public function setAbandonedCartEmailSentAt(?\DateTimeImmutable $abandonedCartEmailSentAt): static
+    {
+        $this->abandonedCartEmailSentAt = $abandonedCartEmailSentAt;
+
+        return $this;
     }
 
     public function addCartItem(CartItem $cartItem): static
