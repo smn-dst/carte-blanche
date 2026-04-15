@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;">
+
+<table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:40px 20px;">
+    <tr>
+        <td align="center">
+            <table width="600" cellpadding="0" cellspacing="0" style="background-color:#151515;border-radius:12px;border:1px solid #2a2a2a;max-width:600px;">
+
+                {# Header #}
+                <tr>
+                    <td style="padding:40px 40px 20px;text-align:center;border-bottom:1px solid #2a2a2a;">
+                        <h1 style="color:#6366F9;font-size:24px;margin:0;letter-spacing:-0.02em;">Carte Blanche</h1>
+                        <p style="color:#666;font-size:11px;margin:8px 0 0;text-transform:uppercase;letter-spacing:0.12em;">Remboursement approuvé</p>
+                    </td>
+                </tr>
+
+                {# Body #}
+                <tr>
+                    <td style="padding:40px;">
+
+                        {# Icône ✓ verte #}
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:28px;">
+                            <tr>
+                                <td align="center">
+                                    <table cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td style="width:60px;height:60px;border-radius:30px;background-color:#14532d;text-align:center;vertical-align:middle;font-size:28px;color:#22c55e;">
+                                                &#10003;
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <h2 style="color:#ffffff;font-size:22px;text-align:center;margin:0 0 10px;">Remboursement approuvé</h2>
+                        <p style="color:#a1a1a1;text-align:center;margin:0 0 28px;font-size:15px;">
+                            Bonjour {{ user.firstName }}, votre demande de remboursement a été <strong style="color:#22c55e;">approuvée</strong>.
+                        </p>
+
+                        {# Récapitulatif #}
+                        <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#1a1a1a;border-radius:8px;border:1px solid #2a2a2a;margin-bottom:24px;">
+                            <tr>
+                                <td style="padding:20px;">
+                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                        {% if order %}
+                                        <tr>
+                                            <td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Commande</td>
+                                            <td style="color:#6366F9;font-size:13px;font-weight:bold;text-align:right;padding-bottom:10px;">{{ order.reference }}</td>
+                                        </tr>
+                                        {% endif %}
+                                        <tr>
+                                            <td style="color:#a1a1a1;font-size:13px;padding-bottom:10px;">Montant remboursé</td>
+                                            <td style="color:#22c55e;font-size:16px;font-weight:bold;text-align:right;padding-bottom:10px;">{{ refund.amount|number_format(0, ',', ' ') }} €</td>
+                                        </tr>
+                                        <tr>
+                                            <td style="color:#a1a1a1;font-size:13px;">Date de traitement</td>
+                                            <td style="color:#ffffff;font-size:13px;text-align:right;">{{ "now"|date('d/m/Y') }}</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <p style="color:#a1a1a1;font-size:13px;text-align:center;margin:0 0 24px;line-height:1.6;">
+                            Le remboursement a été initié via Stripe. Selon votre banque, il peut prendre <strong style="color:#ffffff;">3 à 10 jours ouvrés</strong> pour apparaître sur votre compte.
+                        </p>
+
+                        <table width="100%" cellpadding="0" cellspacing="0" style="margin-top:8px;">
+                            <tr>
+                                <td align="center">
+                                    <a href="{{ url('app_my_tickets') }}" style="display:inline-block;background-color:#6366F9;color:#ffffff;padding:14px 36px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;">
+                                        Voir mes réservations
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+
+                    </td>
+                </tr>
+
+                {# Footer #}
+                <tr>
+                    <td style="padding:20px 40px;border-top:1px solid #2a2a2a;text-align:center;">
+                        <p style="color:#666;font-size:11px;margin:0;">© 2026 Carte Blanche Platform — Tous droits réservés</p>
+                    </td>
+                </tr>
+
+            </table>
+        </td>
+    </tr>
+</table>
+
+</body>
+</html>

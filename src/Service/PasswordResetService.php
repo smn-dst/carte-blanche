@@ -53,7 +53,7 @@ readonly class PasswordResetService
         if (null === $email) {
             throw new \LogicException('User must have an email for password reset.');
         }
-        $this->sendMailService->sendPasswordResetEmail($email, $resetUrl);
+        $this->sendMailService->sendPasswordResetEmail($email, $resetUrl, $user->getFirstName());
     }
 
     public function tokenExists(string $token): PasswordResetToken
