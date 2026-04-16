@@ -34,6 +34,37 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * Statistiques globales pour le dashboard admin.
+     * Retourne le total, le nombre d'acheteurs (ROLE_USER sans vendor/admin) et de vendeurs (ROLE_VENDOR).
+     * Le filtrage par rôle se fait en PHP (rôles stockés en JSON, non requêtables facilement en DQL).
+     *
+     * @return array{total: int, buyers: int, vendors: int}
+     */
+    public function getDashboardStats(): array
+    {
+        /** @var User[] $users */
+        $users = $this->createQueryBuilder('u')
+            ->select('u.roles')
+            ->getQuery()
+            ->getResult();
+
+        $total = count($users);
+        $buyers = 0;
+        $vendors = 0;
+
+        foreach ($users as $row) {
+            $roles = $row['roles'];
+            if (in_array('ROLE_VENDOR', $roles, true)) {
+                ++$vendors;
+            } elseif (!in_array('ROLE_ADMIN', $roles, true)) {
+                ++$buyers;
+            }
+        }
+
+        return ['total' => $total, 'buyers' => $buyers, 'vendors' => $vendors];
+    }
+
+    /**
      * Ajouter cette méthode dans src/Repository/UserRepository.php.
      *
      * Recherche d'utilisateurs pour le panel admin.

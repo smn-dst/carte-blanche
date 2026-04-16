@@ -16,6 +16,14 @@ class RefundRepository extends ServiceEntityRepository
         parent::__construct($registry, Refund::class);
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('rf')
+            ->select('COUNT(rf.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function countPendingForAdmin(): int
     {
         return (int) $this->createQueryBuilder('rf')
