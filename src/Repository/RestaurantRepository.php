@@ -279,6 +279,23 @@ class RestaurantRepository extends ServiceEntityRepository
     }
 
     /**
+     * Nombre de restaurants actifs (publiés, programmés, en cours).
+     */
+    public function countActive(): int
+    {
+        return (int) $this->createQueryBuilder('r')
+            ->select('COUNT(r.id)')
+            ->where('r.status IN (:statuses)')
+            ->setParameter('statuses', [
+                StatusRestaurantEnum::PUBLIE,
+                StatusRestaurantEnum::PROGRAMME,
+                StatusRestaurantEnum::EN_COURS,
+            ])
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
+    /**
      * Nombre de restaurants en attente de validation admin (statut EN_MODERATION).
      */
     public function countPendingValidation(): int

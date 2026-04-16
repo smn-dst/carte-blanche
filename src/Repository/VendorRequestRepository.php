@@ -31,6 +31,14 @@ class VendorRequestRepository extends ServiceEntityRepository
         return null !== $this->findPendingByUser($user);
     }
 
+    public function countAll(): int
+    {
+        return (int) $this->createQueryBuilder('vr')
+            ->select('COUNT(vr.id)')
+            ->getQuery()
+            ->getSingleScalarResult();
+    }
+
     public function countPendingForAdmin(): int
     {
         return (int) $this->createQueryBuilder('vr')

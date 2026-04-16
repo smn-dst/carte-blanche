@@ -17,6 +17,30 @@ class OrderRepository extends ServiceEntityRepository
     }
 
     /**
+     * Statistiques globales pour le dashboard admin.
+     *
+     * @return array{totalRevenue: float, orderCount: int}
+     */
+    public function getDashboardStats(): array
+    {
+        $result = $this->createQueryBuilder('o')
+            ->select('SUM(o.totalAmount) as totalRevenue', 'COUNT(o.id) as orderCount')
+            ->where('o.status IN (:statuses)')
+            ->setParameter('statuses', [
+                \App\Enum\StatusOrderEnum::PAYEE,
+                \App\Enum\StatusOrderEnum::REMBOURSEMENT_PARTIEL,
+                \App\Enum\StatusOrderEnum::REMBOURSEE,
+            ])
+            ->getQuery()
+            ->getSingleResult();
+
+        return [
+            'totalRevenue' => (float) ($result['totalRevenue'] ?? 0),
+            'orderCount' => (int) ($result['orderCount'] ?? 0),
+        ];
+    }
+
+    /**
      * Ajouter cette méthode dans src/Repository/OrderRepository.php
      * (avant le dernier }).
      *
