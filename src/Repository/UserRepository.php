@@ -34,6 +34,35 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
     }
 
     /**
+     * Statistiques globales pour le dashboard admin.
+     *
+     * @return array{total: int, buyers: int, vendors: int}
+     */
+    public function getDashboardStats(): array
+    {
+        /** @var array<array{roles: list<string>}> $rows */
+        $rows = $this->createQueryBuilder('u')
+            ->select('u.roles')
+            ->getQuery()
+            ->getResult();
+
+        $total = count($rows);
+        $buyers = 0;
+        $vendors = 0;
+
+        foreach ($rows as $row) {
+            $roles = $row['roles'];
+            if (in_array('ROLE_VENDOR', $roles, true)) {
+                ++$vendors;
+            } elseif (!in_array('ROLE_ADMIN', $roles, true)) {
+                ++$buyers;
+            }
+        }
+
+        return ['total' => $total, 'buyers' => $buyers, 'vendors' => $vendors];
+    }
+
+    /**
      * Ajouter cette méthode dans src/Repository/UserRepository.php.
      *
      * Recherche d'utilisateurs pour le panel admin.
