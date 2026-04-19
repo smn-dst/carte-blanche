@@ -90,7 +90,6 @@ class VendorRequestController extends AbstractController
         $vendorRequest->setUser($user);
         $vendorRequest->setMotivation($motivation);
 
-        // ── Gestion upload pièce d'identité ──
         $idCardFile = $request->files->get('id_card');
         if (null !== $idCardFile) {
             $allowedMimes = ['image/jpeg', 'image/png', 'image/webp', 'application/pdf'];
@@ -132,10 +131,6 @@ class VendorRequestController extends AbstractController
 
         return $this->redirectToRoute('app_home');
     }
-
-    // ─────────────────────────────────────────────
-    // ADMIN
-    // ─────────────────────────────────────────────
 
     #[Route('/admin/vendor-requests', name: 'app_admin_vendor_requests', methods: ['GET'])]
     #[IsGranted('ROLE_ADMIN')]

@@ -90,8 +90,6 @@ class RestaurantServiceTest extends TestCase
         );
     }
 
-    // --- findOrFail ---
-
     public function testFindOrFailReturnsRestaurantWhenFound(): void
     {
         $restaurant = $this->createRestaurant(42);
@@ -121,8 +119,6 @@ class RestaurantServiceTest extends TestCase
         $this->service->findOrFail(999);
     }
 
-    // --- findByOwner ---
-
     public function testFindByOwnerDelegatesToRepository(): void
     {
         $owner = $this->createOwner();
@@ -138,8 +134,6 @@ class RestaurantServiceTest extends TestCase
 
         $this->assertSame($restaurants, $result);
     }
-
-    // --- buildInputDto ---
 
     public function testBuildInputDtoMapsAllScalarFields(): void
     {
@@ -181,8 +175,6 @@ class RestaurantServiceTest extends TestCase
         $this->assertCount(1, $dto->categories);
         $this->assertContains($category, $dto->categories);
     }
-
-    // --- create ---
 
     public function testCreatePersistsAndFlushesRestaurant(): void
     {
@@ -239,7 +231,40 @@ class RestaurantServiceTest extends TestCase
         $this->assertSame('350000.00', $result->getAskingPrice());
     }
 
-    // --- update ---
+    public function testCreateStripsSpacesAndFrenchCommaInMoneyFields(): void
+    {
+        $owner = $this->createOwner();
+        $dto = new RestaurantInputDto(
+            name: 'Nouveau Restaurant',
+            description: 'Une belle description',
+            address: '5 avenue de la Paix, Lyon',
+            latitude: 45.764,
+            longitude: 4.8357,
+            capacity: 80,
+            askingPrice: '3 500 000',
+            annualRevenue: '5 000 000',
+            rent: '4 000,50',
+            leaseRemaining: 24,
+            pappersUrl: null,
+            auctionDate: null,
+            auctionTime: null,
+            auctionLocation: null,
+            auctionLocationLat: null,
+            auctionLocationLng: null,
+            maxCapacity: 100,
+            categories: [],
+        );
+
+        $this->entityManager->method('persist');
+        $this->entityManager->method('flush');
+
+        $result = $this->service->create($owner, $dto);
+
+        $this->assertSame('3500000', $result->getAskingPrice());
+        $this->assertSame('5000000', $result->getAnnualRevenue());
+        $this->assertSame('4000.50', $result->getRent());
+        $this->assertSame('350', $result->getTicketPrice());
+    }
 
     public function testUpdateFlushesAndSetsUpdatedAt(): void
     {
@@ -290,8 +315,6 @@ class RestaurantServiceTest extends TestCase
         $this->assertFalse($restaurant->getCategories()->contains($oldCategory));
         $this->assertTrue($restaurant->getCategories()->contains($newCategory));
     }
-
-    // --- delete ---
 
     public function testDeleteRemovesAndFlushes(): void
     {

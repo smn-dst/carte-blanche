@@ -49,7 +49,6 @@ class RecommendationService
                 continue;
             }
 
-            // ── Pré-filtrage dur ──
             if (!$this->matchesPreferences($restaurant, $prefs)) {
                 continue;
             }

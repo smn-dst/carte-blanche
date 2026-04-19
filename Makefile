@@ -59,7 +59,10 @@ test-e2e:
 test-e2e-open:
 	npx cypress open
 
-test-all: test-unit test-functional test-e2e
+test-all: test-unit test-functional test-js
+
+# Inclut Cypress (nécessite l’app joignable sur baseUrl du cypress.config.js).
+test-all-with-e2e: test-unit test-functional test-js test-e2e
 
 up:
 	docker compose up -d

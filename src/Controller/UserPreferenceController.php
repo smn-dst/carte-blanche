@@ -91,7 +91,6 @@ class UserPreferenceController extends AbstractController
     {
         $preferenceText = $this->buildPreferenceText($data);
 
-        // ── Données structurées pour le pré-filtrage dur ──
         $structuredData = [
             'cuisineTypes' => $data['cuisineTypes'] ?? [],
             'budgetMin' => isset($data['budgetMin']) && '' !== $data['budgetMin'] ? (float) $data['budgetMin'] : null,
