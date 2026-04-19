@@ -12,7 +12,10 @@ class RecommendationAgent extends Agent
 {
     public static function withTools(EntityManagerInterface $em): static
     {
-        return static::make()->addTool(new GetRestaurantDetailsTool($em));
+        $agent = static::make();
+        $agent->addTool(new GetRestaurantDetailsTool($em));
+
+        return $agent;
     }
 
     protected function provider(): AIProviderInterface

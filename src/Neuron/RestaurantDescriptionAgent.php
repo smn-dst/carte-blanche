@@ -4,7 +4,7 @@ namespace App\Neuron;
 
 use App\Neuron\Tools\GetRestaurantDataTool;
 use Doctrine\ORM\EntityManagerInterface;
-use NeuronAI\Agent;
+use NeuronAI\Agent\Agent;
 use NeuronAI\Providers\AIProviderInterface;
 use NeuronAI\Providers\Ollama\Ollama;
 
@@ -12,7 +12,10 @@ class RestaurantDescriptionAgent extends Agent
 {
     public static function withTools(EntityManagerInterface $em): static
     {
-        return static::make()->addTool(new GetRestaurantDataTool($em));
+        $agent = static::make();
+        $agent->addTool(new GetRestaurantDataTool($em));
+
+        return $agent;
     }
 
     protected function provider(): AIProviderInterface
