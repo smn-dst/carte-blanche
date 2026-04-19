@@ -29,9 +29,16 @@
 					<p class="text-sm text-muted-foreground">{{ profile.membershipLabel }}</p>
 				</div>
 
-				<div class="text-sm">
+				<div class="text-sm flex flex-wrap gap-2">
 					<span class="inline-flex rounded-full px-3 py-1 {{ profile.isVerified ? 'bg-green-500/15 text-green-300' : 'bg-yellow-500/15 text-yellow-300' }}">
 						{{ profile.isVerified ? 'Compte verifié' : 'Compte non verifié' }}
+					</span>
+					<span class="inline-flex rounded-full px-3 py-1 bg-blue-500/15 text-blue-300">
+						{% set roleLabels = {'ROLE_ADMIN': 'Administrateur', 'ROLE_VENDOR': 'Vendeur', 'ROLE_USER': 'Utilisateur'} %}
+						{% set roles = app.user.roles %}
+						{% if 'ROLE_ADMIN' in roles %}Administrateur
+						{% elseif 'ROLE_VENDOR' in roles %}Vendeur
+						{% else %}Utilisateur{% endif %}
 					</span>
 				</div>
 

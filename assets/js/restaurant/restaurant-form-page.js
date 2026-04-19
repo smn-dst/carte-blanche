@@ -5,6 +5,7 @@ import { initGoogleAddressAutocomplete } from './google-address-autocomplete.js'
 import { initAuctionDatetimePickers } from './auction-datetime-pickers.js';
 import { initImageUploadRepeater } from './image-upload-repeater.js';
 import { initAiDescriptionGenerator } from './ai-description-generator.js';
+import { initTicketPriceCalculator } from './ticket-price-calculator.js';
 
 function boot() {
     const cfg = document.getElementById('restaurant-form-config');
@@ -24,6 +25,8 @@ function boot() {
     if (genUrl) {
         initAiDescriptionGenerator(genUrl);
     }
+
+    initTicketPriceCalculator();
 }
 
 document.addEventListener('DOMContentLoaded', boot);
