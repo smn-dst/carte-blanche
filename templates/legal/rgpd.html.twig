@@ -1,0 +1,200 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Politique de confidentialité — Carte Blanche{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto px-6 py-16 space-y-12">
+
+    {# ── En-tête ── #}
+    <div class="space-y-4">
+        <p class="text-xs text-primary uppercase tracking-widest font-semibold">Légal</p>
+        <h1 class="text-4xl sm:text-5xl font-bold text-foreground">Politique de confidentialité</h1>
+        <p class="text-muted-foreground">Dernière mise à jour : avril 2026</p>
+        <div class="h-px bg-border"></div>
+    </div>
+
+    {# ── Introduction ── #}
+    <section class="space-y-4">
+        <p class="text-muted-foreground leading-relaxed">
+            Carte Blanche (ci-après « la Plateforme ») accorde une importance particulière à la protection de vos données personnelles.
+            La présente politique de confidentialité décrit comment nous collectons, utilisons et protégeons vos données conformément
+            au Règlement Général sur la Protection des Données (RGPD — Règlement UE 2016/679) et à la loi Informatique et Libertés.
+        </p>
+    </section>
+
+    {# ── 1. Responsable du traitement ── #}
+    <section class="space-y-3">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            1. Responsable du traitement
+        </h2>
+        <div class="rounded-xl border border-border bg-secondary/10 p-6 space-y-2 text-sm text-muted-foreground">
+            <p><span class="text-foreground font-medium">Société :</span> Carte Blanche SAS</p>
+            <p><span class="text-foreground font-medium">Siège social :</span> Paris, France</p>
+            <p><span class="text-foreground font-medium">Email de contact :</span> contact@carteblanche.fr</p>
+        </div>
+    </section>
+
+    {# ── 2. Données collectées ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            2. Données collectées
+        </h2>
+        <p class="text-muted-foreground leading-relaxed">Nous collectons les données suivantes selon votre utilisation de la Plateforme :</p>
+
+        <div class="overflow-x-auto rounded-xl border border-border">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-border bg-secondary/30 text-left">
+                        <th class="px-4 py-3 font-semibold text-foreground">Catégorie</th>
+                        <th class="px-4 py-3 font-semibold text-foreground">Données</th>
+                        <th class="px-4 py-3 font-semibold text-foreground">Finalité</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border text-muted-foreground">
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">Identité</td>
+                        <td class="px-4 py-3">Nom, prénom, adresse e-mail, numéro de téléphone</td>
+                        <td class="px-4 py-3">Création et gestion de compte</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">Connexion</td>
+                        <td class="px-4 py-3">Adresse IP, logs de connexion, cookies de session</td>
+                        <td class="px-4 py-3">Sécurité, authentification</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">Paiement</td>
+                        <td class="px-4 py-3">Données de transaction Stripe (tokenisées, nous ne stockons pas de CB)</td>
+                        <td class="px-4 py-3">Traitement des achats de tickets</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">Préférences</td>
+                        <td class="px-4 py-3">Budget, localisation, type de cuisine, capacité recherchée</td>
+                        <td class="px-4 py-3">Personnalisation des recommandations</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">Vendeur</td>
+                        <td class="px-4 py-3">Pièce d'identité, motivation, informations sur le restaurant</td>
+                        <td class="px-4 py-3">Vérification de l'identité et validation du compte vendeur</td>
+                    </tr>
+                    <tr>
+                        <td class="px-4 py-3 font-medium text-foreground">IA</td>
+                        <td class="px-4 py-3">Questions posées au chatbot, interactions avec les fonctionnalités IA</td>
+                        <td class="px-4 py-3">Amélioration du service, logs techniques</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </section>
+
+    {# ── 3. Bases légales ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            3. Bases légales du traitement
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-4">
+            {% for item in [
+                { title: 'Exécution du contrat', desc: 'Traitement nécessaire à la gestion de votre compte et de vos commandes.' },
+                { title: 'Consentement', desc: 'Pour les cookies non essentiels et la personnalisation par IA.' },
+                { title: 'Intérêt légitime', desc: 'Sécurité de la plateforme, prévention de la fraude, statistiques internes.' },
+                { title: 'Obligation légale', desc: 'Conservation des données de facturation (10 ans, Code de commerce).' },
+            ] %}
+                <div class="rounded-xl border border-border bg-secondary/10 p-5 space-y-1">
+                    <p class="font-semibold text-foreground text-sm">{{ item.title }}</p>
+                    <p class="text-muted-foreground text-sm">{{ item.desc }}</p>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ── 4. Durées de conservation ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            4. Durées de conservation
+        </h2>
+        <div class="space-y-2 text-muted-foreground text-sm">
+            <p>• <span class="text-foreground">Données de compte actif :</span> durée de la relation contractuelle + 3 ans</p>
+            <p>• <span class="text-foreground">Données de paiement :</span> 10 ans (obligation comptable)</p>
+            <p>• <span class="text-foreground">Logs de connexion :</span> 12 mois</p>
+            <p>• <span class="text-foreground">Pièces d'identité vendeur :</span> durée de la vérification + 1 an</p>
+            <p>• <span class="text-foreground">Logs IA :</span> 6 mois</p>
+        </div>
+    </section>
+
+    {# ── 5. Partage des données ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            5. Partage et sous-traitants
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Vos données ne sont jamais vendues. Elles peuvent être transmises aux sous-traitants suivants dans le cadre
+            de la fourniture du service :
+        </p>
+        <div class="grid sm:grid-cols-3 gap-4">
+            {% for item in [
+                { name: 'Stripe', role: 'Paiement sécurisé', country: 'États-Unis (CCR)' },
+                { name: 'Brevo', role: 'Envoi d\'emails transactionnels', country: 'France' },
+                { name: 'OpenAI', role: 'Chatbot IA (questions uniquement)', country: 'États-Unis (CCR)' },
+            ] %}
+                <div class="rounded-xl border border-border bg-secondary/10 p-4 space-y-1 text-sm">
+                    <p class="font-semibold text-foreground">{{ item.name }}</p>
+                    <p class="text-muted-foreground">{{ item.role }}</p>
+                    <p class="text-xs text-muted-foreground/70">{{ item.country }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <p class="text-muted-foreground text-xs">CCR = Clauses Contractuelles Types approuvées par la Commission Européenne.</p>
+    </section>
+
+    {# ── 6. Vos droits ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            6. Vos droits
+        </h2>
+        <p class="text-muted-foreground text-sm">Conformément au RGPD, vous disposez des droits suivants :</p>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+            {% for right in [
+                { name: 'Accès', desc: 'Obtenir une copie de vos données.' },
+                { name: 'Rectification', desc: 'Corriger des données inexactes.' },
+                { name: 'Effacement', desc: 'Demander la suppression de vos données.' },
+                { name: 'Portabilité', desc: 'Récupérer vos données dans un format structuré.' },
+                { name: 'Opposition', desc: 'Vous opposer à certains traitements.' },
+                { name: 'Limitation', desc: 'Demander la suspension d\'un traitement.' },
+            ] %}
+                <div class="rounded-lg border border-border bg-secondary/10 p-4 space-y-1">
+                    <p class="font-medium text-foreground">{{ right.name }}</p>
+                    <p class="text-muted-foreground text-xs">{{ right.desc }}</p>
+                </div>
+            {% endfor %}
+        </div>
+        <p class="text-muted-foreground text-sm">
+            Pour exercer vos droits : <a href="mailto:contact@carteblanche.fr" class="text-primary hover:underline">contact@carteblanche.fr</a>.
+            Vous pouvez également contacter la <a href="https://www.cnil.fr" target="_blank" class="text-primary hover:underline">CNIL</a> en cas de litige.
+        </p>
+    </section>
+
+    {# ── 7. Cookies ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            7. Cookies
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Nous utilisons des cookies essentiels (session, sécurité CSRF) indispensables au fonctionnement du site.
+            Aucun cookie publicitaire ou de tracking tiers n'est déposé sans votre consentement explicite.
+        </p>
+    </section>
+
+    {# ── Navigation légale ── #}
+    <div class="flex flex-wrap gap-3 pt-4 border-t border-border">
+        <a href="{{ path('app_cgv') }}" class="text-sm text-primary hover:underline">Conditions Générales de Vente →</a>
+        <a href="{{ path('app_cgu') }}" class="text-sm text-primary hover:underline">Conditions Générales d'Utilisation →</a>
+    </div>
+
+</div>
+{% endblock %}

@@ -35,3 +35,8 @@ services:
     App\Service\RefundService:
         arguments:
             $stripeSecretKey: '%stripe_secret_key%'
+
+    App\Service\AiDescriptionService:
+        arguments:
+            $ollamaUrl: '%env(string:OLLAMA_URL)%'
+            $ollamaModel: '%env(string:OLLAMA_MODEL)%'

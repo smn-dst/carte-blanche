@@ -1,0 +1,216 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions Générales d'Utilisation — Carte Blanche{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto px-6 py-16 space-y-12">
+
+    <div class="space-y-4">
+        <p class="text-xs text-primary uppercase tracking-widest font-semibold">Légal</p>
+        <h1 class="text-4xl sm:text-5xl font-bold text-foreground">Conditions Générales d'Utilisation</h1>
+        <p class="text-muted-foreground">Dernière mise à jour : avril 2026 — Version 1.0</p>
+        <div class="h-px bg-border"></div>
+    </div>
+
+    {# ── Préambule ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Préambule
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les présentes Conditions Générales d'Utilisation (CGU) définissent les règles d'accès et d'utilisation
+            de la plateforme Carte Blanche, accessible à l'adresse <span class="text-foreground">carteblanche.fr</span>.
+            Toute utilisation de la Plateforme implique l'acceptation sans réserve des présentes CGU.
+        </p>
+    </section>
+
+    {# ── 1. Définitions ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 1 — Définitions
+        </h2>
+        <div class="space-y-2 text-sm">
+            {% for item in [
+                { term: 'Plateforme', def: 'Le site web et l\'ensemble des services proposés par Carte Blanche.' },
+                { term: 'Utilisateur', def: 'Toute personne accédant à la Plateforme, qu\'elle soit inscrite ou non.' },
+                { term: 'Acheteur', def: 'Utilisateur inscrit qui achète des tickets d\'accès aux enchères.' },
+                { term: 'Vendeur', def: 'Utilisateur disposant du rôle vendeur, habilité à mettre des restaurants aux enchères.' },
+                { term: 'Enchère', def: 'Événement organisé en salle permettant la cession d\'un fonds de commerce de restaurant.' },
+                { term: 'Ticket', def: 'Droit d\'accès numérique à une enchère, matérialisé par un QR code.' },
+            ] %}
+                <div class="flex gap-3">
+                    <span class="text-primary font-semibold shrink-0 w-24">{{ item.term }}</span>
+                    <span class="text-muted-foreground">{{ item.def }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ── 2. Accès ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 2 — Accès à la Plateforme
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            La Plateforme est accessible 24h/24, 7j/7, sous réserve de maintenance ou d'interruption technique.
+            L'accès à certaines fonctionnalités (achat de tickets, dépôt d'annonce) nécessite la création d'un compte.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            L'utilisation de la Plateforme est réservée aux personnes majeures (18 ans ou plus) ayant la capacité juridique
+            de contracter. En vous inscrivant, vous certifiez remplir ces conditions.
+        </p>
+    </section>
+
+    {# ── 3. Compte utilisateur ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 3 — Création et gestion du compte
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            L'inscription s'effectue via formulaire ou via un compte Google/GitHub. L'utilisateur s'engage à fournir
+            des informations exactes et à les maintenir à jour. Chaque utilisateur est responsable de la confidentialité
+            de ses identifiants.
+        </p>
+        <div class="rounded-xl border border-border bg-secondary/10 p-5 space-y-2 text-sm text-muted-foreground">
+            <p class="text-foreground font-medium">Obligations de l'utilisateur :</p>
+            <p>• Ne pas créer plusieurs comptes avec la même identité</p>
+            <p>• Ne pas céder, louer ou partager son compte</p>
+            <p>• Signaler immédiatement tout accès non autorisé à son compte</p>
+            <p>• Ne pas usurper l'identité d'un tiers</p>
+        </div>
+    </section>
+
+    {# ── 4. Rôle vendeur ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 4 — Rôle vendeur
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Le rôle vendeur est attribué après validation de la demande par l'équipe Carte Blanche.
+            Cette validation nécessite la fourniture d'une pièce d'identité valide et d'une lettre de motivation.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Le vendeur s'engage à fournir des informations exactes et vérifiables sur les restaurants mis aux enchères
+            (chiffre d'affaires, bail, capacité, etc.). Toute information mensongère pourra entraîner la suspension
+            du compte et des poursuites judiciaires.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les annonces soumises sont soumises à validation par l'équipe Carte Blanche avant publication.
+        </p>
+    </section>
+
+    {# ── 5. Règles d'utilisation ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 5 — Comportements interdits
+        </h2>
+        <div class="grid sm:grid-cols-2 gap-3 text-sm">
+            {% for item in [
+                'Tenter de contourner les systèmes de sécurité de la Plateforme',
+                'Publier des informations fausses ou trompeuses sur un restaurant',
+                'Utiliser des robots, scrapers ou outils automatisés sans autorisation',
+                'Harceler, menacer ou diffamer d\'autres utilisateurs',
+                'Utiliser la Plateforme à des fins illicites ou frauduleuses',
+                'Reproduire, copier ou vendre tout contenu de la Plateforme sans autorisation',
+                'Créer des faux comptes ou usurper l\'identité d\'un tiers',
+                'Interférer avec le bon fonctionnement des enchères',
+            ] %}
+                <div class="flex items-start gap-3 rounded-lg border border-red-500/20 bg-red-500/5 p-3">
+                    <svg class="size-4 text-red-400 shrink-0 mt-0.5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                    <span class="text-muted-foreground">{{ item }}</span>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ── 6. Fonctionnalités IA ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 6 — Fonctionnalités d'intelligence artificielle
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            La Plateforme intègre des fonctionnalités d'IA (chatbot, génération de descriptions, recommandations personnalisées).
+            Ces fonctionnalités sont fournies à titre indicatif. Carte Blanche ne garantit pas l'exactitude ou l'exhaustivité
+            des réponses générées par l'IA et ne saurait être tenu responsable de décisions prises sur la base de ces informations.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les interactions avec le chatbot peuvent être conservées à des fins d'amélioration du service (voir notre
+            <a href="{{ path('app_rgpd') }}" class="text-primary hover:underline">Politique de confidentialité</a>).
+        </p>
+    </section>
+
+    {# ── 7. Propriété intellectuelle ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 7 — Propriété intellectuelle
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            L'ensemble des éléments de la Plateforme (logo, design, code source, textes, images) est la propriété
+            exclusive de Carte Blanche ou fait l'objet d'une licence d'utilisation. Toute reproduction ou exploitation
+            non autorisée est strictement interdite et constitue une contrefaçon.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            En publiant du contenu sur la Plateforme (descriptions de restaurants, photos), le vendeur concède à
+            Carte Blanche une licence non exclusive d'utilisation de ce contenu pour les besoins du service.
+        </p>
+    </section>
+
+    {# ── 8. Suspension / résiliation ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 8 — Suspension et résiliation
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Carte Blanche se réserve le droit de suspendre ou supprimer tout compte en cas de violation des présentes CGU,
+            sans préavis ni indemnité. L'utilisateur peut supprimer son compte à tout moment depuis ses paramètres de profil
+            ou en contactant <a href="mailto:contact@carteblanche.fr" class="text-primary hover:underline">contact@carteblanche.fr</a>.
+        </p>
+    </section>
+
+    {# ── 9. Modification des CGU ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 9 — Modification des CGU
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Carte Blanche se réserve le droit de modifier les présentes CGU à tout moment. Les utilisateurs seront
+            informés par email en cas de modification substantielle. La poursuite de l'utilisation de la Plateforme
+            après notification vaut acceptation des nouvelles CGU.
+        </p>
+    </section>
+
+    {# ── 10. Droit applicable ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 10 — Droit applicable et juridiction
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les présentes CGU sont régies par le droit français. Tout litige relatif à leur interprétation ou
+            exécution relève de la compétence exclusive des tribunaux de Paris.
+        </p>
+        <p class="text-muted-foreground text-sm">
+            Contact : <a href="mailto:contact@carteblanche.fr" class="text-primary hover:underline">contact@carteblanche.fr</a>
+        </p>
+    </section>
+
+    {# ── Navigation ── #}
+    <div class="flex flex-wrap gap-3 pt-4 border-t border-border">
+        <a href="{{ path('app_rgpd') }}" class="text-sm text-primary hover:underline">Politique de confidentialité →</a>
+        <a href="{{ path('app_cgv') }}" class="text-sm text-primary hover:underline">Conditions Générales de Vente →</a>
+    </div>
+
+</div>
+{% endblock %}

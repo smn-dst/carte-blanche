@@ -1,38 +1,59 @@
-function openFilters() {
-    const drawer = document.getElementById('filters-drawer');
-    const overlay = document.getElementById('filters-overlay');
-    if (!drawer || !overlay) {
-        return;
-    }
-    drawer.classList.remove('translate-y-full');
-    overlay.classList.remove('hidden');
-}
+/**
+ * Filtres enchères — auto-submit au changement de filtre.
+ * La recherche texte est soumise avec un debounce de 400ms.
+ * Le slider de prix soumet au relâchement (input event + debounce).
+ */
 
-function closeFilters() {
-    const drawer = document.getElementById('filters-drawer');
-    const overlay = document.getElementById('filters-overlay');
-    if (!drawer || !overlay) {
-        return;
-    }
-    drawer.classList.add('translate-y-full');
-    overlay.classList.add('hidden');
-}
+const form = document.getElementById('search-form');
+if (form) {
 
-document.addEventListener('click', (e) => {
-    if (e.target.closest('#filters-toggle')) {
-        e.preventDefault();
-        openFilters();
-        return;
+    // ── Debounce utilitaire ──
+    function debounce(fn, delay) {
+        let timer;
+        return (...args) => {
+            clearTimeout(timer);
+            timer = setTimeout(() => fn(...args), delay);
+        };
     }
-    if (e.target.closest('#filters-overlay')) {
-        closeFilters();
-        return;
+
+    const submitForm = () => form.submit();
+    const debouncedSubmit = debounce(submitForm, 400);
+
+    // ── Selects → submit immédiat au changement ──
+    form.querySelectorAll('select').forEach(select => {
+        select.addEventListener('change', submitForm);
+    });
+
+    // ── Champ texte → submit avec debounce ──
+    const searchInput = form.querySelector('input[name="search"]');
+    if (searchInput) {
+        searchInput.addEventListener('input', debouncedSubmit);
     }
-    if (e.target.closest('#filters-drawer-close')) {
-        closeFilters();
-        return;
+
+    // ── Sliders de prix → submit au relâchement ──
+    const minPriceInput = form.querySelector('input[name="minPrice"]');
+    const maxPriceInput = form.querySelector('input[name="maxPrice"]');
+
+    if (minPriceInput) {
+        minPriceInput.addEventListener('change', debouncedSubmit);
     }
-    if (e.target.closest('#filters-drawer-apply')) {
-        closeFilters();
+    if (maxPriceInput) {
+        maxPriceInput.addEventListener('change', debouncedSubmit);
     }
-});
+
+    // ── Bouton toggle filtres mobile ──
+    const toggleBtn = document.getElementById('filters-toggle');
+    const filtersRow = form.querySelector('.hidden.md\\:flex');
+    const mobileSelects = form.querySelectorAll('.hidden.md\\:block');
+
+    if (toggleBtn) {
+        toggleBtn.addEventListener('click', () => {
+            filtersRow?.classList.toggle('hidden');
+            filtersRow?.classList.toggle('flex');
+            mobileSelects.forEach(el => {
+                el.classList.toggle('hidden');
+                el.classList.toggle('block');
+            });
+        });
+    }
+}

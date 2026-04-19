@@ -1,4 +1,241 @@
-<button class="right-0 bottom-0 fixed p-6 bg-primary hover:bg-primary/90 rounded-full z-50 m-8 transition duration-200">
-    <span class="absolute top-0 right-0 w-4 h-4 bg-green-500 rounded-full -m-1.5 border border-border"></span>
-    <svg class="size-4" xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-message-circle-icon lucide-message-circle"><path d="M2.992 16.342a2 2 0 0 1 .094 1.167l-1.065 3.29a1 1 0 0 0 1.236 1.168l3.413-.998a2 2 0 0 1 1.099.092 10 10 0 1 0-4.777-4.719"/></svg>
+{#
+  Composant chatbot flottant — à inclure dans base.html.twig :
+  {{ include('Components/chatbot/chatbot_toggle-btn.html.twig') }}
+#}
+
+{# ── Bouton flottant ── #}
+<button
+    id="chatbot-toggle"
+    type="button"
+    aria-label="Ouvrir le chatbot"
+    class="fixed bottom-6 right-6 z-[100] w-14 h-14 rounded-full bg-primary shadow-lg shadow-primary/30 flex items-center justify-center hover:bg-primary/90 transition-all duration-200 hover:scale-105"
+>
+    <svg id="chatbot-icon-open" class="size-6 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-5l-3 3v-3z"/>
+    </svg>
+    <svg id="chatbot-icon-close" class="size-6 text-white hidden" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+    </svg>
 </button>
+
+{# ── Fenêtre de chat ── #}
+<div
+    id="chatbot-window"
+    class="hidden fixed bottom-24 right-6 z-[100] flex h-[min(540px,calc(100vh-8rem))] w-[340px] sm:w-[380px] flex-col overflow-hidden rounded-2xl border border-border bg-[#151515] shadow-2xl shadow-black/60"
+>
+    {# Header #}
+    <div class="flex shrink-0 items-center gap-3 border-b border-border bg-[#111111] px-4 py-3">
+        <div class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#2a2844]">
+            <svg class="size-4 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+            </svg>
+        </div>
+        <div class="flex-1 min-w-0">
+            <p class="text-sm font-semibold text-foreground">Assistant Carte Blanche</p>
+            <p class="text-xs text-muted-foreground">Répond en quelques secondes</p>
+        </div>
+        <div class="w-2 h-2 rounded-full bg-green-400 shrink-0" title="En ligne"></div>
+    </div>
+
+    {# Messages #}
+    <div id="chatbot-messages" class="min-h-0 flex-1 space-y-3 overflow-y-auto bg-[#151515] p-4">
+        {# Message de bienvenue #}
+        <div class="flex gap-2">
+            <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2a2844]">
+                <svg class="size-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+            </div>
+            <div class="max-w-[85%] rounded-2xl rounded-tl-sm bg-[#252525] px-3 py-2">
+                <p class="text-sm text-foreground">Bonjour ! 👋 Je suis l'assistant Carte Blanche. Comment puis-je t'aider avec les enchères ?</p>
+            </div>
+        </div>
+    </div>
+
+    {# Suggestions rapides #}
+    <div id="chatbot-suggestions" class="flex flex-wrap gap-1.5 border-t border-border bg-[#151515] px-4 py-2">
+        <button type="button" class="chatbot-suggestion text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors">
+            Comment acheter un ticket ?
+        </button>
+        <button type="button" class="chatbot-suggestion text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors">
+            Comment devenir vendeur ?
+        </button>
+        <button type="button" class="chatbot-suggestion text-xs px-2.5 py-1 rounded-full border border-border text-muted-foreground hover:border-primary/40 hover:text-primary transition-colors">
+            Comment fonctionne le remboursement ?
+        </button>
+    </div>
+
+    {# Input #}
+    <div class="shrink-0 border-t border-border bg-[#151515] px-4 py-3">
+        <div class="flex items-end gap-2">
+            <textarea
+                id="chatbot-input"
+                placeholder="Pose ta question…"
+                rows="1"
+                maxlength="500"
+                class="max-h-24 flex-1 resize-none overflow-y-auto rounded-xl border border-border bg-[#1a1a1a] px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-primary/50"
+            ></textarea>
+            <button
+                id="chatbot-send"
+                type="button"
+                class="shrink-0 w-9 h-9 rounded-xl bg-primary flex items-center justify-center hover:bg-primary/90 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                disabled
+            >
+                <svg class="size-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 12 3.269 3.125A59.769 59.769 0 0 1 21.485 12 59.768 59.768 0 0 1 3.27 20.875L5.999 12Zm0 0h7.5"/>
+                </svg>
+            </button>
+        </div>
+        <p class="text-[10px] text-muted-foreground mt-1.5 text-center">Propulsé par GPT-4o mini · Les réponses peuvent être inexactes</p>
+    </div>
+</div>
+
+<script>
+(function () {
+    const toggle    = document.getElementById('chatbot-toggle');
+    const window_   = document.getElementById('chatbot-window');
+    const messages  = document.getElementById('chatbot-messages');
+    const input     = document.getElementById('chatbot-input');
+    const sendBtn   = document.getElementById('chatbot-send');
+    const iconOpen  = document.getElementById('chatbot-icon-open');
+    const iconClose = document.getElementById('chatbot-icon-close');
+    const suggestions = document.getElementById('chatbot-suggestions');
+
+    let isOpen    = false;
+    let isLoading = false;
+    let history   = [];
+
+    // ── Toggle ──
+    toggle.addEventListener('click', () => {
+        isOpen = !isOpen;
+        window_.classList.toggle('hidden', !isOpen);
+        iconOpen.classList.toggle('hidden', isOpen);
+        iconClose.classList.toggle('hidden', !isOpen);
+        if (isOpen) input.focus();
+    });
+
+    // ── Activer/désactiver le bouton envoi ──
+    input.addEventListener('input', () => {
+        sendBtn.disabled = input.value.trim() === '' || isLoading;
+        // Auto-resize textarea
+        input.style.height = 'auto';
+        input.style.height = Math.min(input.scrollHeight, 96) + 'px';
+    });
+
+    // ── Envoi avec Enter (Shift+Enter = nouvelle ligne) ──
+    input.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled) sendMessage();
+        }
+    });
+
+    sendBtn.addEventListener('click', sendMessage);
+
+    // ── Suggestions rapides ──
+    document.querySelectorAll('.chatbot-suggestion').forEach(btn => {
+        btn.addEventListener('click', () => {
+            input.value = btn.textContent.trim();
+            sendBtn.disabled = false;
+            if (suggestions) suggestions.style.display = 'none';
+            sendMessage();
+        });
+    });
+
+    function sendMessage() {
+        const question = input.value.trim();
+        if (!question || isLoading) return;
+
+        appendMessage('user', question);
+        input.value = '';
+        input.style.height = 'auto';
+        sendBtn.disabled = true;
+
+        if (suggestions) suggestions.style.display = 'none';
+
+        isLoading = true;
+        const typingId = appendTyping();
+
+        fetch('{{ path('app_chatbot_ask') }}', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ question, history }),
+        })
+        .then(r => r.json())
+        .then(data => {
+            removeTyping(typingId);
+            const response = data.response ?? data.error ?? 'Erreur inconnue.';
+            appendMessage('bot', response);
+            history.push({ role: 'user', content: question });
+            history.push({ role: 'assistant', content: response });
+            // Garde seulement les 10 derniers échanges
+            if (history.length > 20) history = history.slice(-20);
+        })
+        .catch(() => {
+            removeTyping(typingId);
+            appendMessage('bot', 'Désolé, une erreur est survenue. Réessaie dans un instant.');
+        })
+        .finally(() => {
+            isLoading = false;
+            sendBtn.disabled = input.value.trim() === '';
+        });
+    }
+
+    function appendMessage(role, content) {
+        const isBot = role === 'bot';
+        const div = document.createElement('div');
+        div.className = 'flex gap-2' + (isBot ? '' : ' justify-end');
+
+        if (isBot) {
+            div.innerHTML = `
+                <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2a2844]">
+                    <svg class="size-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                    </svg>
+                </div>
+                <div class="max-w-[85%] rounded-2xl rounded-tl-sm bg-[#252525] px-3 py-2">
+                    <p class="text-sm text-foreground whitespace-pre-wrap">${escapeHtml(content)}</p>
+                </div>`;
+        } else {
+            div.innerHTML = `
+                <div class="bg-primary rounded-2xl rounded-tr-sm px-3 py-2 max-w-[85%]">
+                    <p class="text-sm text-white whitespace-pre-wrap">${escapeHtml(content)}</p>
+                </div>`;
+        }
+
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+    }
+
+    function appendTyping() {
+        const id  = 'typing-' + Date.now();
+        const div = document.createElement('div');
+        div.id        = id;
+        div.className = 'flex gap-2';
+        div.innerHTML = `
+            <div class="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#2a2844]">
+                <svg class="size-3.5 text-primary" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+                </svg>
+            </div>
+            <div class="rounded-2xl rounded-tl-sm bg-[#252525] px-3 py-2.5">
+                <div class="flex gap-1 items-center h-4">
+                    <span class="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style="animation-delay:0ms"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style="animation-delay:150ms"></span>
+                    <span class="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce" style="animation-delay:300ms"></span>
+                </div>
+            </div>`;
+        messages.appendChild(div);
+        messages.scrollTop = messages.scrollHeight;
+        return id;
+    }
+
+    function removeTyping(id) {
+        document.getElementById(id)?.remove();
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+    }
+})();
+</script>
