@@ -31,10 +31,8 @@ class ChatbotService
     {
         $start = microtime(true);
 
-        // ── RAG : cherche les entrées FAQ pertinentes ──
         $context = $this->buildContext($question);
 
-        // ── Construit le prompt enrichi ──
         $prompt = $this->buildPrompt($question, $context);
 
         try {
@@ -54,7 +52,6 @@ class ChatbotService
 
         $duration = round(microtime(true) - $start, 3);
 
-        // ── Log en base ──
         $this->logInteraction($question, $response, $duration, $user);
 
         return $response;

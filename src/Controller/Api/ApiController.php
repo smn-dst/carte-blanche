@@ -22,8 +22,6 @@ use Symfony\Component\Security\Http\Attribute\IsGranted;
 #[OA\Tag(name: 'Carte Blanche API')]
 class ApiController extends AbstractController
 {
-    // ── 1. GET /api/restaurants ──────────────────────────────────────────
-
     #[Route('/restaurants', name: 'restaurants', methods: ['GET'])]
     #[OA\Get(
         path: '/api/restaurants',
@@ -59,8 +57,6 @@ class ApiController extends AbstractController
         ]);
     }
 
-    // ── 2. GET /api/restaurants/map ──────────────────────────────────────
-
     #[Route('/restaurants/map', name: 'restaurants_map', methods: ['GET'])]
     #[OA\Get(
         path: '/api/restaurants/map',
@@ -94,8 +90,6 @@ class ApiController extends AbstractController
         return $this->json(['type' => 'FeatureCollection', 'features' => $features]);
     }
 
-    // ── 3. GET /api/restaurants/{id} ─────────────────────────────────────
-
     #[Route('/restaurants/{id}', name: 'restaurant', requirements: ['id' => '\d+'], methods: ['GET'])]
     #[OA\Get(
         path: '/api/restaurants/{id}',
@@ -116,8 +110,6 @@ class ApiController extends AbstractController
             : $this->json(['error' => 'Restaurant non trouvé.'], 404);
     }
 
-    // ── 4. GET /api/categories ───────────────────────────────────────────
-
     #[Route('/categories', name: 'categories', methods: ['GET'])]
     #[OA\Get(
         path: '/api/categories',
@@ -133,8 +125,6 @@ class ApiController extends AbstractController
             'slug' => $c->getSlug(),
         ], $repo->findAll()));
     }
-
-    // ── 5. GET /api/encheres ─────────────────────────────────────────────
 
     #[Route('/encheres', name: 'encheres', methods: ['GET'])]
     #[OA\Get(
@@ -158,8 +148,6 @@ class ApiController extends AbstractController
             'pagination' => ['page' => $page, 'limit' => $limit, 'total' => $total, 'total_pages' => (int) ceil($total / max($limit, 1))],
         ]);
     }
-
-    // ── 6. GET /api/me  🔒 ───────────────────────────────────────────────
 
     #[Route('/me', name: 'me', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -186,8 +174,6 @@ class ApiController extends AbstractController
         ]);
     }
 
-    // ── 7. GET /api/me/orders  🔒 ────────────────────────────────────────
-
     #[Route('/me/orders', name: 'me_orders', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
@@ -211,8 +197,6 @@ class ApiController extends AbstractController
             'createdAt' => $o->getCreatedAt()?->format('Y-m-d H:i'),
         ], $repo->findBy(['buyer' => $user], ['createdAt' => 'DESC'])));
     }
-
-    // ── 8. GET /api/me/tickets  🔒 ───────────────────────────────────────
 
     #[Route('/me/tickets', name: 'me_tickets', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -247,8 +231,6 @@ class ApiController extends AbstractController
         return $this->json($tickets);
     }
 
-    // ── 9. GET /api/me/favorites  🔒 ─────────────────────────────────────
-
     #[Route('/me/favorites', name: 'me_favorites', methods: ['GET'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Get(
@@ -274,8 +256,6 @@ class ApiController extends AbstractController
 
         return $this->json($list);
     }
-
-    // ── 10. POST /api/me/favorites/{id}  🔒 ──────────────────────────────
 
     #[Route('/me/favorites/{id}', name: 'me_favorites_add', requirements: ['id' => '\d+'], methods: ['POST'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
@@ -313,8 +293,6 @@ class ApiController extends AbstractController
         return $this->json(['message' => 'Ajouté aux favoris.'], 201);
     }
 
-    // ── 11. DELETE /api/me/favorites/{id}  🔒 ────────────────────────────
-
     #[Route('/me/favorites/{id}', name: 'me_favorites_remove', requirements: ['id' => '\d+'], methods: ['DELETE'])]
     #[IsGranted('IS_AUTHENTICATED_FULLY')]
     #[OA\Delete(
@@ -344,8 +322,6 @@ class ApiController extends AbstractController
 
         return $this->json(['message' => 'Retiré des favoris.']);
     }
-
-    // ── 12. POST /api/chatbot ────────────────────────────────────────────
 
     #[Route('/chatbot', name: 'chatbot', methods: ['POST'])]
     #[OA\Post(
@@ -386,8 +362,6 @@ class ApiController extends AbstractController
             'response' => $chatbotService->ask($question, $history, $user instanceof User ? $user : null),
         ]);
     }
-
-    // ── Sérialiseur ──────────────────────────────────────────────────────
 
     /**
      * @return array<string, mixed>

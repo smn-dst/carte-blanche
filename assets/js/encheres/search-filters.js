@@ -7,33 +7,23 @@
  * et synchronisés manuellement vers le formulaire au clic sur "Appliquer".
  */
 
+import { debounce } from 'utils-debounce';
+
 const form = document.getElementById('search-form');
 if (form) {
-
-    // ── Debounce utilitaire ──
-    function debounce(fn, delay) {
-        let timer;
-        return (...args) => {
-            clearTimeout(timer);
-            timer = setTimeout(() => fn(...args), delay);
-        };
-    }
 
     const submitForm = () => form.submit();
     const debouncedSubmit = debounce(submitForm, 400);
 
-    // ── Selects → submit immédiat au changement ──
     form.querySelectorAll('select').forEach(select => {
         select.addEventListener('change', submitForm);
     });
 
-    // ── Champ texte → submit avec debounce ──
     const searchInput = form.querySelector('input[name="search"]');
     if (searchInput) {
         searchInput.addEventListener('input', debouncedSubmit);
     }
 
-    // ── Sliders de prix → submit au relâchement ──
     const minPriceInput = form.querySelector('input[name="minPrice"]');
     const maxPriceInput = form.querySelector('input[name="maxPrice"]');
 
@@ -44,7 +34,6 @@ if (form) {
         maxPriceInput.addEventListener('change', debouncedSubmit);
     }
 
-    // ── Drawer mobile ──
     const toggleBtn = document.getElementById('filters-toggle');
     const drawerCloseBtn = document.getElementById('filters-drawer-close');
     const overlay = document.getElementById('filters-overlay');
@@ -66,7 +55,6 @@ if (form) {
     drawerCloseBtn?.addEventListener('click', closeDrawer);
     overlay?.addEventListener('click', closeDrawer);
 
-    // ── Bouton "Appliquer" : copie les valeurs du drawer vers le formulaire puis soumet ──
     const applyBtn = document.getElementById('filters-drawer-apply');
     if (applyBtn && drawer) {
         applyBtn.addEventListener('click', () => {
