@@ -143,7 +143,6 @@
             selected: categoryId,
             options: categories|map(c => { value: c.id, label: c.name }),
             class: 'select',
-            form: 'search-form',
             autosubmit: false,
         } %}
     </div>
@@ -161,7 +160,6 @@
                 { value: 'old', label: 'Plus anciennes en premier' },
             ],
             class: 'select',
-            form: 'search-form',
             autosubmit: false,
         } %}
     </div>
@@ -176,7 +174,6 @@
             value: currentMinPrice,
             step: 1000,
             class: "input-range",
-            form: 'search-form',
             autosubmit: false,
         } %}
         {% include 'Components/inputs/input.html.twig' with {
@@ -187,7 +184,6 @@
             value: currentMaxPrice,
             step: 1000,
             class: "input-range",
-            form: 'search-form',
             autosubmit: false,
         } %}
         <span class="text-sm shrink-0">{{ currentMaxPrice|number_format(0, '', ' ') }} €</span>
@@ -206,7 +202,6 @@
                 { value: 'desc', label: 'Du plus cher au moins cher' },
             ],
             class: 'select',
-            form: 'search-form',
             autosubmit: false,
         } %}
     </div>
@@ -224,12 +219,11 @@
                 { value: 'desc', label: 'Du plus élevé au plus faible' },
             ],
             class: 'select',
-            form: 'search-form',
             autosubmit: false,
         } %}
     </div>
 
-    <button type="submit" form="search-form" id="filters-drawer-apply" class="w-full py-3 bg-primary text-white rounded-lg font-medium">
+    <button type="button" id="filters-drawer-apply" class="w-full py-3 bg-primary text-white rounded-lg font-medium">
         Appliquer les filtres
     </button>
 </div>

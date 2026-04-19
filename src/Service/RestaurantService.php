@@ -148,7 +148,7 @@ readonly class RestaurantService
         $restaurant->setAuctionLocation($dto->auctionLocation);
         $restaurant->setAuctionLocationLat($dto->auctionLocationLat);
         $restaurant->setAuctionLocationLng($dto->auctionLocationLng);
-        $restaurant->setTicketPrice($this->normalizeMoneyString($dto->ticketPrice));
+        $restaurant->setTicketPrice($this->resolveTicketPrice($dto->askingPrice));
         $restaurant->setMaxCapacity($dto->maxCapacity);
 
         foreach ($restaurant->getCategories() as $existing) {
@@ -157,6 +157,32 @@ readonly class RestaurantService
         foreach ($dto->categories as $category) {
             $restaurant->addCategory($category);
         }
+    }
+
+    /**
+     * Calcule le prix du ticket à partir du prix demandé selon le barème :
+     * < 100 000 € → 50 € | 100 000-300 000 → 100 € | 300 000-500 000 → 200 € | > 500 000 → 350 €
+     */
+    private function resolveTicketPrice(?string $askingPriceRaw): ?string
+    {
+        $normalized = $this->normalizeMoneyString($askingPriceRaw);
+        if (null === $normalized) {
+            return null;
+        }
+
+        $asking = (float) $normalized;
+
+        if ($asking < 100_000) {
+            return '50';
+        }
+        if ($asking < 300_000) {
+            return '100';
+        }
+        if ($asking <= 500_000) {
+            return '200';
+        }
+
+        return '350';
     }
 
     /**
