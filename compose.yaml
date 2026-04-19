@@ -134,6 +134,19 @@ services:
       - ollama_data:/root/.ollama
       - ./Ollama:/models
 
+  # --- MCP Server ---
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      SYMFONY_BASE_URL: http://nginx:80
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
 volumes:
   database_data:
   rabbitmq_data:
