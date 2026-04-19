@@ -18,6 +18,7 @@
         "knpuniversity/oauth2-client-bundle": "^2.20",
         "league/oauth2-github": "^3.1",
         "league/oauth2-google": "^4.1",
+        "nelmio/api-doc-bundle": "^5.10",
         "neuron-core/neuron-ai": "^3.3",
         "pgvector/pgvector": "^0.2.2",
         "phpdocumentor/reflection-docblock": "^5.6",
@@ -58,7 +59,8 @@
         "symfonycasts/verify-email-bundle": "^1.18",
         "twig/extra-bundle": "^2.12|^3.0",
         "twig/twig": "^2.12|^3.0",
-        "vich/uploader-bundle": "^2.9"
+        "vich/uploader-bundle": "^2.9",
+        "zircote/swagger-php": "^6.1"
     },
     "config": {
         "allow-plugins": {
