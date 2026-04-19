@@ -5,12 +5,13 @@ namespace App\Controller;
 use App\Entity\User;
 use App\Entity\UserPreferenceEmbedding;
 use App\Form\UserPreferenceType;
-use App\Service\EmbeddingService;
+use App\Message\GenerateUserEmbeddingMessage;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Security\Http\Attribute\IsGranted;
 
@@ -21,10 +22,9 @@ class UserPreferenceController extends AbstractController
     public function preferences(
         Request $request,
         EntityManagerInterface $em,
-        EmbeddingService $embeddingService,
+        MessageBusInterface $bus,
     ): Response {
         $user = $this->getUser();
-
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
@@ -36,21 +36,7 @@ class UserPreferenceController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $data = $form->getData();
-
-            $preferenceText = $this->buildPreferenceText($data);
-
-            $embedding = $user->getUserPreferenceEmbedding() ?? new UserPreferenceEmbedding();
-            $embedding->setUser($user);
-            $embedding->setPreferencesText($preferenceText);
-            $embedding->setEmbedding([]);
-            $embedding->setUpdatedAt(new \DateTimeImmutable());
-
-            $em->persist($embedding);
-            $em->flush();
-
-            // Génère l'embedding vectoriel (erreurs loguées sans bloquer la navigation)
-            $embeddingService->embedUserPreferences($embedding);
-
+            $this->savePreferences($user, $data, $em, $bus);
             $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
 
             return $this->redirectToRoute('app_home');
@@ -66,35 +52,19 @@ class UserPreferenceController extends AbstractController
     public function save(
         Request $request,
         EntityManagerInterface $em,
-        EmbeddingService $embeddingService,
+        MessageBusInterface $bus,
     ): JsonResponse {
         $user = $this->getUser();
-
         if (!$user instanceof User) {
             throw $this->createAccessDeniedException();
         }
 
         $data = json_decode($request->getContent(), true);
-
         if (!$data) {
             return $this->json(['error' => 'Données invalides'], Response::HTTP_BAD_REQUEST);
         }
 
-        $preferenceText = $this->buildPreferenceText($data);
-
-        $embedding = $user->getUserPreferenceEmbedding() ?? new UserPreferenceEmbedding();
-        $embedding->setUser($user);
-        $embedding->setPreferencesText($preferenceText);
-        $embedding->setEmbedding([]);
-        $embedding->setUpdatedAt(new \DateTimeImmutable());
-
-        $em->persist($embedding);
-        $em->flush();
-
-        // Génère l'embedding vectoriel (erreurs loguées sans bloquer la navigation)
-        $embeddingService->embedUserPreferences($embedding);
-
-        $this->addFlash('success', 'Vos préférences ont bien été enregistrées !');
+        $this->savePreferences($user, $data, $em, $bus);
 
         return $this->json([
             'success' => true,
@@ -110,6 +80,45 @@ class UserPreferenceController extends AbstractController
             'success' => true,
             'redirect' => $this->generateUrl('app_home'),
         ]);
+    }
+
+    /**
+     * Sauvegarde texte + données structurées + dispatch async embedding.
+     *
+     * @param array<string, mixed> $data
+     */
+    private function savePreferences(User $user, array $data, EntityManagerInterface $em, MessageBusInterface $bus): void
+    {
+        $preferenceText = $this->buildPreferenceText($data);
+
+        // ── Données structurées pour le pré-filtrage dur ──
+        $structuredData = [
+            'cuisineTypes' => $data['cuisineTypes'] ?? [],
+            'budgetMin' => isset($data['budgetMin']) && '' !== $data['budgetMin'] ? (float) $data['budgetMin'] : null,
+            'budgetMax' => isset($data['budgetMax']) && '' !== $data['budgetMax'] ? (float) $data['budgetMax'] : null,
+            'capacityMin' => isset($data['capacityMin']) && $data['capacityMin'] > 0 ? (int) $data['capacityMin'] : null,
+            'preferredCity' => $data['preferredCity'] ?? null,
+            'searchRadius' => isset($data['searchRadius']) ? (int) $data['searchRadius'] : null,
+            'preferredLat' => $data['preferredLat'] ?? null,
+            'preferredLng' => $data['preferredLng'] ?? null,
+        ];
+
+        $embedding = $user->getUserPreferenceEmbedding() ?? new UserPreferenceEmbedding();
+        $embedding->setUser($user);
+        $embedding->setPreferencesText($preferenceText);
+        $embedding->setPreferencesData($structuredData);
+        $embedding->setEmbedding([]);
+        $embedding->setUpdatedAt(new \DateTimeImmutable());
+
+        $em->persist($embedding);
+        $em->flush();
+
+        $userId = $user->getId();
+        if (null === $userId) {
+            throw new \LogicException('Utilisateur sans identifiant : impossible de lancer la génération d’embedding.');
+        }
+
+        $bus->dispatch(new GenerateUserEmbeddingMessage($userId));
     }
 
     /**
@@ -133,10 +142,8 @@ class UserPreferenceController extends AbstractController
         }
 
         if (!empty($data['preferredCity'])) {
-            $city = $data['preferredCity'];
             $radius = $data['searchRadius'] ?? 0;
-            $radiusText = $radius ? "dans un rayon de {$radius} km" : 'sur toute la France';
-            $parts[] = "Localisation : {$city}, {$radiusText}";
+            $parts[] = "Localisation : {$data['preferredCity']}, ".($radius ? "dans un rayon de {$radius} km" : 'sur toute la France');
         }
 
         if (!empty($data['capacityMin']) && $data['capacityMin'] > 0) {

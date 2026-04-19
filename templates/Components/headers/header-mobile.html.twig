@@ -75,8 +75,15 @@
 					<span>Connexion</span>
 				</a>
 			{% endif %}
-			<div class="text-xs text-muted-foreground space-y-1 pt-1">
-				<p>© 2026 Carte Blanche</p>
+
+			{# ── Liens légaux ── #}
+			<div class="pt-1 space-y-1">
+				<div class="flex flex-wrap gap-x-3 gap-y-1">
+					<a href="{{ path('app_rgpd') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors" data-action="click->mobile-menu#navigateAway">Confidentialité</a>
+					<a href="{{ path('app_cgv') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors" data-action="click->mobile-menu#navigateAway">CGV</a>
+					<a href="{{ path('app_cgu') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors" data-action="click->mobile-menu#navigateAway">CGU</a>
+				</div>
+				<p class="text-[11px] text-muted-foreground/40">© 2026 Carte Blanche</p>
 			</div>
 		</div>
 	</div>
