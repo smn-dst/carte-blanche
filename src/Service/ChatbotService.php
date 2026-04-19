@@ -6,6 +6,9 @@ use App\Entity\AiLog;
 use App\Entity\FaqEntry;
 use App\Entity\User;
 use App\Neuron\ChatbotAgent;
+use App\Neuron\Tools\GetCategoriesTool;
+use App\Neuron\Tools\SearchFaqTool;
+use App\Neuron\Tools\SearchRestaurantsTool;
 use Doctrine\ORM\EntityManagerInterface;
 use NeuronAI\Chat\Messages\UserMessage;
 use Psr\Log\LoggerInterface;
@@ -35,7 +38,11 @@ class ChatbotService
         $prompt = $this->buildPrompt($question, $context);
 
         try {
-            $agent = ChatbotAgent::make();
+            $agent = ChatbotAgent::make()
+                ->addTool(new SearchFaqTool($this->em))
+                ->addTool(new SearchRestaurantsTool($this->em))
+                ->addTool(new GetCategoriesTool($this->em));
+
             $message = $agent->chat(new UserMessage($prompt))->getMessage();
             $response = trim((string) $message->getContent());
         } catch (\Throwable $e) {
