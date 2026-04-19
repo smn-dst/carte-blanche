@@ -1,0 +1,183 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Conditions Générales de Vente — Carte Blanche{% endblock %}
+
+{% block body %}
+<div class="max-w-4xl mx-auto px-6 py-16 space-y-12">
+
+    <div class="space-y-4">
+        <p class="text-xs text-primary uppercase tracking-widest font-semibold">Légal</p>
+        <h1 class="text-4xl sm:text-5xl font-bold text-foreground">Conditions Générales de Vente</h1>
+        <p class="text-muted-foreground">Dernière mise à jour : avril 2026 — Version 1.0</p>
+        <div class="h-px bg-border"></div>
+    </div>
+
+    {# ── Préambule ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Préambule
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les présentes Conditions Générales de Vente (CGV) régissent les achats de tickets d'accès aux enchères
+            de restaurants réalisés sur la plateforme Carte Blanche (ci-après « la Plateforme »).
+            Tout achat implique l'acceptation pleine et entière des présentes CGV.
+        </p>
+        <div class="rounded-xl border border-primary/20 bg-primary/5 p-4 text-sm text-muted-foreground">
+            <span class="text-foreground font-medium">Attention :</span> Les tickets donnent accès à une enchère en salle.
+            Ils ne constituent pas une promesse d'acquisition du restaurant mis aux enchères.
+        </div>
+    </section>
+
+    {# ── 1. Vendeur ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 1 — Identification du vendeur
+        </h2>
+        <div class="rounded-xl border border-border bg-secondary/10 p-6 space-y-2 text-sm text-muted-foreground">
+            <p><span class="text-foreground font-medium">Raison sociale :</span> Carte Blanche SAS</p>
+            <p><span class="text-foreground font-medium">Siège social :</span> Paris, France</p>
+            <p><span class="text-foreground font-medium">Email :</span> contact@carteblanche.fr</p>
+            <p><span class="text-foreground font-medium">Activité :</span> Plateforme d'enchères de cession de fonds de commerce de restaurants</p>
+        </div>
+    </section>
+
+    {# ── 2. Produits ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 2 — Produits proposés à la vente
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            La Plateforme propose à la vente des <strong class="text-foreground">tickets d'accès aux enchères</strong>.
+            Chaque ticket donne droit à l'entrée à une enchère en salle portant sur la cession d'un fonds de commerce de restaurant.
+            Le prix du ticket est affiché sur la page de chaque enchère avant l'achat. Les prix sont exprimés en euros TTC.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Le nombre de tickets disponibles par enchère est limité. La disponibilité est indiquée en temps réel sur la Plateforme.
+            La Plateforme se réserve le droit de modifier le nombre de tickets disponibles sans préavis.
+        </p>
+    </section>
+
+    {# ── 3. Commande ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 3 — Processus de commande
+        </h2>
+        <div class="space-y-3">
+            {% for step in [
+                { num: '1', title: 'Sélection', desc: 'L\'acheteur sélectionne une enchère et choisit le nombre de tickets souhaités.' },
+                { num: '2', title: 'Panier', desc: 'Les tickets sont ajoutés au panier. L\'acheteur vérifie sa commande avant de procéder au paiement.' },
+                { num: '3', title: 'Paiement', desc: 'Le paiement est effectué via Stripe (CB Visa, Mastercard). La commande est confirmée à réception du paiement.' },
+                { num: '4', title: 'Confirmation', desc: 'Un email de confirmation est envoyé avec les tickets en pièce jointe (QR codes individuels).' },
+            ] %}
+                <div class="flex gap-4 items-start rounded-xl border border-border bg-secondary/10 p-4">
+                    <span class="w-8 h-8 rounded-full bg-primary/20 text-primary font-bold text-sm flex items-center justify-center shrink-0">{{ step.num }}</span>
+                    <div>
+                        <p class="font-semibold text-foreground text-sm">{{ step.title }}</p>
+                        <p class="text-muted-foreground text-sm mt-0.5">{{ step.desc }}</p>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </section>
+
+    {# ── 4. Paiement ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 4 — Paiement
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Le paiement est sécurisé par <strong class="text-foreground">Stripe</strong>, prestataire de services de paiement certifié PCI-DSS.
+            Carte Blanche ne stocke à aucun moment les données bancaires des acheteurs.
+            Le paiement est débité au moment de la validation de la commande.
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            En cas d'échec du paiement, la commande est annulée et les tickets réservés sont remis en vente.
+        </p>
+    </section>
+
+    {# ── 5. Livraison ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 5 — Livraison des tickets
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les tickets sont délivrés exclusivement sous format électronique, par email, dans les minutes suivant la confirmation de paiement.
+            Chaque ticket contient un QR code unique à présenter à l'entrée de la salle d'enchères.
+            L'acheteur est responsable de la conservation et de la non-divulgation de ses tickets.
+        </p>
+    </section>
+
+    {# ── 6. Droit de rétractation ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 6 — Droit de rétractation et remboursements
+        </h2>
+        <div class="rounded-xl border border-yellow-500/20 bg-yellow-500/5 p-5 text-sm space-y-2">
+            <p class="font-semibold text-yellow-400">Information importante</p>
+            <p class="text-muted-foreground">
+                Conformément à l'article L221-28 du Code de la consommation, le droit de rétractation de 14 jours
+                <strong class="text-foreground">ne s'applique pas</strong> aux prestations de loisirs fournies à une date déterminée
+                (enchères à date fixe). Les tickets sont donc non remboursables une fois l'achat confirmé,
+                sauf dans les cas suivants :
+            </p>
+            <ul class="text-muted-foreground space-y-1 pl-4">
+                <li>• Annulation de l'enchère par Carte Blanche</li>
+                <li>• Erreur technique avérée de notre part ayant empêché l'accès à l'événement</li>
+            </ul>
+        </div>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les demandes de remboursement sont à soumettre depuis la section
+            <strong class="text-foreground">« Mes réservations »</strong> de votre compte. Elles sont examinées par notre équipe
+            sous 5 jours ouvrés.
+        </p>
+    </section>
+
+    {# ── 7. Responsabilités ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 7 — Responsabilités
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Carte Blanche est responsable de la mise en relation entre acheteurs et vendeurs de restaurants,
+            ainsi que de l'organisation logistique des enchères. La Plateforme n'est pas partie à la transaction
+            de cession du fonds de commerce, qui relève exclusivement des parties (vendeur et acquéreur).
+        </p>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Carte Blanche ne saurait être tenue responsable des informations communiquées par les vendeurs
+            concernant leurs restaurants, ni du résultat des enchères.
+        </p>
+    </section>
+
+    {# ── 8. Litiges ── #}
+    <section class="space-y-4">
+        <h2 class="text-2xl font-bold text-foreground flex items-center gap-3">
+            <span class="w-1 h-7 bg-primary rounded-full inline-block shrink-0"></span>
+            Article 8 — Droit applicable et litiges
+        </h2>
+        <p class="text-muted-foreground text-sm leading-relaxed">
+            Les présentes CGV sont soumises au droit français. En cas de litige, une solution amiable sera
+            recherchée en priorité via <a href="mailto:contact@carteblanche.fr" class="text-primary hover:underline">contact@carteblanche.fr</a>.
+            À défaut, les tribunaux compétents de Paris seront saisis.
+        </p>
+        <p class="text-muted-foreground text-sm">
+            Médiation : conformément à l'article L612-1 du Code de la consommation, vous pouvez recourir
+            gratuitement à un médiateur de la consommation en cas de litige non résolu.
+        </p>
+    </section>
+
+    {# ── Navigation ── #}
+    <div class="flex flex-wrap gap-3 pt-4 border-t border-border">
+        <a href="{{ path('app_rgpd') }}" class="text-sm text-primary hover:underline">Politique de confidentialité →</a>
+        <a href="{{ path('app_cgu') }}" class="text-sm text-primary hover:underline">Conditions Générales d'Utilisation →</a>
+    </div>
+
+</div>
+{% endblock %}

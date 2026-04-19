@@ -1,0 +1,123 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Logs IA — Admin
+{% endblock %}
+
+{% block body %}
+	<div
+		class="p-6 md:p-10 space-y-8">
+
+		{# ── En-tête ── #}
+		<div>
+			<p class="text-xs text-primary uppercase tracking-widest font-semibold mb-1">Administration</p>
+			<h1 class="text-3xl sm:text-4xl font-bold text-foreground">Logs IA</h1>
+			<p class="text-muted-foreground mt-1">{{ stats.total }}
+				interaction{{ stats.total > 1 ? 's' : '' }}
+				enregistrée{{ stats.total > 1 ? 's' : '' }}</p>
+		</div>
+
+		{# ── KPIs ── #}
+		<div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+			{% for label, count in {
+            'Total': stats.total,
+            'Chatbot': stats.chatbot,
+            'Descriptions': stats.description,
+            'Recommandations': stats.recommendation
+        } %}
+				<div class="rounded-xl border border-border bg-secondary/20 p-4 text-center">
+					<p class="text-2xl font-bold text-primary">{{ count }}</p>
+					<p class="text-xs text-muted-foreground mt-1 uppercase tracking-wider">{{ label }}</p>
+				</div>
+			{% endfor %}
+		</div>
+
+		{# ── Tableau ── #}
+		{% if logs is empty %}
+			<div class="text-center py-20 text-muted-foreground">
+				<svg class="size-12 mx-auto mb-4 opacity-40" xmlns="http://www.w3.org/2000/svg" fill="none" viewbox="0 0 24 24" stroke="currentColor">
+					<path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9.663 17h4.673M12 3v1m6.364 1.636-.707.707M21 12h-1M4 12H3m3.343-5.657-.707-.707m2.828 9.9a5 5 0 1 1 7.072 0l-.548.547A3.374 3.374 0 0 0 14 18.469V19a2 2 0 1 1-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
+				</svg>
+				Aucun log IA pour le moment.
+			</div>
+		{% else %}
+			<div class="overflow-x-auto rounded-xl border border-border">
+				<table class="w-full text-sm">
+					<thead>
+						<tr class="border-b border-border bg-secondary/30 text-left">
+							<th class="px-4 py-3 font-semibold text-muted-foreground">Type</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground">Question / Prompt</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Réponse</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Modèle</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Durée</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Utilisateur</th>
+							<th class="px-4 py-3 font-semibold text-muted-foreground">Date</th>
+						</tr>
+					</thead>
+					<tbody class="divide-y divide-border">
+						{% for log in logs %}
+							<tr
+								class="hover:bg-secondary/20 transition-colors align-top">
+
+								{# Type #}
+								<td class="px-4 py-3">
+									{% if log.type == 'chatbot' %}
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-primary/15 text-primary border border-primary/20">Chatbot</span>
+									{% elseif log.type == 'description' %}
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-violet-500/15 text-violet-400 border border-violet-500/20">Description</span>
+									{% elseif log.type == 'recommendation' %}
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/15 text-yellow-400 border border-yellow-500/20">Reco</span>
+									{% else %}
+										<span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold bg-secondary text-muted-foreground">{{ log.type }}</span>
+									{% endif %}
+								</td>
+
+								{# Prompt #}
+								<td class="px-4 py-3 max-w-[200px]">
+									<p class="line-clamp-3 text-foreground text-xs leading-relaxed">{{ log.prompt }}</p>
+								</td>
+
+								{# Réponse #}
+								<td class="px-4 py-3 max-w-[250px] hidden lg:table-cell">
+									<p class="line-clamp-3 text-muted-foreground text-xs leading-relaxed">{{ log.response }}</p>
+								</td>
+
+								{# Modèle #}
+								<td class="px-4 py-3 hidden md:table-cell">
+									<span class="font-mono text-xs text-muted-foreground">{{ log.model }}</span>
+								</td>
+
+								{# Durée #}
+								<td class="px-4 py-3 hidden md:table-cell text-muted-foreground tabular-nums">
+									{% if log.duration %}
+										{{ log.duration }}s
+									{% else %}
+										—
+									{% endif %}
+								</td>
+
+								{# Utilisateur #}
+								<td class="px-4 py-3 hidden lg:table-cell text-muted-foreground">
+									{% if log.user %}
+										<p class="text-xs">{{ log.user.firstName }}
+											{{ log.user.lastName }}</p>
+										<p class="text-[10px] text-muted-foreground/60">{{ log.user.email }}</p>
+									{% else %}
+										<span class="text-xs">Anonyme</span>
+									{% endif %}
+								</td>
+
+								{# Date #}
+								<td class="px-4 py-3 text-muted-foreground text-xs whitespace-nowrap">
+									{{ log.createdAt ? log.createdAt|date('d/m/Y') : '—' }}<br>
+									<span class="text-[10px]">{{ log.createdAt ? log.createdAt|date('H:i') : '' }}</span>
+								</td>
+
+							</tr>
+						{% endfor %}
+					</tbody>
+				</table>
+			</div>
+		{% endif %}
+
+	</div>
+{% endblock %}

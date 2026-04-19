@@ -22,7 +22,7 @@
 		</div>
 	</div>
 
-	<div class="flex flex-col gap-6 p-6 border-t border-sidebar-border">
+	<div class="flex flex-col gap-4 p-6 border-t border-sidebar-border">
 		<div>
 			{% if is_granted('IS_AUTHENTICATED_FULLY') %}
 				<a href="{{ path('app_logout') }}" class="w-full flex justify-start items-center gap-3 px-4 py-2 border border-border rounded-lg hover:bg-secondary hover:border-primary/50 transition-all cursor-pointer" aria-label="Déconnexion">
@@ -36,9 +36,15 @@
 				</a>
 			{% endif %}
 		</div>
-		<div class="text-xs text-muted-foreground space-y-1">
-			<p>© 2026 Carte Blanche Platform</p>
-			<p>Carte Blanche</p>
+
+		{# ── Liens légaux ── #}
+		<div class="space-y-1.5">
+			<div class="flex flex-wrap gap-x-3 gap-y-1">
+				<a href="{{ path('app_rgpd') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">Confidentialité</a>
+				<a href="{{ path('app_cgv') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">CGV</a>
+				<a href="{{ path('app_cgu') }}" class="text-[11px] text-muted-foreground/60 hover:text-muted-foreground transition-colors">CGU</a>
+			</div>
+			<p class="text-[11px] text-muted-foreground/40">© 2026 Carte Blanche Platform</p>
 		</div>
 	</div>
 </aside>

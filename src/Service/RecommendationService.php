@@ -4,26 +4,24 @@ namespace App\Service;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
-use App\Neuron\RecommendationAgent;
 use App\Repository\RestaurantEmbeddingRepository;
-use NeuronAI\Chat\Messages\UserMessage;
-use Psr\Cache\CacheItemPoolInterface;
 use Psr\Log\LoggerInterface;
 
 class RecommendationService
 {
-    // TTL du cache Redis pour les explications LLM (1 heure)
-    private const EXPLANATION_TTL = 3600;
+    // Tolérance budget : ±20% au-delà du max (pour ne pas exclure des bons candidats proches)
+    private const BUDGET_TOLERANCE = 1.20;
 
     public function __construct(
         private readonly RestaurantEmbeddingRepository $embeddingRepository,
-        private readonly CacheItemPoolInterface $cache,
         private readonly LoggerInterface $logger,
     ) {
     }
 
     /**
-     * Retourne le top-$limit des restaurants les plus proches des préférences utilisateur.
+     * Retourne le top-$limit des restaurants correspondant aux préférences utilisateur.
+     * Étape 1 : pré-filtrage dur sur budget, capacité, localisation, cuisine.
+     * Étape 2 : ranking par similarité cosinus sur les candidats restants.
      *
      * @return array<int, array{restaurant: Restaurant, score: float, explanation: string}>
      */
@@ -36,17 +34,23 @@ class RecommendationService
         }
 
         $userVector = $userEmbedding->getEmbedding();
+        $prefs = $userEmbedding->getPreferencesData();
         $restaurantEmbeddings = $this->embeddingRepository->findAllWithNonEmptyEmbedding();
 
         if (empty($restaurantEmbeddings)) {
             return [];
         }
 
-        // Calcul de la similarité cosinus pour chaque restaurant
         $scored = [];
+
         foreach ($restaurantEmbeddings as $re) {
             $restaurant = $re->getRestaurant();
             if (!$restaurant) {
+                continue;
+            }
+
+            // ── Pré-filtrage dur ──
+            if (!$this->matchesPreferences($restaurant, $prefs)) {
                 continue;
             }
 
@@ -54,30 +58,43 @@ class RecommendationService
             $scored[] = [
                 'restaurant' => $restaurant,
                 'score' => $score,
-                'content' => $re->getContent(),
             ];
         }
 
-        // Tri par score décroissant
+        // Si aucun résultat après filtrage strict → on assouplit (sans filtre cuisine/localisation)
+        if (empty($scored)) {
+            $this->logger->info('RecommendationService: aucun résultat avec filtres stricts, fallback sans filtre cuisine/ville.');
+
+            foreach ($restaurantEmbeddings as $re) {
+                $restaurant = $re->getRestaurant();
+                if (!$restaurant) {
+                    continue;
+                }
+
+                if (!$this->matchesPreferencesSoft($restaurant, $prefs)) {
+                    continue;
+                }
+
+                $score = $this->cosineSimilarity($userVector, $re->getEmbedding());
+                $scored[] = [
+                    'restaurant' => $restaurant,
+                    'score' => $score,
+                ];
+            }
+        }
+
+        if (empty($scored)) {
+            return [];
+        }
+
         usort($scored, static fn (array $a, array $b) => $b['score'] <=> $a['score']);
 
-        $top = array_slice($scored, 0, $limit);
-
-        // Génération ou récupération (cache Redis) des explications LLM
         $results = [];
-        foreach ($top as $item) {
-            $explanation = $this->getExplanation(
-                $user,
-                $item['restaurant'],
-                $userEmbedding->getPreferencesText() ?? '',
-                $item['content'] ?? '',
-                $item['score'],
-            );
-
+        foreach (array_slice($scored, 0, $limit) as $item) {
             $results[] = [
                 'restaurant' => $item['restaurant'],
                 'score' => $item['score'],
-                'explanation' => $explanation,
+                'explanation' => $this->buildExplanation($item['restaurant'], $item['score'], $prefs),
             ];
         }
 
@@ -85,9 +102,162 @@ class RecommendationService
     }
 
     /**
-     * Calcule la similarité cosinus entre deux vecteurs.
-     * Retourne 0.0 si l'un des vecteurs est vide ou nul.
+     * Filtrage strict : budget + capacité + cuisine + localisation (si lat/lng dispo).
      *
+     * @param array<string, mixed> $prefs
+     */
+    private function matchesPreferences(Restaurant $restaurant, array $prefs): bool
+    {
+        // Budget
+        if (!$this->matchesBudget($restaurant, $prefs)) {
+            return false;
+        }
+
+        // Capacité minimum
+        if (!empty($prefs['capacityMin']) && null !== $restaurant->getCapacity()) {
+            if ($restaurant->getCapacity() < (int) $prefs['capacityMin']) {
+                return false;
+            }
+        }
+
+        // Type de cuisine
+        if (!empty($prefs['cuisineTypes'])) {
+            $restaurantCategories = array_map(
+                static fn ($c) => mb_strtolower($c->getName() ?? ''),
+                $restaurant->getCategories()->toArray()
+            );
+
+            $preferredCuisines = array_map(
+                static fn ($c) => mb_strtolower((string) $c),
+                (array) $prefs['cuisineTypes']
+            );
+
+            $hasMatchingCuisine = false;
+            foreach ($preferredCuisines as $pref) {
+                foreach ($restaurantCategories as $cat) {
+                    if (str_contains($cat, $pref) || str_contains($pref, $cat)) {
+                        $hasMatchingCuisine = true;
+                        break 2;
+                    }
+                }
+            }
+
+            if (!$hasMatchingCuisine) {
+                return false;
+            }
+        }
+
+        // Localisation par distance haversine si lat/lng disponibles
+        if (!empty($prefs['preferredLat']) && !empty($prefs['preferredLng']) && !empty($prefs['searchRadius'])) {
+            if (null !== $restaurant->getLatitude() && null !== $restaurant->getLongitude()) {
+                $distance = $this->haversineDistance(
+                    (float) $prefs['preferredLat'],
+                    (float) $prefs['preferredLng'],
+                    $restaurant->getLatitude(),
+                    $restaurant->getLongitude()
+                );
+
+                if ($distance > (int) $prefs['searchRadius']) {
+                    return false;
+                }
+            }
+        } elseif (!empty($prefs['preferredCity'])) {
+            // Fallback textuel si pas de coordonnées
+            $city = mb_strtolower((string) $prefs['preferredCity']);
+            $address = mb_strtolower((string) $restaurant->getAddress());
+            if (!str_contains($address, $city)) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * Filtrage assoupli : budget + capacité uniquement (sans cuisine ni localisation).
+     *
+     * @param array<string, mixed> $prefs
+     */
+    private function matchesPreferencesSoft(Restaurant $restaurant, array $prefs): bool
+    {
+        if (!$this->matchesBudget($restaurant, $prefs)) {
+            return false;
+        }
+
+        if (!empty($prefs['capacityMin']) && null !== $restaurant->getCapacity()) {
+            if ($restaurant->getCapacity() < (int) $prefs['capacityMin']) {
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /**
+     * @param array<string, mixed> $prefs
+     */
+    private function matchesBudget(Restaurant $restaurant, array $prefs): bool
+    {
+        $price = null !== $restaurant->getAskingPrice() ? (float) $restaurant->getAskingPrice() : null;
+
+        if (null === $price) {
+            return true; // Pas de prix → on inclut
+        }
+
+        if (!empty($prefs['budgetMin']) && $price < (float) $prefs['budgetMin']) {
+            return false;
+        }
+
+        // Tolérance de 20% au-dessus du budget max
+        if (!empty($prefs['budgetMax']) && $price > (float) $prefs['budgetMax'] * self::BUDGET_TOLERANCE) {
+            return false;
+        }
+
+        return true;
+    }
+
+    /**
+     * Distance haversine en km entre deux points GPS.
+     */
+    private function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
+    {
+        $earthRadius = 6371;
+        $dLat = deg2rad($lat2 - $lat1);
+        $dLng = deg2rad($lng2 - $lng1);
+
+        $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
+
+        return $earthRadius * 2 * asin(sqrt($a));
+    }
+
+    /**
+     * Explication courte sans LLM.
+     *
+     * @param array<string, mixed> $prefs
+     */
+    private function buildExplanation(Restaurant $restaurant, float $score, array $prefs): string
+    {
+        $percent = (int) round($score * 100);
+        $qualifier = match (true) {
+            $percent >= 85 => 'correspond parfaitement',
+            $percent >= 70 => 'correspond très bien',
+            $percent >= 55 => 'correspond bien',
+            default => 'correspond',
+        };
+
+        $parts = ["Ce restaurant {$qualifier} à tes critères ({$percent}% de compatibilité)."];
+
+        if ($restaurant->getAnnualRevenue()) {
+            $ca = number_format((float) $restaurant->getAnnualRevenue(), 0, ',', ' ');
+            $parts[] = "CA annuel : {$ca} €.";
+        } elseif ($restaurant->getCapacity()) {
+            $parts[] = "Capacité : {$restaurant->getCapacity()} couverts.";
+        }
+
+        return implode(' ', $parts);
+    }
+
+    /**
      * @param array<int, float> $a
      * @param array<int, float> $b
      */
@@ -97,9 +267,7 @@ class RecommendationService
             return 0.0;
         }
 
-        $dot = 0.0;
-        $normA = 0.0;
-        $normB = 0.0;
+        $dot = $normA = $normB = 0.0;
 
         foreach ($a as $i => $valA) {
             $valB = $b[$i] ?? 0.0;
@@ -108,76 +276,8 @@ class RecommendationService
             $normB += (float) $valB * (float) $valB;
         }
 
-        $denominator = sqrt($normA) * sqrt($normB);
-        if ($denominator < PHP_FLOAT_EPSILON) {
-            return 0.0;
-        }
+        $denom = sqrt($normA) * sqrt($normB);
 
-        return $dot / $denominator;
-    }
-
-    /**
-     * Génère ou récupère depuis le cache l'explication LLM du match restaurant/utilisateur.
-     */
-    private function getExplanation(
-        User $user,
-        Restaurant $restaurant,
-        string $preferencesText,
-        string $restaurantContent,
-        float $score,
-    ): string {
-        $cacheKey = sprintf('rec_exp_u%d_r%d', $user->getId(), $restaurant->getId());
-
-        $item = $this->cache->getItem($cacheKey);
-
-        if ($item->isHit()) {
-            return (string) $item->get();
-        }
-
-        $explanation = $this->generateExplanation($preferencesText, $restaurantContent, $score);
-
-        $item->set($explanation);
-        $item->expiresAfter(self::EXPLANATION_TTL);
-        $this->cache->save($item);
-
-        return $explanation;
-    }
-
-    /**
-     * Appelle le RecommendationAgent pour générer l'explication LLM.
-     */
-    private function generateExplanation(
-        string $preferencesText,
-        string $restaurantContent,
-        float $score,
-    ): string {
-        $scorePercent = round($score * 100, 1);
-
-        $prompt = <<<PROMPT
-            Préférences de l'investisseur : {$preferencesText}
-
-            Caractéristiques du restaurant : {$restaurantContent}
-
-            Score de correspondance (similarité cosinus) : {$scorePercent}%
-
-            Explique en 2 à 3 phrases pourquoi ce restaurant correspond aux préférences de cet investisseur.
-            PROMPT;
-
-        try {
-            $agent = RecommendationAgent::make();
-            $message = $agent->chat(new UserMessage($prompt))->getMessage();
-
-            return trim((string) $message->getContent());
-        } catch (\Throwable $e) {
-            $this->logger->error('RecommendationService: échec génération explication LLM: {message}', [
-                'message' => $e->getMessage(),
-            ]);
-
-            // Fallback : explication générique sans LLM
-            return sprintf(
-                'Ce restaurant présente un taux de correspondance de %s%% avec vos critères de recherche.',
-                round($score * 100)
-            );
-        }
+        return $denom < PHP_FLOAT_EPSILON ? 0.0 : $dot / $denom;
     }
 }

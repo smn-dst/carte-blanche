@@ -138,9 +138,9 @@ readonly class RestaurantService
         $restaurant->setLatitude($dto->latitude);
         $restaurant->setLongitude($dto->longitude);
         $restaurant->setCapacity($dto->capacity);
-        $restaurant->setAskingPrice($dto->askingPrice ?? '0');
-        $restaurant->setAnnualRevenue($dto->annualRevenue);
-        $restaurant->setRent($dto->rent);
+        $restaurant->setAskingPrice($this->normalizeMoneyString($dto->askingPrice) ?? '0');
+        $restaurant->setAnnualRevenue($this->normalizeMoneyString($dto->annualRevenue));
+        $restaurant->setRent($this->normalizeMoneyString($dto->rent));
         $restaurant->setLeaseRemaining($dto->leaseRemaining);
         $restaurant->setPappersUrl($dto->pappersUrl);
         $restaurant->setAuctionDate($dto->auctionDate);
@@ -148,7 +148,7 @@ readonly class RestaurantService
         $restaurant->setAuctionLocation($dto->auctionLocation);
         $restaurant->setAuctionLocationLat($dto->auctionLocationLat);
         $restaurant->setAuctionLocationLng($dto->auctionLocationLng);
-        $restaurant->setTicketPrice($dto->ticketPrice);
+        $restaurant->setTicketPrice($this->normalizeMoneyString($dto->ticketPrice));
         $restaurant->setMaxCapacity($dto->maxCapacity);
 
         foreach ($restaurant->getCategories() as $existing) {
@@ -157,5 +157,27 @@ readonly class RestaurantService
         foreach ($dto->categories as $category) {
             $restaurant->addCategory($category);
         }
+    }
+
+    /**
+     * Enlève les espaces (séparateurs de milliers) et la virgule décimale typique en FR
+     * pour que la valeur soit valide en colonne PostgreSQL numeric/decimal.
+     */
+    private function normalizeMoneyString(?string $value): ?string
+    {
+        if (null === $value || '' === trim($value)) {
+            return null;
+        }
+
+        $s = preg_replace('/[\s\x{00A0}\x{202F}]+/u', '', trim($value));
+        if (!\is_string($s) || '' === $s) {
+            return null;
+        }
+
+        if (str_contains($s, ',') && !str_contains($s, '.')) {
+            $s = str_replace(',', '.', $s);
+        }
+
+        return $s;
     }
 }
