@@ -43,6 +43,9 @@ return [
         'path' => './assets/js/encheres/search-filters.js',
         'entrypoint' => true,
     ],
+    'utils-debounce' => [
+        'path' => './assets/js/utils/debounce.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],

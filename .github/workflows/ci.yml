@@ -123,6 +123,24 @@ jobs:
       - run: php bin/console lint:yaml config/
       - run: php bin/console lint:container
 
+  # ── POINT 1 : Lint MCP Python ──────────────────────────────────────────
+
+  lint-mcp:
+    name: "MCP Server (Python lint)"
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install MCP dependencies
+        run: pip install -r mcp-server/requirements.txt
+
+      - name: Vérification syntaxe Python
+        run: python -m py_compile mcp-server/main.py
+
   # ─── TESTS ───────────────────────
 
   unit-tests:
@@ -158,7 +176,6 @@ jobs:
         env:
           POSTGRES_USER: carte_blanche
           POSTGRES_PASSWORD: carte_blanche
-          # Doit correspondre au nom de base dans DATABASE_URL (.env.test)
           POSTGRES_DB: carte_blanche_test
         ports:
           - 5432:5432
@@ -302,7 +319,7 @@ jobs:
   build:
     name: "Build production"
     if: github.ref == 'refs/heads/main'
-    needs: [unit-tests, functional-tests, e2e, test-js]
+    needs: [unit-tests, functional-tests, e2e, test-js, lint-mcp]
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -320,8 +337,62 @@ jobs:
           key: composer-${{ hashFiles('composer.lock') }}
           restore-keys: composer-
 
-      - run: cp .env.test .env
       - run: composer install --no-progress --no-interaction --no-dev --optimize-autoloader --no-scripts
+
+      # ── POINT 2 : .env.prod minimal pour que cache:warmup ne plante pas ──
+      - name: Créer .env.prod minimal pour le build
+        run: |
+          cat > .env.prod << 'EOF'
+          APP_SECRET=buildsecret_placeholder
+          DATABASE_URL=postgresql://x:x@localhost/x
+          REDIS_URL=redis://localhost:6379
+          MESSENGER_TRANSPORT_DSN=doctrine://default
+          MAILER_DSN=null://null
+          STRIPE_PUBLIC_KEY=pk_test_placeholder
+          STRIPE_SECRET_KEY=sk_test_placeholder
+          STRIPE_WEBHOOK_SECRET=whsec_placeholder
+          MAPBOX_TOKEN=placeholder
+          GOOGLE_MAPS_API_KEY=placeholder
+          OAUTH_GOOGLE_CLIENT_ID=placeholder
+          OAUTH_GOOGLE_CLIENT_SECRET=placeholder
+          OAUTH_GITHUB_CLIENT_ID=placeholder
+          OAUTH_GITHUB_CLIENT_SECRET=placeholder
+          OLLAMA_URL=http://localhost:11434/
+          OLLAMA_BASE_URL=http://localhost:11434
+          OLLAMA_MODEL=content-generator
+          OLLAMA_CHATBOT_MODEL=chatbot
+          OLLAMA_RECOMMEND_MODEL=recommendation-explainer
+          EOF
+
       - run: php bin/console cache:warmup --env=prod --no-debug
 
-      - run: echo "Build prod OK"
+      - run: echo "Build prod OK ✅"
+
+  # ─── DEPLOY (main uniquement) ────────────────
+
+  deploy:
+    name: "Deploy → Railway"
+    if: github.ref == 'refs/heads/main'
+    needs: [build]
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install Railway CLI
+        run: npm install -g @railway/cli
+
+      - name: Deploy sur Railway
+        run: railway up --detach
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Migrations en prod
+        run: railway run php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
+
+      - name: Cache clear prod
+        run: railway run php bin/console cache:clear --env=prod --no-debug
+        env:
+          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
