@@ -383,16 +383,16 @@ jobs:
         run: npm install -g @railway/cli
 
       - name: Deploy sur Railway
-        run: railway up --detach --service carte-blanche --project dazzling-gratitude
+        run: railway up --detach --service carte-blanche --project dazzling-gratitude --environment production
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Migrations en prod
-        run: railway run --service carte-blanche --project dazzling-gratitude php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
+        run: railway run --service carte-blanche --project dazzling-gratitude --environment production php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
 
       - name: Cache clear prod
-        run: railway run --service carte-blanche --project dazzling-gratitude php bin/console cache:clear --env=prod --no-debug
+        run: railway run --service carte-blanche --project dazzling-gratitude --environment production php bin/console cache:clear --env=prod --no-debug
         env:
           RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
