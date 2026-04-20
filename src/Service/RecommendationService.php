@@ -4,7 +4,9 @@ namespace App\Service;
 
 use App\Entity\Restaurant;
 use App\Entity\User;
+use App\Enum\StatusRestaurantEnum;
 use App\Repository\RestaurantEmbeddingRepository;
+use App\Repository\RestaurantRepository;
 use Psr\Log\LoggerInterface;
 
 class RecommendationService
@@ -13,6 +15,7 @@ class RecommendationService
 
     public function __construct(
         private readonly RestaurantEmbeddingRepository $embeddingRepository,
+        private readonly RestaurantRepository $restaurantRepository,
         private readonly LoggerInterface $logger,
     ) {
     }
@@ -37,8 +40,6 @@ class RecommendationService
         $userVector = $userEmbedding->getEmbedding();
         $hasVectors = !empty($userVector);
 
-        // Avec vecteurs : utilise les RestaurantEmbeddings (contiennent aussi les restaurants)
-        // Sans vecteurs : utilise tous les restaurants publiés via filtres uniquement
         if ($hasVectors) {
             return $this->getRecommendationsWithEmbeddings($userVector, $prefs, $limit);
         }
@@ -47,8 +48,6 @@ class RecommendationService
     }
 
     /**
-     * Recommandations par similarité cosinus (Ollama disponible).
-     *
      * @param array<int, float>    $userVector
      * @param array<string, mixed> $prefs
      *
@@ -59,7 +58,7 @@ class RecommendationService
         $restaurantEmbeddings = $this->embeddingRepository->findAllWithNonEmptyEmbedding();
 
         if (empty($restaurantEmbeddings)) {
-            return [];
+            return $this->getRecommendationsWithFiltersOnly($prefs, $limit);
         }
 
         $scored = [];
@@ -79,18 +78,14 @@ class RecommendationService
         }
 
         if (empty($scored)) {
-            $this->logger->info('RecommendationService: aucun résultat avec filtres stricts, fallback sans filtre cuisine/ville.');
-
             foreach ($restaurantEmbeddings as $re) {
                 $restaurant = $re->getRestaurant();
                 if (!$restaurant) {
                     continue;
                 }
-
                 if (!$this->matchesPreferencesSoft($restaurant, $prefs)) {
                     continue;
                 }
-
                 $score = $this->cosineSimilarity($userVector, $re->getEmbedding());
                 $scored[] = ['restaurant' => $restaurant, 'score' => $score];
             }
@@ -115,33 +110,25 @@ class RecommendationService
     }
 
     /**
-     * Recommandations par filtres uniquement (Ollama absent, pas de vecteurs).
-     * Score calculé sur la correspondance des critères.
-     *
      * @param array<string, mixed> $prefs
      *
      * @return array<int, array{restaurant: Restaurant, score: float, explanation: string}>
      */
     private function getRecommendationsWithFiltersOnly(array $prefs, int $limit): array
     {
-        $restaurantEmbeddings = $this->embeddingRepository->findAll();
+        // Récupère tous les restaurants publiés/programmés directement
+        $allRestaurants = $this->restaurantRepository->findBy([
+            'status' => [StatusRestaurantEnum::PUBLIE, StatusRestaurantEnum::PROGRAMME],
+        ]);
 
-        $candidates = [];
-        foreach ($restaurantEmbeddings as $re) {
-            $restaurant = $re->getRestaurant();
-            if ($restaurant) {
-                $candidates[] = $restaurant;
-            }
-        }
-
-        if (empty($candidates)) {
+        if (empty($allRestaurants)) {
             return [];
         }
 
         $scored = [];
 
-        // Filtrage strict d'abord
-        foreach ($candidates as $restaurant) {
+        // Filtrage strict
+        foreach ($allRestaurants as $restaurant) {
             if ($this->matchesPreferences($restaurant, $prefs)) {
                 $score = $this->computeSimpleScore($restaurant, $prefs);
                 $scored[] = ['restaurant' => $restaurant, 'score' => $score];
@@ -151,8 +138,7 @@ class RecommendationService
         // Fallback assoupli si aucun résultat
         if (empty($scored)) {
             $this->logger->info('RecommendationService (no embeddings): fallback soft filters.');
-
-            foreach ($candidates as $restaurant) {
+            foreach ($allRestaurants as $restaurant) {
                 if ($this->matchesPreferencesSoft($restaurant, $prefs)) {
                     $score = $this->computeSimpleScore($restaurant, $prefs);
                     $scored[] = ['restaurant' => $restaurant, 'score' => $score];
@@ -160,8 +146,14 @@ class RecommendationService
             }
         }
 
+        // Dernier fallback : tous les restaurants si toujours vide
         if (empty($scored)) {
-            return [];
+            foreach ($allRestaurants as $restaurant) {
+                $scored[] = [
+                    'restaurant' => $restaurant,
+                    'score' => 0.5,
+                ];
+            }
         }
 
         usort($scored, static fn (array $a, array $b) => $b['score'] <=> $a['score']);
@@ -179,15 +171,12 @@ class RecommendationService
     }
 
     /**
-     * Score simple basé sur la correspondance des critères (sans vecteurs).
-     *
      * @param array<string, mixed> $prefs
      */
     private function computeSimpleScore(Restaurant $restaurant, array $prefs): float
     {
-        $score = 0.5; // base
+        $score = 0.5;
 
-        // Budget centré → meilleur score si le prix est au milieu de la fourchette
         if (!empty($prefs['budgetMin']) && !empty($prefs['budgetMax']) && null !== $restaurant->getAskingPrice()) {
             $price = (float) $restaurant->getAskingPrice();
             $min = (float) $prefs['budgetMin'];
@@ -197,7 +186,6 @@ class RecommendationService
             $score += 0.3 * (1 - abs($price - $mid) / $range);
         }
 
-        // Cuisine correspondante
         if (!empty($prefs['cuisineTypes'])) {
             $restaurantCategories = array_map(
                 static fn ($c) => mb_strtolower($c->getName() ?? ''),
