@@ -365,5 +365,4 @@ jobs:
           EOF
 
       - run: php bin/console cache:warmup --env=prod --no-debug
-
       - run: echo "Build prod OK ✅"
