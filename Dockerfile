@@ -14,7 +14,8 @@ RUN composer install \
     --no-interaction \
     --no-scripts \
     --optimize-autoloader \
-    --prefer-dist
+    --prefer-dist \
+    --ignore-platform-reqs
 
 # ── Stage 2 : Assets (Node) ───────────────────────
 FROM node:22-alpine AS assets
