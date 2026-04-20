@@ -9,7 +9,6 @@ use Psr\Log\LoggerInterface;
 
 class RecommendationService
 {
-    // Tolérance budget : ±20% au-delà du max (pour ne pas exclure des bons candidats proches)
     private const BUDGET_TOLERANCE = 1.20;
 
     public function __construct(
@@ -19,22 +18,44 @@ class RecommendationService
     }
 
     /**
-     * Retourne le top-$limit des restaurants correspondant aux préférences utilisateur.
-     * Étape 1 : pré-filtrage dur sur budget, capacité, localisation, cuisine.
-     * Étape 2 : ranking par similarité cosinus sur les candidats restants.
-     *
      * @return array<int, array{restaurant: Restaurant, score: float, explanation: string}>
      */
     public function getTopRecommendations(User $user, int $limit = 3): array
     {
         $userEmbedding = $user->getUserPreferenceEmbedding();
 
-        if (!$userEmbedding || empty($userEmbedding->getEmbedding())) {
+        if (!$userEmbedding) {
+            return [];
+        }
+
+        $prefs = $userEmbedding->getPreferencesData();
+
+        if (empty($prefs)) {
             return [];
         }
 
         $userVector = $userEmbedding->getEmbedding();
-        $prefs = $userEmbedding->getPreferencesData();
+        $hasVectors = !empty($userVector);
+
+        // Avec vecteurs : utilise les RestaurantEmbeddings (contiennent aussi les restaurants)
+        // Sans vecteurs : utilise tous les restaurants publiés via filtres uniquement
+        if ($hasVectors) {
+            return $this->getRecommendationsWithEmbeddings($userVector, $prefs, $limit);
+        }
+
+        return $this->getRecommendationsWithFiltersOnly($prefs, $limit);
+    }
+
+    /**
+     * Recommandations par similarité cosinus (Ollama disponible).
+     *
+     * @param array<int, float>    $userVector
+     * @param array<string, mixed> $prefs
+     *
+     * @return array<int, array{restaurant: Restaurant, score: float, explanation: string}>
+     */
+    private function getRecommendationsWithEmbeddings(array $userVector, array $prefs, int $limit): array
+    {
         $restaurantEmbeddings = $this->embeddingRepository->findAllWithNonEmptyEmbedding();
 
         if (empty($restaurantEmbeddings)) {
@@ -54,13 +75,9 @@ class RecommendationService
             }
 
             $score = $this->cosineSimilarity($userVector, $re->getEmbedding());
-            $scored[] = [
-                'restaurant' => $restaurant,
-                'score' => $score,
-            ];
+            $scored[] = ['restaurant' => $restaurant, 'score' => $score];
         }
 
-        // Si aucun résultat après filtrage strict → on assouplit (sans filtre cuisine/localisation)
         if (empty($scored)) {
             $this->logger->info('RecommendationService: aucun résultat avec filtres stricts, fallback sans filtre cuisine/ville.');
 
@@ -75,10 +92,7 @@ class RecommendationService
                 }
 
                 $score = $this->cosineSimilarity($userVector, $re->getEmbedding());
-                $scored[] = [
-                    'restaurant' => $restaurant,
-                    'score' => $score,
-                ];
+                $scored[] = ['restaurant' => $restaurant, 'score' => $score];
             }
         }
 
@@ -101,35 +115,130 @@ class RecommendationService
     }
 
     /**
-     * Filtrage strict : budget + capacité + cuisine + localisation (si lat/lng dispo).
+     * Recommandations par filtres uniquement (Ollama absent, pas de vecteurs).
+     * Score calculé sur la correspondance des critères.
      *
+     * @param array<string, mixed> $prefs
+     *
+     * @return array<int, array{restaurant: Restaurant, score: float, explanation: string}>
+     */
+    private function getRecommendationsWithFiltersOnly(array $prefs, int $limit): array
+    {
+        $restaurantEmbeddings = $this->embeddingRepository->findAll();
+
+        $candidates = [];
+        foreach ($restaurantEmbeddings as $re) {
+            $restaurant = $re->getRestaurant();
+            if ($restaurant) {
+                $candidates[] = $restaurant;
+            }
+        }
+
+        if (empty($candidates)) {
+            return [];
+        }
+
+        $scored = [];
+
+        // Filtrage strict d'abord
+        foreach ($candidates as $restaurant) {
+            if ($this->matchesPreferences($restaurant, $prefs)) {
+                $score = $this->computeSimpleScore($restaurant, $prefs);
+                $scored[] = ['restaurant' => $restaurant, 'score' => $score];
+            }
+        }
+
+        // Fallback assoupli si aucun résultat
+        if (empty($scored)) {
+            $this->logger->info('RecommendationService (no embeddings): fallback soft filters.');
+
+            foreach ($candidates as $restaurant) {
+                if ($this->matchesPreferencesSoft($restaurant, $prefs)) {
+                    $score = $this->computeSimpleScore($restaurant, $prefs);
+                    $scored[] = ['restaurant' => $restaurant, 'score' => $score];
+                }
+            }
+        }
+
+        if (empty($scored)) {
+            return [];
+        }
+
+        usort($scored, static fn (array $a, array $b) => $b['score'] <=> $a['score']);
+
+        $results = [];
+        foreach (array_slice($scored, 0, $limit) as $item) {
+            $results[] = [
+                'restaurant' => $item['restaurant'],
+                'score' => $item['score'],
+                'explanation' => $this->buildExplanation($item['restaurant'], $item['score'], $prefs),
+            ];
+        }
+
+        return $results;
+    }
+
+    /**
+     * Score simple basé sur la correspondance des critères (sans vecteurs).
+     *
+     * @param array<string, mixed> $prefs
+     */
+    private function computeSimpleScore(Restaurant $restaurant, array $prefs): float
+    {
+        $score = 0.5; // base
+
+        // Budget centré → meilleur score si le prix est au milieu de la fourchette
+        if (!empty($prefs['budgetMin']) && !empty($prefs['budgetMax']) && null !== $restaurant->getAskingPrice()) {
+            $price = (float) $restaurant->getAskingPrice();
+            $min = (float) $prefs['budgetMin'];
+            $max = (float) $prefs['budgetMax'];
+            $mid = ($min + $max) / 2;
+            $range = max($max - $min, 1);
+            $score += 0.3 * (1 - abs($price - $mid) / $range);
+        }
+
+        // Cuisine correspondante
+        if (!empty($prefs['cuisineTypes'])) {
+            $restaurantCategories = array_map(
+                static fn ($c) => mb_strtolower($c->getName() ?? ''),
+                $restaurant->getCategories()->toArray()
+            );
+            $preferredCuisines = array_map(static fn ($c) => mb_strtolower((string) $c), (array) $prefs['cuisineTypes']);
+
+            foreach ($preferredCuisines as $pref) {
+                foreach ($restaurantCategories as $cat) {
+                    if (str_contains($cat, $pref) || str_contains($pref, $cat)) {
+                        $score += 0.2;
+                        break 2;
+                    }
+                }
+            }
+        }
+
+        return min(1.0, $score);
+    }
+
+    /**
      * @param array<string, mixed> $prefs
      */
     private function matchesPreferences(Restaurant $restaurant, array $prefs): bool
     {
-        // Budget
         if (!$this->matchesBudget($restaurant, $prefs)) {
             return false;
         }
 
-        // Capacité minimum
         if (!empty($prefs['capacityMin']) && null !== $restaurant->getCapacity()) {
             if ($restaurant->getCapacity() < (int) $prefs['capacityMin']) {
                 return false;
             }
         }
 
-        // Type de cuisine
         if (!empty($prefs['cuisineTypes'])) {
             $restaurantCategories = array_map(
                 static fn ($c) => mb_strtolower($c->getName() ?? ''),
                 $restaurant->getCategories()->toArray()
             );
-
-            $preferredCuisines = array_map(
-                static fn ($c) => mb_strtolower((string) $c),
-                (array) $prefs['cuisineTypes']
-            );
+            $preferredCuisines = array_map(static fn ($c) => mb_strtolower((string) $c), (array) $prefs['cuisineTypes']);
 
             $hasMatchingCuisine = false;
             foreach ($preferredCuisines as $pref) {
@@ -146,7 +255,6 @@ class RecommendationService
             }
         }
 
-        // Localisation par distance haversine si lat/lng disponibles
         if (!empty($prefs['preferredLat']) && !empty($prefs['preferredLng']) && !empty($prefs['searchRadius'])) {
             if (null !== $restaurant->getLatitude() && null !== $restaurant->getLongitude()) {
                 $distance = $this->haversineDistance(
@@ -155,13 +263,11 @@ class RecommendationService
                     $restaurant->getLatitude(),
                     $restaurant->getLongitude()
                 );
-
                 if ($distance > (int) $prefs['searchRadius']) {
                     return false;
                 }
             }
         } elseif (!empty($prefs['preferredCity'])) {
-            // Fallback textuel si pas de coordonnées
             $city = mb_strtolower((string) $prefs['preferredCity']);
             $address = mb_strtolower((string) $restaurant->getAddress());
             if (!str_contains($address, $city)) {
@@ -173,8 +279,6 @@ class RecommendationService
     }
 
     /**
-     * Filtrage assoupli : budget + capacité uniquement (sans cuisine ni localisation).
-     *
      * @param array<string, mixed> $prefs
      */
     private function matchesPreferencesSoft(Restaurant $restaurant, array $prefs): bool
@@ -200,14 +304,13 @@ class RecommendationService
         $price = null !== $restaurant->getAskingPrice() ? (float) $restaurant->getAskingPrice() : null;
 
         if (null === $price) {
-            return true; // Pas de prix → on inclut
+            return true;
         }
 
         if (!empty($prefs['budgetMin']) && $price < (float) $prefs['budgetMin']) {
             return false;
         }
 
-        // Tolérance de 20% au-dessus du budget max
         if (!empty($prefs['budgetMax']) && $price > (float) $prefs['budgetMax'] * self::BUDGET_TOLERANCE) {
             return false;
         }
@@ -215,23 +318,17 @@ class RecommendationService
         return true;
     }
 
-    /**
-     * Distance haversine en km entre deux points GPS.
-     */
     private function haversineDistance(float $lat1, float $lng1, float $lat2, float $lng2): float
     {
         $earthRadius = 6371;
         $dLat = deg2rad($lat2 - $lat1);
         $dLng = deg2rad($lng2 - $lng1);
-
         $a = sin($dLat / 2) ** 2 + cos(deg2rad($lat1)) * cos(deg2rad($lat2)) * sin($dLng / 2) ** 2;
 
         return $earthRadius * 2 * asin(sqrt($a));
     }
 
     /**
-     * Explication courte sans LLM.
-     *
      * @param array<string, mixed> $prefs
      */
     private function buildExplanation(Restaurant $restaurant, float $score, array $prefs): string
