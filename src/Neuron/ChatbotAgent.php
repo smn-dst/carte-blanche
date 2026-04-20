@@ -11,14 +11,23 @@ class ChatbotAgent extends Agent
 {
     protected function provider(): AIProviderInterface
     {
-        $openAiKey = $_ENV['OPENAI_API_KEY'] ?? $_SERVER['OPENAI_API_KEY'] ?? '';
+        // Groq (prioritaire)
+        $groqKey = $_ENV['GROQ_API_KEY'] ?? $_SERVER['GROQ_API_KEY'] ?? '';
+        if ('' !== $groqKey) {
+            $model = $_ENV['GROQ_CHATBOT_MODEL'] ?? $_SERVER['GROQ_CHATBOT_MODEL'] ?? 'llama-3.3-70b-versatile';
 
+            return new GroqOpenAI(key: $groqKey, model: $model);
+        }
+
+        // OpenAI (fallback)
+        $openAiKey = $_ENV['OPENAI_API_KEY'] ?? $_SERVER['OPENAI_API_KEY'] ?? '';
         if ('' !== $openAiKey) {
             $model = $_ENV['OPENAI_CHATBOT_MODEL'] ?? $_SERVER['OPENAI_CHATBOT_MODEL'] ?? 'gpt-4o-mini';
 
             return new OpenAI(key: $openAiKey, model: $model);
         }
 
+        // Ollama (local dev)
         $baseUrl = $_ENV['OLLAMA_BASE_URL'] ?? $_SERVER['OLLAMA_BASE_URL'] ?? 'http://host.docker.internal:11434';
         $model = $_ENV['OLLAMA_CHATBOT_MODEL'] ?? $_SERVER['OLLAMA_CHATBOT_MODEL'] ?? 'chatbot';
 
@@ -27,8 +36,6 @@ class ChatbotAgent extends Agent
 
     public function instructions(): string
     {
-        // NeuronAI envoie ce texte comme system prompt via l'API — le Modelfile est ignoré.
-        // Ce prompt s'applique donc à Ollama ET à OpenAI.
         return <<<PROMPT
             Tu es l'assistant de Carte Blanche, une plateforme premium de vente aux enchères de restaurants en France.
             Sur Carte Blanche, des vendeurs mettent en vente leurs restaurants via des enchères.
