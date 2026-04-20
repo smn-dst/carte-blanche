@@ -12,38 +12,45 @@ use Psr\Log\LoggerInterface;
 
 class EmbeddingService
 {
-    private OllamaEmbeddingsProvider $embeddingsProvider;
+    private ?OllamaEmbeddingsProvider $embeddingsProvider = null;
+    private bool $ollamaAvailable = false;
 
     public function __construct(
         private readonly EntityManagerInterface $em,
         private readonly RestaurantEmbeddingRepository $restaurantEmbeddingRepository,
         private readonly LoggerInterface $logger,
     ) {
-        $baseUrl = $_ENV['OLLAMA_URL'] ?? $_SERVER['OLLAMA_URL'] ?? 'http://ollama:11434';
+        $baseUrl = $_ENV['OLLAMA_URL'] ?? $_SERVER['OLLAMA_URL'] ?? '';
         $model = $_ENV['OLLAMA_EMBED_MODEL'] ?? $_SERVER['OLLAMA_EMBED_MODEL'] ?? 'nomic-embed-text';
 
-        $this->embeddingsProvider = new OllamaEmbeddingsProvider(
-            model: $model,
-            url: rtrim($baseUrl, '/').'/api',
-        );
+        // Si OLLAMA_URL est vide, "disabled" ou absent → on désactive silencieusement
+        if ('' !== $baseUrl && 'disabled' !== strtolower($baseUrl)) {
+            $this->ollamaAvailable = true;
+            $this->embeddingsProvider = new OllamaEmbeddingsProvider(
+                model: $model,
+                url: rtrim($baseUrl, '/').'/api',
+            );
+        }
     }
 
     /**
-     * Génère un vecteur d'embedding pour un texte libre.
-     *
      * @return array<int, float>
      */
     public function embedText(string $text): array
     {
+        if (!$this->ollamaAvailable || null === $this->embeddingsProvider) {
+            return [];
+        }
+
         return $this->embeddingsProvider->embedText($text);
     }
 
-    /**
-     * Génère et persiste l'embedding d'un restaurant.
-     * Crée ou met à jour le RestaurantEmbedding associé.
-     */
     public function embedRestaurant(Restaurant $restaurant): void
     {
+        if (!$this->ollamaAvailable) {
+            return;
+        }
+
         $content = $this->buildRestaurantContent($restaurant);
 
         $embedding = $this->restaurantEmbeddingRepository->findOneBy(['restaurant' => $restaurant])
@@ -60,6 +67,10 @@ class EmbeddingService
             return;
         }
 
+        if (empty($vector)) {
+            return;
+        }
+
         $embedding->setRestaurant($restaurant);
         $embedding->setContent($content);
         $embedding->setEmbedding($vector);
@@ -69,11 +80,12 @@ class EmbeddingService
         $this->em->flush();
     }
 
-    /**
-     * Génère et persiste l'embedding des préférences d'un utilisateur.
-     */
     public function embedUserPreferences(UserPreferenceEmbedding $pref): void
     {
+        if (!$this->ollamaAvailable) {
+            return;
+        }
+
         $text = $pref->getPreferencesText();
         if (!$text) {
             return;
@@ -90,6 +102,10 @@ class EmbeddingService
             return;
         }
 
+        if (empty($vector)) {
+            return;
+        }
+
         $pref->setEmbedding($vector);
         $pref->setUpdatedAt(new \DateTimeImmutable());
 
@@ -97,9 +113,6 @@ class EmbeddingService
         $this->em->flush();
     }
 
-    /**
-     * Construit le texte de contenu d'un restaurant pour l'embedding.
-     */
     private function buildRestaurantContent(Restaurant $restaurant): string
     {
         $parts = [];

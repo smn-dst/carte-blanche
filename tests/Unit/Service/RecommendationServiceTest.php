@@ -104,7 +104,9 @@ final class RecommendationServiceTest extends TestCase
         $upe = new UserPreferenceEmbedding();
         $upe->setPreferencesText('Préférences');
         $upe->setEmbedding($vector);
-        $upe->setPreferencesData([]);
+        $upe->setPreferencesData([
+            'preferredCity' => 'Toulouse',
+        ]);
         $upe->setUpdatedAt(new \DateTimeImmutable());
         $upe->setUser($user);
 

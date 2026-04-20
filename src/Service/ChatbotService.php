@@ -6,9 +6,6 @@ use App\Entity\AiLog;
 use App\Entity\FaqEntry;
 use App\Entity\User;
 use App\Neuron\ChatbotAgent;
-use App\Neuron\Tools\GetCategoriesTool;
-use App\Neuron\Tools\SearchFaqTool;
-use App\Neuron\Tools\SearchRestaurantsTool;
 use Doctrine\ORM\EntityManagerInterface;
 use NeuronAI\Chat\Messages\UserMessage;
 use Psr\Log\LoggerInterface;
@@ -22,24 +19,18 @@ class ChatbotService
     }
 
     /**
-     * Pose une question au chatbot et retourne la réponse.
-     * Effectue un RAG simple : cherche les FAQ correspondantes avant d'appeler le LLM.
-     *
-     * @param array<array{role: string, content: string}> $history Historique de la conversation
+     * @param array<array{role: string, content: string}> $history
      */
     public function ask(string $question, array $history = [], ?User $user = null): string
     {
         $start = microtime(true);
 
         $context = $this->buildContext($question);
-
         $prompt = $this->buildPrompt($question, $context);
 
         try {
-            $agent = ChatbotAgent::make()
-                ->addTool(new SearchFaqTool($this->em))
-                ->addTool(new SearchRestaurantsTool($this->em))
-                ->addTool(new GetCategoriesTool($this->em));
+            // Pas de tools NeuronAI : le contexte FAQ est déjà injecté dans le prompt
+            $agent = ChatbotAgent::make();
 
             $message = $agent->chat(new UserMessage($prompt))->getMessage();
             $response = trim((string) $message->getContent());
@@ -51,16 +42,11 @@ class ChatbotService
         }
 
         $duration = round(microtime(true) - $start, 3);
-
         $this->logInteraction($question, $response, $duration, $user);
 
         return $response;
     }
 
-    /**
-     * Cherche les entrées FAQ dont la question ou la réponse contient des mots-clés.
-     * RAG textuel simple (pas de vecteurs nécessaires pour commencer).
-     */
     private function buildContext(string $question): string
     {
         $keywords = $this->extractKeywords($question);
@@ -96,9 +82,6 @@ class ChatbotService
         return implode("\n\n", $parts);
     }
 
-    /**
-     * Construit le prompt final avec contexte FAQ si disponible.
-     */
     private function buildPrompt(string $question, string $context): string
     {
         if ('' === $context) {
@@ -116,8 +99,6 @@ class ChatbotService
     }
 
     /**
-     * Extrait les mots-clés significatifs d'une question (> 3 caractères, pas de stop words).
-     *
      * @return string[]
      */
     private function extractKeywords(string $question): array
@@ -167,13 +148,10 @@ class ChatbotService
         }));
     }
 
-    /**
-     * Enregistre l'interaction dans ai_log.
-     */
     private function logInteraction(string $question, string $response, float $duration, ?User $user): void
     {
         try {
-            $model = $_ENV['OPENAI_CHATBOT_MODEL'] ?? $_SERVER['OPENAI_CHATBOT_MODEL'] ?? 'gpt-4o-mini';
+            $model = $_ENV['GROQ_CHATBOT_MODEL'] ?? $_SERVER['GROQ_CHATBOT_MODEL'] ?? 'llama-3.3-70b-versatile';
 
             $log = new AiLog();
             $log->setPrompt($question);
@@ -190,9 +168,7 @@ class ChatbotService
             $this->em->persist($log);
             $this->em->flush();
         } catch (\Throwable $e) {
-            $this->logger->error('ChatbotService: échec log: {message}', [
-                'message' => $e->getMessage(),
-            ]);
+            $this->logger->error('ChatbotService: échec log: {message}', ['message' => $e->getMessage()]);
         }
     }
 }
