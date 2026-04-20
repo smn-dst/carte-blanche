@@ -88,18 +88,18 @@ COPY --from=node /app/node_modules ./node_modules
 # Crée les dossiers assets
 RUN mkdir -p public/assets public/build
 
-# Build des assets avec PHP (qui a accès à Symfony)
-RUN php bin/console importmap:install 2>/dev/null || true
-RUN php bin/console tailwind:build --minify 2>/dev/null || true
-RUN php bin/console asset-map:compile 2>/dev/null || true
+# Build des assets avec PHP
+RUN APP_ENV=prod php bin/console importmap:install 2>/dev/null || true
+RUN APP_ENV=prod php bin/console tailwind:build --minify
+RUN APP_ENV=prod php bin/console asset-map:compile 2>/dev/null || true
 
-# Permissions
+# Permissions sur var ET public AVANT le warmup
 RUN mkdir -p var/cache var/log \
-    && chown -R www-data:www-data var \
+    && chown -R www-data:www-data var public \
     && chmod -R 775 var
 
-# Cache Symfony prod
-RUN APP_ENV=prod php bin/console cache:warmup --no-debug 2>/dev/null || true
+# Cache warmup en tant que www-data pour éviter les problèmes de permissions
+RUN su -s /bin/sh www-data -c "APP_ENV=prod php bin/console cache:warmup --no-debug" || true
 
 # Nettoie node_modules pour alléger l'image finale
 RUN rm -rf node_modules
