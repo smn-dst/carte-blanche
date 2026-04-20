@@ -3,14 +3,10 @@
 namespace App\Service;
 
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Symfony\Contracts\HttpClient\ResponseInterface;
 
 class AiDescriptionService
 {
-    /** Délai HTTP : avec stream=false, Ollama n’envoie rien tant que la génération n’est pas finie → éviter l’idle timeout Symfony (~60 s). */
-    private const GENERATE_TIMEOUT_SECONDS = 600;
-
-    /** Limite de tokens de sortie : réduit le temps de génération (≈ 120–180 mots en français). */
+    private const GENERATE_TIMEOUT_SECONDS = 60;
     private const NUM_PREDICT = 320;
 
     public function __construct(
@@ -27,6 +23,57 @@ class AiDescriptionService
     {
         $prompt = $this->buildPrompt($restaurantData);
 
+        $groqKey = $_ENV['GROQ_API_KEY'] ?? $_SERVER['GROQ_API_KEY'] ?? '';
+
+        if ('' !== $groqKey) {
+            return $this->generateWithGroq($prompt, $groqKey);
+        }
+
+        return $this->generateWithOllama($prompt);
+    }
+
+    private function generateWithGroq(string $prompt, string $apiKey): string
+    {
+        $model = $_ENV['GROQ_MODEL'] ?? $_SERVER['GROQ_MODEL'] ?? 'llama-3.3-70b-versatile';
+
+        $response = $this->httpClient->request('POST', 'https://api.groq.com/openai/v1/chat/completions', [
+            'headers' => [
+                'Authorization' => 'Bearer '.$apiKey,
+                'Content-Type' => 'application/json',
+            ],
+            'json' => [
+                'model' => $model,
+                'messages' => [
+                    [
+                        'role' => 'system',
+                        'content' => 'Tu es un expert en rédaction commerciale pour la restauration. Tu génères des descriptions attractives et professionnelles de fonds de commerce de restaurants. Tu rédiges en français, 100 mots maximum, ton premium, sans listes à puces.',
+                    ],
+                    [
+                        'role' => 'user',
+                        'content' => $prompt,
+                    ],
+                ],
+                'max_tokens' => self::NUM_PREDICT,
+                'temperature' => 0.45,
+            ],
+            'timeout' => self::GENERATE_TIMEOUT_SECONDS,
+        ]);
+
+        $statusCode = $response->getStatusCode();
+        $raw = $response->getContent(false);
+
+        if ($statusCode >= 400) {
+            throw new \RuntimeException(sprintf('Groq API HTTP %d — %s', $statusCode, $raw));
+        }
+
+        /** @var array<string, mixed> $data */
+        $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
+
+        return (string) ($data['choices'][0]['message']['content'] ?? '');
+    }
+
+    private function generateWithOllama(string $prompt): string
+    {
         $baseUrl = rtrim($this->ollamaUrl, '/');
 
         $response = $this->httpClient->request('POST', $baseUrl.'/api/generate', [
@@ -39,53 +86,20 @@ class AiDescriptionService
                     'temperature' => 0.45,
                 ],
             ],
-            'timeout' => self::GENERATE_TIMEOUT_SECONDS,
+            'timeout' => 600,
         ]);
 
-        return $this->parseGenerateResponse($response, $baseUrl);
-    }
-
-    /**
-     * @throws \JsonException
-     */
-    private function parseGenerateResponse(ResponseInterface $response, string $baseUrl): string
-    {
         $statusCode = $response->getStatusCode();
         $raw = $response->getContent(false);
 
         if ($statusCode >= 400) {
-            $detail = $this->extractOllamaError($raw);
-            $hint = '';
-            if (404 === $statusCode || str_contains(strtolower($detail), 'model') || str_contains(strtolower($detail), 'not found')) {
-                $hint = sprintf(
-                    ' Crée le modèle dans le conteneur Ollama : `docker compose exec ollama ollama pull phi3:mini` puis `docker compose exec ollama ollama create %s -f /models/Modelfile.content`.',
-                    $this->ollamaModel,
-                );
-            }
-
-            throw new \RuntimeException(sprintf('Ollama (%s/api/generate) HTTP %d — %s.%s', $baseUrl, $statusCode, $detail, $hint));
+            throw new \RuntimeException(sprintf('Ollama HTTP %d — %s', $statusCode, $raw));
         }
 
         /** @var array<string, mixed> $data */
         $data = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
 
         return (string) ($data['response'] ?? '');
-    }
-
-    private function extractOllamaError(string $raw): string
-    {
-        try {
-            /** @var array<string, mixed> $decoded */
-            $decoded = json_decode($raw, true, 512, JSON_THROW_ON_ERROR);
-            if (isset($decoded['error']) && is_string($decoded['error'])) {
-                return $decoded['error'];
-            }
-        } catch (\JsonException) {
-        }
-
-        $trimmed = trim($raw);
-
-        return '' !== $trimmed ? $trimmed : 'réponse vide ou invalide';
     }
 
     /**

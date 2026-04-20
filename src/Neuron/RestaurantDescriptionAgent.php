@@ -20,6 +20,15 @@ class RestaurantDescriptionAgent extends Agent
 
     protected function provider(): AIProviderInterface
     {
+        // Groq (prioritaire)
+        $groqKey = $_ENV['GROQ_API_KEY'] ?? $_SERVER['GROQ_API_KEY'] ?? '';
+        if ('' !== $groqKey) {
+            $model = $_ENV['GROQ_MODEL'] ?? $_SERVER['GROQ_MODEL'] ?? 'llama-3.3-70b-versatile';
+
+            return new GroqOpenAI(key: $groqKey, model: $model);
+        }
+
+        // Ollama (local dev)
         $baseUrl = $_ENV['OLLAMA_URL'] ?? $_SERVER['OLLAMA_URL'] ?? 'http://ollama:11434';
         $model = $_ENV['OLLAMA_MODEL'] ?? $_SERVER['OLLAMA_MODEL'] ?? 'content-generator';
 
