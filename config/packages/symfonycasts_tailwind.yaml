@@ -1,0 +1,4 @@
+symfonycasts_tailwind:
+    # Utilise le binaire standalone téléchargé par le bundle.
+    # Cela évite de dépendre de Node.js dans le conteneur PHP.
+    binary_version: 'v4.1.18'

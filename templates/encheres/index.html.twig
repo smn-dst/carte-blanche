@@ -1,0 +1,30 @@
+{% extends 'base.html.twig' %}
+
+{% block javascripts %}
+	{{ parent() }}
+	{{ importmap('encheres-search-filters') }}
+{% endblock %}
+
+{% block body %}
+    <div class="flex flex-col flex-1 min-h-0">
+        {% for type, message in app.flashes %}
+            <div class="alert alert-{{ type }}" role="alert">
+                {{ message | join(', ') }}
+            </div>
+        {% endfor %}
+
+        {% set total = pagination.total_count %}
+        {% include 'Components/headers/page-header.html.twig' with {
+            title: 'Page des enchères',
+            description: total ~ ' enchère' ~ (total > 1 ? 's' : '') ~ ' disponible' ~ (total > 1 ? 's' : '')
+        } %}
+
+        {{ include('encheres/_search.html.twig') }}
+
+        <div class="flex-1 min-h-0">
+            {{ include('encheres/_restaurants.html.twig') }}
+        </div>
+
+        {{ include('encheres/pagination.html.twig', { route: 'app_encheres', pagination: pagination }) }}
+    </div>
+{% endblock %}

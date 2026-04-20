@@ -1,0 +1,108 @@
+{% if recommendations is defined and recommendations is not empty %}
+<section class="mx-8 mb-10">
+    <div class="flex items-center gap-3 mb-5">
+        <div class="flex items-center gap-2">
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+            <h2 class="text-white font-bold text-lg">Sélectionnés pour vous</h2>
+        </div>
+        <span class="text-xs text-gray-400 bg-white/5 px-2 py-0.5 rounded-full">Basé sur vos préférences</span>
+    </div>
+
+    <ul class="grid grid-cols-1 md:grid-cols-3 gap-4">
+        {% for rec in recommendations %}
+            {% set restaurant = rec.restaurant %}
+            {% set scorePercent = (rec.score * 100)|round %}
+            <li class="flex flex-col gap-3">
+                <div class="flex items-center gap-2">
+                    <span class="inline-flex items-center gap-1 text-xs font-semibold text-primary bg-primary/10 border border-primary/20 rounded-full px-2.5 py-1">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                        {{ scorePercent }}% de correspondance
+                    </span>
+                </div>
+
+                {% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+                    variant: 'small',
+                    restaurantId: restaurant.id,
+                    isFavorite: restaurant.id in favoriteRestaurantIds|default([]),
+                    href: path('app_restaurant_show', { id: restaurant.id }),
+                    image: restaurant.firstImage ? '/uploads/restaurants/' ~ restaurant.firstImage.fileName : null,
+                    name: restaurant.name,
+                    seats: restaurant.maxCapacity ~ ' places',
+                    category: restaurant.categories|map(c => c.name)|join(', '),
+                    city: restaurant.address,
+                    price_label: 'Prix de départ · Enchère le ' ~ restaurant.auctionDate|date('d/m/Y') ~ (restaurant.auctionTime ? ' à ' ~ restaurant.auctionTime|date('H:i') : ''),
+                    price_amount: restaurant.askingPrice|number_format(0, '', ' '),
+                    price: restaurant.askingPrice|number_format(0, '', ' ') ~ ' €',
+                } %}
+
+                {% if rec.explanation %}
+                    <p class="text-xs text-gray-400 leading-relaxed px-1">
+                        {{ rec.explanation }}
+                    </p>
+                {% endif %}
+            </li>
+        {% endfor %}
+    </ul>
+</section>
+<hr class="mx-8 mb-8 border-white/10">
+{% elseif app.user is not null and (app.user.userPreferenceEmbedding is null or app.user.userPreferenceEmbedding.embedding is empty) %}
+<section class="mx-8 mb-10">
+    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 bg-primary/5 border border-primary/20 rounded-xl">
+        <div class="flex items-start gap-3">
+            <div class="mt-0.5 shrink-0 flex items-center justify-center w-9 h-9 rounded-lg bg-primary/10 border border-primary/20">
+                <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="text-primary" aria-hidden="true"><path d="M9.937 15.5A2 2 0 0 0 8.5 14.063l-6.135-1.582a.5.5 0 0 1 0-.962L8.5 9.936A2 2 0 0 0 9.937 8.5l1.582-6.135a.5.5 0 0 1 .963 0L14.063 8.5A2 2 0 0 0 15.5 9.937l6.135 1.581a.5.5 0 0 1 0 .964L15.5 14.063a2 2 0 0 0-1.437 1.437l-1.582 6.135a.5.5 0 0 1-.963 0z"/><path d="M20 3v4"/><path d="M22 5h-4"/><path d="M4 17v2"/><path d="M5 18H3"/></svg>
+            </div>
+            <div>
+                <p class="text-sm font-semibold text-white">Obtenez des recommandations personnalisées</p>
+                <p class="text-xs text-gray-400 mt-0.5">Configurez vos préférences pour que nous puissions vous suggérer les restaurants qui vous correspondent le mieux.</p>
+            </div>
+        </div>
+        <a href="{{ path('app_register_preferences') }}"
+           class="shrink-0 inline-flex items-center gap-1.5 text-xs font-semibold px-3.5 py-2 rounded-lg bg-primary text-primary-foreground hover:bg-primary/90 transition-colors">
+            Configurer mes préférences
+            <svg xmlns="http://www.w3.org/2000/svg" width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="m12 5 7 7-7 7"/></svg>
+        </a>
+    </div>
+</section>
+<hr class="mx-8 mb-8 border-white/10">
+{% endif %}
+
+<div class="flex flex-col flex-1 min-h-0">
+    <ul class="flex flex-col gap-8 mx-8 mb-8 {{ restaurants|length == 0 ? 'flex-1 min-h-0' : '' }}">
+
+        {% for restaurant in restaurants %}
+            <li>
+            {% include 'Components/cards-restaurant/cards-restaurant.html.twig' with {
+                variant: loop.first ? 'first' : (loop.index <= 3 ? 'small' : 'bottom'),
+                restaurantId: restaurant.id,
+                isFavorite: restaurant.id in favoriteRestaurantIds|default([]),
+                href: path('app_restaurant_show', { id: restaurant.id }),
+                image: restaurant.firstImage ? '/uploads/restaurants/' ~ restaurant.firstImage.fileName : null,
+                name: restaurant.name,
+                seats: restaurant.maxCapacity ~ ' places',
+                category: restaurant.categories|map(c => c.name)|join(', '),
+                city: restaurant.address,
+                price_label: 'Prix de départ · Enchère le ' ~ restaurant.auctionDate|date('d/m/Y') ~ (restaurant.auctionTime ? ' à ' ~ restaurant.auctionTime|date('H:i') : ''),
+                price_amount: restaurant.askingPrice|number_format(0, '', ' '),
+                price: restaurant.askingPrice|number_format(0, '', ' ') ~ ' €',
+                } %}
+            </li>
+
+            {% if loop.index is divisible by(10) and not loop.last %}
+                <li class="list-none">
+                    {% include 'home/_cta.html.twig' with {
+                        hasPendingVendorRequest: hasPendingVendorRequest|default(false)
+                    } %}
+                </li>
+            {% endif %}
+        {% else %}
+            <li class="flex-1 min-h-0 flex">
+                {% include 'Components/not-found/not-found.html.twig' with {
+                    icon: '<path d="m13.5 8.5-5 5"/><path d="m8.5 8.5 5 5"/><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/>',
+                    title: 'Aucun restaurant',
+                    description: "Nous ne trouvons pas de résultats pour votre recherche",
+                } %}
+            </li>
+        {% endfor %}
+    </ul>
+</div>

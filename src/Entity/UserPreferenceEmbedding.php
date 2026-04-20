@@ -19,8 +19,19 @@ class UserPreferenceEmbedding
     private ?string $preferencesText = null;
 
     /**
-     * Vecteur d'embedding (768 dimensions), stocké en JSON pour portabilité.
+     * Préférences structurées pour le pré-filtrage dur.
+     * Ex: {"budgetMin":500000,"budgetMax":1000000,"capacityMin":100,
+     *      "preferredCity":"Toulouse","searchRadius":25,"cuisineTypes":["french"]}.
      *
+     * Nullable côté PHP + DB : lignes anciennes ou NULL en base, sinon Doctrine peut
+     * laisser la propriété non initialisée après hydratation (newInstanceWithoutConstructor).
+     *
+     * @var array<string, mixed>|null
+     */
+    #[ORM\Column(type: Types::JSON, nullable: true)]
+    private ?array $preferencesData = null;
+
+    /**
      * @var array<int, float>
      */
     #[ORM\Column(type: Types::JSON)]
@@ -50,17 +61,27 @@ class UserPreferenceEmbedding
         return $this;
     }
 
-    /**
-     * @return array<int, float>
-     */
+    /** @return array<string, mixed> */
+    public function getPreferencesData(): array
+    {
+        return $this->preferencesData ?? [];
+    }
+
+    /** @param array<string, mixed> $preferencesData */
+    public function setPreferencesData(array $preferencesData): static
+    {
+        $this->preferencesData = $preferencesData;
+
+        return $this;
+    }
+
+    /** @return array<int, float> */
     public function getEmbedding(): array
     {
         return $this->embedding;
     }
 
-    /**
-     * @param array<int, float> $embedding
-     */
+    /** @param array<int, float> $embedding */
     public function setEmbedding(array $embedding): static
     {
         $this->embedding = $embedding;

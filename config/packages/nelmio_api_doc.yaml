@@ -1,0 +1,21 @@
+nelmio_api_doc:
+    documentation:
+        info:
+            title: Carte Blanche API
+            description: API REST de la plateforme d'enchères de restaurants Carte Blanche.
+            version: 1.0.0
+        components:
+            securitySchemes:
+                bearerAuth:
+                    type: http
+                    scheme: bearer
+                cookieAuth:
+                    type: apiKey
+                    in: cookie
+                    name: PHPSESSID
+        security:
+            - cookieAuth: []
+
+    areas:
+        path_patterns:
+            - ^/api(?!/doc$)

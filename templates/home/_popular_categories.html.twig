@@ -1,0 +1,71 @@
+{% if popularCategories|length > 0 %}
+	{% set accents = [
+		'from-primary/35 via-primary/10 to-transparent',
+		'from-violet-500/30 via-violet-500/10 to-transparent',
+		'from-amber-500/30 via-amber-500/10 to-transparent',
+		'from-emerald-500/30 via-emerald-500/10 to-transparent',
+	] %}
+	<section class="relative w-full flex flex-col items-center py-24 px-6 lg:px-8 border-t border-border overflow-hidden" aria-labelledby="popular-categories-heading">
+		<div class="pointer-events-none absolute inset-0 bg-linear-to-b from-background via-primary/[0.03] to-background" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute -top-24 left-1/2 h-72 w-[min(90vw,42rem)] -translate-x-1/2 rounded-full bg-primary/20 blur-[100px]" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute bottom-0 right-[10%] h-56 w-56 rounded-full bg-violet-500/15 blur-[80px]" aria-hidden="true"></div>
+		<div class="pointer-events-none absolute top-1/3 left-[5%] h-40 w-40 rounded-full bg-amber-500/10 blur-[64px]" aria-hidden="true"></div>
+
+		<div class="relative z-10 flex flex-col items-center w-full max-w-6xl">
+			<div class="primary-comment">
+				<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+					<path d="M3 3h8v8H3z"/>
+					<path d="M13 3h8v8h-8z"/>
+					<path d="M3 13h8v8H3z"/>
+					<path d="M13 13h8v8h-8z"/>
+				</svg>
+				Parcourir
+			</div>
+
+			<h2 id="popular-categories-heading" class="text-3xl md:text-5xl font-bold mt-4 text-center">
+				Catégories populaires
+			</h2>
+			<p class="text-description mt-2 max-w-xl text-center !mb-8">
+				Les segments les plus actifs en un clic
+			</p>
+
+			<ul class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 w-full list-none p-0 m-0">
+				{% for item in popularCategories %}
+					{% set category = item.category %}
+					{% set restaurantCount = item.count %}
+					{% set accent = accents[loop.index0] ?? accents[0] %}
+					<li class="min-h-0">
+						<a href="{{ path('app_encheres', { category: category.id }) }}" class="group relative flex flex-col justify-between min-h-[11.5rem] h-full overflow-hidden rounded-2xl border border-border bg-container/50 backdrop-blur-md shadow-lg shadow-black/5 transition-all duration-300 hover:border-primary/40 hover:shadow-xl hover:shadow-primary/10 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background">
+							<div class="pointer-events-none absolute inset-0 bg-linear-to-br {{ accent }} opacity-90 group-hover:opacity-100 transition-opacity duration-300" aria-hidden="true"></div>
+							<div class="pointer-events-none absolute -right-6 -top-6 size-28 rounded-full border border-white/5 bg-white/5 group-hover:bg-white/10 transition-colors duration-300" aria-hidden="true"></div>
+							<div class="pointer-events-none absolute right-4 top-4 opacity-[0.12] group-hover:opacity-20 transition-opacity text-foreground" aria-hidden="true">
+								<svg xmlns="http://www.w3.org/2000/svg" width="72" height="72" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.25" stroke-linecap="round" stroke-linejoin="round">
+									<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/>
+									<path d="M7 2v20"/>
+									<path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>
+								</svg>
+							</div>
+
+							<div class="relative z-10 flex flex-col flex-1 p-6 pt-7">
+								<span class="text-xl font-bold leading-tight text-foreground group-hover:text-gradient transition-colors pr-10 sm:text-2xl">{{ category.name }}</span>
+								<span class="mt-2 text-sm tabular-nums text-muted-foreground group-hover:text-foreground/80 transition-colors">
+									{{ restaurantCount }}&nbsp;restaurant{% if restaurantCount > 1 %}s{% endif %}
+								</span>
+							</div>
+
+							<div class="relative z-10 mt-auto flex items-center justify-between gap-3 px-6 pb-6 pt-0">
+								<span class="text-sm text-muted-foreground group-hover:text-foreground transition-colors">Voir les enchères</span>
+								<span class="inline-flex size-9 shrink-0 items-center justify-center rounded-full border border-border bg-background/80 text-foreground transition-all duration-300 group-hover:border-primary/50 group-hover:bg-primary/10 group-hover:translate-x-0.5" aria-hidden="true">
+									<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+										<path d="M5 12h14"/>
+										<path d="m12 5 7 7-7 7"/>
+									</svg>
+								</span>
+							</div>
+						</a>
+					</li>
+				{% endfor %}
+			</ul>
+		</div>
+	</section>
+{% endif %}

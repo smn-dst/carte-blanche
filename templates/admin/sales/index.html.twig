@@ -1,0 +1,162 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Ventes réalisées — Admin{% endblock %}
+
+{% block body %}
+<div class="p-6 md:p-10 space-y-8">
+
+    {# ── En-tête + KPIs ── #}
+    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+        <div>
+            <p class="text-xs text-primary uppercase tracking-widest font-semibold mb-1">Administration</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-foreground">Ventes réalisées</h1>
+            <p class="text-muted-foreground mt-1">{{ count }} commande{{ count > 1 ? 's' : '' }} aboutie{{ count > 1 ? 's' : '' }}</p>
+        </div>
+
+        {# Chiffre d'affaires total #}
+        <div class="shrink-0 px-6 py-4 rounded-xl border border-primary/30 bg-primary/5 text-right">
+            <p class="text-xs text-muted-foreground uppercase tracking-wider mb-1">Chiffre d'affaires total</p>
+            <p class="text-2xl font-bold text-primary">{{ totalRevenue|number_format(0, ',', ' ') }} €</p>
+        </div>
+    </div>
+
+    {# ── Flashes ── #}
+    {% for type, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="p-4 rounded-lg border text-sm
+                {{ type == 'success' ? 'bg-green-500/10 border-green-500/30 text-green-400' : 'bg-red-500/10 border-red-500/30 text-red-400' }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+
+    {# ── Tableau ── #}
+    {% if orders is empty %}
+        <div class="text-center py-20 text-muted-foreground">
+            <svg class="size-12 mx-auto mb-4 opacity-40" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 0 0 2.25-2.25V6.75A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25v10.5A2.25 2.25 0 0 0 4.5 19.5Z"/>
+            </svg>
+            Aucune vente réalisée pour le moment.
+        </div>
+    {% else %}
+        <div class="overflow-x-auto rounded-xl border border-border">
+            <table class="w-full text-sm">
+                <thead>
+                    <tr class="border-b border-border bg-secondary/30 text-left">
+                        <th class="px-4 py-3 font-semibold text-muted-foreground">Référence</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground">Acheteur</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground hidden md:table-cell">Restaurant(s)</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground text-center hidden lg:table-cell">Tickets</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground text-right">Montant</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground hidden lg:table-cell">Date</th>
+                        <th class="px-4 py-3 font-semibold text-muted-foreground">Statut</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-border">
+                    {% for order in orders %}
+
+                        {# On déduplique les restaurants via les tickets #}
+                        {% set restaurantNames = [] %}
+                        {% for ticket in order.tickets %}
+                            {% if ticket.restaurant and ticket.restaurant.name not in restaurantNames %}
+                                {% set restaurantNames = restaurantNames|merge([ticket.restaurant.name]) %}
+                            {% endif %}
+                        {% endfor %}
+
+                        <tr class="hover:bg-secondary/20 transition-colors">
+
+                            {# Référence #}
+                            <td class="px-4 py-3">
+                                <span class="font-mono text-xs font-semibold text-primary">{{ order.reference }}</span>
+                            </td>
+
+                            {# Acheteur #}
+                            <td class="px-4 py-3">
+                                {% if order.buyer %}
+                                    <p class="font-medium text-foreground">{{ order.buyer.firstName }} {{ order.buyer.lastName }}</p>
+                                    <p class="text-xs text-muted-foreground">{{ order.buyer.email }}</p>
+                                {% else %}
+                                    <span class="text-muted-foreground">—</span>
+                                {% endif %}
+                            </td>
+
+                            {# Restaurants #}
+                            <td class="px-4 py-3 hidden md:table-cell">
+                                {% if restaurantNames is not empty %}
+                                    <div class="flex flex-col gap-0.5">
+                                        {% for name in restaurantNames %}
+                                            <span class="text-foreground truncate max-w-[200px]" title="{{ name }}">{{ name }}</span>
+                                        {% endfor %}
+                                    </div>
+                                {% else %}
+                                    <span class="text-muted-foreground">—</span>
+                                {% endif %}
+                            </td>
+
+                            {# Nb tickets #}
+                            <td class="px-4 py-3 text-center hidden lg:table-cell">
+                                <span class="inline-flex items-center justify-center w-7 h-7 rounded-full bg-primary/10 text-primary text-xs font-bold">
+                                    {{ order.tickets|length }}
+                                </span>
+                            </td>
+
+                            {# Montant #}
+                            <td class="px-4 py-3 text-right font-bold text-foreground tabular-nums">
+                                {{ order.totalAmount|number_format(0, ',', ' ') }} €
+                            </td>
+
+                            {# Date #}
+                            <td class="px-4 py-3 text-muted-foreground hidden lg:table-cell">
+                                {% if order.createdAt %}
+                                    <p>{{ order.createdAt|date('d/m/Y') }}</p>
+                                    <p class="text-xs">{{ order.createdAt|date('H:i') }}</p>
+                                {% else %}
+                                    —
+                                {% endif %}
+                            </td>
+
+                            {# Statut #}
+                            <td class="px-4 py-3">
+                                {% if order.status.value == 'payee' %}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-green-500/10 text-green-400 border border-green-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-green-400 inline-block"></span>
+                                        Payée
+                                    </span>
+                                {% elseif order.status.value == 'remboursee' %}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-blue-400 inline-block"></span>
+                                        Remboursée
+                                    </span>
+                                {% elseif order.status.value == 'remboursement_partiel' %}
+                                    <span class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-semibold bg-yellow-500/10 text-yellow-400 border border-yellow-500/20">
+                                        <span class="w-1.5 h-1.5 rounded-full bg-yellow-400 inline-block"></span>
+                                        Remb. partiel
+                                    </span>
+                                {% endif %}
+                            </td>
+
+                        </tr>
+                    {% endfor %}
+                </tbody>
+
+                {# ── Pied de tableau : total ── #}
+                <tfoot>
+                    <tr class="border-t border-border bg-secondary/20">
+                        <td colspan="4" class="px-4 py-3 text-sm font-semibold text-muted-foreground hidden lg:table-cell">
+                            Total — {{ count }} vente{{ count > 1 ? 's' : '' }}
+                        </td>
+                        <td colspan="4" class="px-4 py-3 text-sm font-semibold text-muted-foreground lg:hidden">
+                            Total
+                        </td>
+                        <td class="px-4 py-3 text-right font-bold text-primary tabular-nums text-base">
+                            {{ totalRevenue|number_format(0, ',', ' ') }} €
+                        </td>
+                        <td colspan="2" class="hidden lg:table-cell"></td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    {% endif %}
+
+</div>
+{% endblock %}

@@ -16,6 +16,36 @@ return [
         'path' => './assets/app.js',
         'entrypoint' => true,
     ],
+    'map' => [
+        'path' => './assets/js/map/map.js',
+        'entrypoint' => true,
+    ],
+    'map-helpers' => [
+        'path' => './assets/js/map/map-helpers.js',
+    ],
+    'registration-register' => [
+        'path' => './assets/js/registration/register-page.js',
+        'entrypoint' => true,
+    ],
+    'registration-preferences' => [
+        'path' => './assets/js/registration/user-preferences-wizard.js',
+        'entrypoint' => true,
+    ],
+    'restaurant-form' => [
+        'path' => './assets/js/restaurant/restaurant-form-page.js',
+        'entrypoint' => true,
+    ],
+    'encheres-detail' => [
+        'path' => './assets/js/encheres/auction-ticket-stepper.js',
+        'entrypoint' => true,
+    ],
+    'encheres-search-filters' => [
+        'path' => './assets/js/encheres/search-filters.js',
+        'entrypoint' => true,
+    ],
+    'utils-debounce' => [
+        'path' => './assets/js/utils/debounce.js',
+    ],
     '@hotwired/stimulus' => [
         'version' => '3.2.2',
     ],
@@ -24,5 +54,12 @@ return [
     ],
     '@hotwired/turbo' => [
         'version' => '7.3.0',
+    ],
+    'mapbox-gl' => [
+        'version' => '3.19.0',
+    ],
+    'mapbox-gl/dist/mapbox-gl.min.css' => [
+        'version' => '3.19.0',
+        'type' => 'css',
     ],
 ];

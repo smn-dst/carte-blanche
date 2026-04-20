@@ -1,0 +1,26 @@
+{% set type = type|default('text') %}
+
+<input
+    type="{{ type }}"
+    name="{{ name|default('') }}"
+    value="{{ value|default('') }}"
+    {% if form is defined %}
+        form="{{ form }}"
+    {% endif %}
+
+    {% if type != 'range' %}
+        placeholder="{{ label|default('') }}"
+        autocomplete="off"
+    {% endif %}
+
+    {% if type == 'range' %}
+        min="{{ min|default(0) }}"
+        max="{{ max|default(0) }}"
+        step="{{ step|default(1000) }}"
+    {% endif %}
+    
+    {% if autosubmit is not defined or autosubmit %}
+        onchange="this.form.submit()"
+    {% endif %}
+    class="{{ class|default('') }}"
+>

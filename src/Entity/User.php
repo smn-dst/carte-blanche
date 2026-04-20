@@ -101,8 +101,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToOne(mappedBy: 'user', targetEntity: UserPreferenceEmbedding::class)]
     private ?UserPreferenceEmbedding $userPreferenceEmbedding = null;
 
+    /**
+     * @var Collection<int, VendorRequest>
+     */
+    #[ORM\OneToMany(mappedBy: 'user', targetEntity: VendorRequest::class)]
+    private Collection $vendorRequests;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $updatedAt = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifNewAuctions = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifReminders = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifResults = null;
+
+    #[ORM\Column(nullable: true)]
+    private ?bool $notifNewsletter = null;
+
+    /**
+     * @var Collection<int, PasswordResetToken>
+     */
+    #[ORM\OneToMany(targetEntity: PasswordResetToken::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $passwordResetTokens;
+
+    #[ORM\Column(length: 500, nullable: true)]
+    private ?string $picture = null;
 
     public function __construct()
     {
@@ -114,6 +141,8 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->refundsProcessed = new ArrayCollection();
         $this->favorites = new ArrayCollection();
         $this->aiLogs = new ArrayCollection();
+        $this->passwordResetTokens = new ArrayCollection();
+        $this->vendorRequests = new ArrayCollection();
     }
 
     public function getId(): ?int
@@ -140,7 +169,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
      */
     public function getUserIdentifier(): string
     {
-        return (string) $this->email;
+        $email = $this->email;
+        if (null === $email || '' === $email) {
+            throw new \LogicException('User identifier (email) is required.');
+        }
+
+        return $email;
     }
 
     /**
@@ -186,7 +220,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function __serialize(): array
     {
         $data = (array) $this;
-        $data["\0".self::class."\0password"] = hash('crc32c', $this->password);
+        $data["\0".self::class."\0password"] = hash('crc32c', $this->password ?? '');
 
         return $data;
     }
@@ -467,6 +501,14 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         return $this;
     }
 
+    /**
+     * @return Collection<int, VendorRequest>
+     */
+    public function getVendorRequests(): Collection
+    {
+        return $this->vendorRequests;
+    }
+
     public function getUpdatedAt(): ?\DateTimeImmutable
     {
         return $this->updatedAt;
@@ -475,6 +517,96 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setUpdatedAt(\DateTimeImmutable $updatedAt): static
     {
         $this->updatedAt = $updatedAt;
+
+        return $this;
+    }
+
+    public function isNotifNewAuctions(): bool
+    {
+        return $this->notifNewAuctions ?? false;
+    }
+
+    public function setNotifNewAuctions(bool $notifNewAuctions): static
+    {
+        $this->notifNewAuctions = $notifNewAuctions;
+
+        return $this;
+    }
+
+    public function isNotifReminders(): bool
+    {
+        return $this->notifReminders ?? false;
+    }
+
+    public function setNotifReminders(bool $notifReminders): static
+    {
+        $this->notifReminders = $notifReminders;
+
+        return $this;
+    }
+
+    public function isNotifResults(): bool
+    {
+        return $this->notifResults ?? false;
+    }
+
+    public function setNotifResults(bool $notifResults): static
+    {
+        $this->notifResults = $notifResults;
+
+        return $this;
+    }
+
+    public function isNotifNewsletter(): bool
+    {
+        return $this->notifNewsletter ?? false;
+    }
+
+    public function setNotifNewsletter(bool $notifNewsletter): static
+    {
+        $this->notifNewsletter = $notifNewsletter;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, PasswordResetToken>
+     */
+    public function getPasswordResetTokens(): Collection
+    {
+        return $this->passwordResetTokens;
+    }
+
+    public function addPasswordResetToken(PasswordResetToken $passwordResetToken): static
+    {
+        if (!$this->passwordResetTokens->contains($passwordResetToken)) {
+            $this->passwordResetTokens->add($passwordResetToken);
+            $passwordResetToken->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removePasswordResetToken(PasswordResetToken $passwordResetToken): static
+    {
+        if ($this->passwordResetTokens->removeElement($passwordResetToken)) {
+            // set the owning side to null (unless already changed)
+            if ($passwordResetToken->getOwner() === $this) {
+                $passwordResetToken->setOwner(null);
+            }
+        }
+
+        return $this;
+    }
+
+    public function getPicture(): ?string
+    {
+        return $this->picture;
+    }
+
+    public function setPicture(?string $picture): static
+    {
+        $this->picture = $picture;
 
         return $this;
     }

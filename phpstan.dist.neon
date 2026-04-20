@@ -1,8 +1,11 @@
 parameters:
-    level: 6
+    level: 8
     paths:
         - src/
         - tests/
+    # Vendor neuron-ai absent ou non analysé : définition minimale pour les agents qui étendent NeuronAI\Agent
+    scanFiles:
+        - phpstan-stubs/NeuronAI/Agent.php
     excludePaths:
         - .php-cs-fixer.dist.php
     ignoreErrors:

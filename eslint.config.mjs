@@ -17,7 +17,7 @@ export default [
     },
   },
   {
-    files: ["commitlint.config.js", "cypress.config.js"],
+    files: ["commitlint.config.js", "cypress.config.js", "scripts/**/*.cjs"],
     languageOptions: {
       globals: {
         ...globals.node,

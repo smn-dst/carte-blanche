@@ -38,14 +38,18 @@ services:
     environment:
       DATABASE_URL: postgresql://carte_blanche:carte_blanche@database:5432/carte_blanche?serverVersion=16&charset=utf8
       MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f/messages
-      MAILER_DSN: smtp://mailer:1025
       REDIS_URL: redis://redis:6379
       DEFAULT_URI: http://localhost:8000
+      OLLAMA_URL: http://ollama:11434
+      OLLAMA_MODEL: content-generator
+      OLLAMA_EMBED_MODEL: nomic-embed-text
+      OLLAMA_RECOMMEND_MODEL: recommendation-explainer
     depends_on:
       - database
       - rabbitmq
       - mailer
       - redis
+      - ollama
     ports:
       - "8888:8000"
     command: php -S 0.0.0.0:8000 -t public
@@ -61,7 +65,6 @@ services:
     environment:
       DATABASE_URL: postgresql://carte_blanche:carte_blanche@database:5432/carte_blanche?serverVersion=16&charset=utf8
       MESSENGER_TRANSPORT_DSN: amqp://guest:guest@rabbitmq:5672/%2f/messages
-      MAILER_DSN: smtp://mailer:1025
       REDIS_URL: redis://redis:6379
       DEFAULT_URI: http://localhost:8000
     depends_on:
@@ -121,7 +124,31 @@ services:
       timeout: 5s
       retries: 5
 
+  # --- Ollama ---
+  ollama:
+    image: ollama/ollama
+    container_name: carte-blanche-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+      - ./Ollama:/models
+
+  # --- MCP Server ---
+  mcp-server:
+    build:
+      context: ./mcp-server
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    environment:
+      SYMFONY_BASE_URL: http://nginx:80
+    depends_on:
+      - nginx
+    restart: unless-stopped
+
 volumes:
   database_data:
   rabbitmq_data:
   redis_data:
+  ollama_data:

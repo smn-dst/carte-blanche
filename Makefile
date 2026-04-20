@@ -4,6 +4,12 @@
 sh:
 	docker compose exec -it php sh
 
+watch:
+	docker compose exec -it php php bin/console tailwind:build --watch
+
+install:
+	docker compose exec -it php composer require symfony/ux-tailwind
+
 cache:
 	docker compose exec -it php php bin/console cache:clear
 
@@ -20,10 +26,10 @@ phpstan:
 	docker compose exec php php vendor/bin/phpstan analyse --memory-limit=512M
 
 cs-fix:
-	./php-cs-fixer.phar fix
+	docker compose exec php php vendor/bin/php-cs-fixer fix
 
 cs-check:
-	./php-cs-fixer.phar fix --dry-run --diff
+	docker compose exec php php vendor/bin/php-cs-fixer fix --dry-run --diff
 
 quality: cs-check phpstan
 
@@ -33,6 +39,10 @@ lint:
 	docker compose exec php php bin/console lint:container
 
 # === Tests ===
+
+test-db:
+	docker compose exec php php bin/console doctrine:database:create --env=test --if-not-exists
+	docker compose exec php php bin/console doctrine:migrations:migrate --env=test --no-interaction
 
 test:
 	docker compose exec php php bin/phpunit
@@ -49,7 +59,10 @@ test-e2e:
 test-e2e-open:
 	npx cypress open
 
-test-all: test-unit test-functional test-e2e
+test-all: test-unit test-functional test-js
+
+# Inclut Cypress (nécessite l’app joignable sur baseUrl du cypress.config.js).
+test-all-with-e2e: test-unit test-functional test-js test-e2e
 
 up:
 	docker compose up -d
@@ -57,8 +70,29 @@ up:
 down:
 	docker compose down
 
+restart: 
+	docker compose restart
+
 build:
 	docker compose up -d --build
+
+assets:
+	docker compose exec php php bin/console asset-map:compile
+
+sprite:
+	npm run build:icons
+
+test-js:
+	npm run test:js
+
+crud:
+	docker compose exec -it php php bin/console make:crud
+
+entity:
+	docker compose exec -it php php bin/console make:entity
+
+migration:
+	docker compose exec -it php php bin/console make:migration
 
 reset-db:
 	docker compose exec -it php php bin/console doctrine:database:drop --force --if-exists
@@ -71,3 +105,10 @@ setup-hooks:
 	git config core.hooksPath .githooks
 	npm install
 	@echo "Hooks et dependances configures !"
+
+pull-models:
+	docker compose exec ollama ollama pull nomic-embed-text
+	docker compose exec ollama ollama create recommendation-explainer -f /models/Modelfile.recommendation
+
+embeddings:
+	docker compose exec -it php php bin/console app:generate-restaurant-embeddings

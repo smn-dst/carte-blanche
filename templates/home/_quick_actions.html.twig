@@ -1,0 +1,158 @@
+{% set featured = [
+	{
+		href: path('app_encheres'),
+		icon: 'gavel',
+		headline: 'Parcourir les enchères',
+		line: 'Filtrer, comparer et ouvrir une fiche.',
+		gradient: 'from-primary/50 via-primary/15 to-transparent',
+		ring: 'ring-primary/25',
+	},
+	{
+		href: path('app_map'),
+		icon: 'map',
+		headline: 'Afficher la carte',
+		line: 'Localiser les restaurants sur la carte.',
+		gradient: 'from-violet-500/45 via-violet-600/10 to-transparent',
+		ring: 'ring-violet-500/20',
+	},
+] %}
+
+{% set more_actions = [
+	{
+		href: '/calendrier',
+		icon: 'calendar-range',
+		label: 'Consulter le calendrier',
+		hint: 'Voir les dates d’enchères à venir',
+		show: true,
+		needs_account: false,
+	},
+	{
+		href: path('app_favorites'),
+		icon: 'heart',
+		label: 'Ouvrir mes favoris',
+		hint: 'Accéder à mes restaurants suivis',
+		show: true,
+		needs_account: true,
+	},
+	{
+		href: '/reservations',
+		icon: 'tickets',
+		label: 'Voir mes réservations',
+		hint: 'Contrôler l’état de mes participations',
+		show: is_granted('ROLE_USER'),
+		needs_account: true,
+	},
+	{
+		href: path('app_profile'),
+		icon: 'user',
+		label: 'Modifier mon profil',
+		hint: 'Mettre à jour compte et préférences',
+		show: true,
+		needs_account: true,
+	},
+	{
+		href: path('app_restaurant_index'),
+		icon: 'megaphone',
+		label: 'Gérer mes restaurants',
+		hint: 'Accéder à l’espace vendeur',
+		show: is_granted('ROLE_VENDOR'),
+		needs_account: true,
+	},
+	{
+		href: '/panier',
+		icon: 'shopping-cart',
+		label: 'Ouvrir mon panier',
+		hint: 'Reprendre ou finaliser ma sélection',
+		show: true,
+		needs_account: false,
+	},
+] %}
+
+<section class="relative w-full flex flex-col items-center overflow-hidden border-t border-border py-24 px-6 lg:px-8" aria-labelledby="quick-actions-heading">
+	<div class="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-20%,color-mix(in_oklab,var(--color-primary)_18%,transparent),transparent)]" aria-hidden="true"></div>
+
+	<div class="relative z-10 flex w-full max-w-6xl flex-col items-center">
+		<div class="primary-comment">
+			<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+				<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>
+			</svg>
+			Actions rapides
+		</div>
+
+		<h2 id="quick-actions-heading" class="text-3xl md:text-5xl font-bold mt-4 text-center">
+			Accéder à l’essentiel
+		</h2>
+		<p class="text-description mt-2 max-w-xl text-center !mb-8">
+			Raccourcis utiles menant directement à l’action.
+		</p>
+
+		<ul class="mt-12 grid w-full list-none grid-cols-1 gap-4 p-0 md:grid-cols-2 md:gap-5" role="list">
+			{% for item in featured %}
+				<li class="min-h-0">
+					<a href="{{ item.href }}" class="group relative flex min-h-[14rem] flex-col justify-end overflow-hidden rounded-2xl border border-white/10 bg-container/60 p-8 shadow-lg shadow-black/20 ring-1 ring-inset {{ item.ring }} transition-all duration-300 hover:border-primary/35 hover:shadow-primary/10 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background md:min-h-[16rem]">
+						<div class="pointer-events-none absolute inset-0 bg-linear-to-br {{ item.gradient }} opacity-90 transition-opacity duration-300 group-hover:opacity-100" aria-hidden="true"></div>
+						<div class="pointer-events-none absolute -right-8 top-6 text-white/[0.07] transition-transform duration-500 group-hover:scale-105 group-hover:text-white/[0.11]" aria-hidden="true">
+							<svg class="size-32 md:size-40" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+						</div>
+						<div class="relative z-10">
+							<span class="inline-flex items-center gap-2 rounded-full border border-white/15 bg-black/20 px-3 py-1 text-[11px] font-medium uppercase tracking-wider text-white/90 backdrop-blur-sm">
+								<svg class="size-3.5 text-primary" aria-hidden="true"><use href="#icon-{{ item.icon }}"/></svg>
+								Raccourci
+							</span>
+							<h3 class="mt-5 text-2xl font-bold leading-tight text-white md:text-3xl">
+								{{ item.headline }}
+							</h3>
+							<p class="mt-2 max-w-md text-sm leading-relaxed text-white/75 md:text-base">
+								{{ item.line }}
+							</p>
+							<span class="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-white">
+								<span class="border-b border-white/40 pb-0.5 transition-colors group-hover:border-white">Y accéder</span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="transition-transform group-hover:translate-x-1" aria-hidden="true">
+									<path d="M5 12h14"/><path d="m12 5 7 7-7 7"/>
+								</svg>
+							</span>
+						</div>
+					</a>
+				</li>
+			{% endfor %}
+		</ul>
+
+		<div class="mt-14 w-full">
+			<div class="flex flex-col gap-2 sm:flex-row sm:items-end sm:justify-between sm:gap-6">
+				<div>
+					<h3 class="text-sm font-semibold uppercase tracking-widest text-muted-foreground">
+						Autres actions rapides
+					</h3>
+				</div>
+			</div>
+
+			<ul class="mt-6 divide-y divide-border rounded-2xl border border-border bg-container/30 backdrop-blur-sm" role="list">
+				{% for action in more_actions %}
+					{% if action.show %}
+						<li>
+							<a href="{{ action.href }}" class="group flex items-center gap-4 px-4 py-4 transition-colors first:rounded-t-2xl last:rounded-b-2xl hover:bg-primary/5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-inset focus-visible:ring-primary sm:px-5 sm:py-5">
+								<span class="flex size-11 shrink-0 items-center justify-center rounded-full border border-border bg-background/50 text-primary transition-colors group-hover:border-primary/40 group-hover:bg-primary/10">
+									<svg class="size-[1.35rem]" aria-hidden="true"><use href="#icon-{{ action.icon }}"/></svg>
+								</span>
+								<span class="min-w-0 flex-1">
+									<span class="flex flex-wrap items-center gap-2">
+										<span class="font-medium text-foreground group-hover:text-gradient transition-colors">{{ action.label }}</span>
+										{% if action.needs_account and not is_granted('IS_AUTHENTICATED_FULLY') %}
+											<span class="rounded-full bg-muted-foreground/15 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+												Connexion
+											</span>
+										{% endif %}
+									</span>
+									<span class="mt-0.5 block text-sm text-muted-foreground group-hover:text-foreground/70 transition-colors">{{ action.hint }}</span>
+								</span>
+								<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0 text-muted-foreground transition-transform group-hover:translate-x-0.5 group-hover:text-foreground" aria-hidden="true">
+									<path d="m9 18 6-6-6-6"/>
+								</svg>
+							</a>
+						</li>
+					{% endif %}
+				{% endfor %}
+			</ul>
+		</div>
+	</div>
+</section>

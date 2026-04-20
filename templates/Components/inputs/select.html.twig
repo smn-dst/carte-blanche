@@ -1,0 +1,20 @@
+<select
+    name="{{ name }}"
+    {% if form is defined %}
+        form="{{ form }}"
+    {% endif %}
+    {% if autosubmit is not defined or autosubmit %}
+        onchange="this.form.submit()"
+    {% endif %}
+    class="{{ class }}"
+>
+    {% if default_label is defined %}
+        <option value="">{{ default_label }}</option>
+    {% endif %}
+
+    {% for option in options %}
+        <option value="{{ option.value }}" {{ selected == option.value ? 'selected' : '' }}>
+            {{ option.label }}
+        </option>
+    {% endfor %}
+</select>

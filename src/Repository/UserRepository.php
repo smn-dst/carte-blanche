@@ -32,4 +32,70 @@ class UserRepository extends ServiceEntityRepository implements PasswordUpgrader
         $this->getEntityManager()->persist($user);
         $this->getEntityManager()->flush();
     }
+
+    /**
+     * Statistiques globales pour le dashboard admin.
+     *
+     * @return array{total: int, buyers: int, vendors: int}
+     */
+    public function getDashboardStats(): array
+    {
+        /** @var array<array{roles: list<string>}> $rows */
+        $rows = $this->createQueryBuilder('u')
+            ->select('u.roles')
+            ->getQuery()
+            ->getResult();
+
+        $total = count($rows);
+        $buyers = 0;
+        $vendors = 0;
+
+        foreach ($rows as $row) {
+            $roles = $row['roles'];
+            if (in_array('ROLE_VENDOR', $roles, true)) {
+                ++$vendors;
+            } elseif (!in_array('ROLE_ADMIN', $roles, true)) {
+                ++$buyers;
+            }
+        }
+
+        return ['total' => $total, 'buyers' => $buyers, 'vendors' => $vendors];
+    }
+
+    /**
+     * Ajouter cette méthode dans src/Repository/UserRepository.php.
+     *
+     * Recherche d'utilisateurs pour le panel admin.
+     * Filtre par rôle (ex: 'ROLE_ADMIN', 'ROLE_VENDOR', 'ROLE_USER')
+     * et/ou par recherche texte sur email, prénom, nom.
+     *
+     * @return User[]
+     */
+    public function findForAdmin(?string $role = null, ?string $search = null): array
+    {
+        $qb = $this->createQueryBuilder('u')
+            ->orderBy('u.createdAt', 'DESC');
+
+        if (null !== $search && '' !== $search) {
+            $qb->andWhere(
+                $qb->expr()->orX(
+                    'LOWER(u.email) LIKE LOWER(:search)',
+                    'LOWER(u.firstName) LIKE LOWER(:search)',
+                    'LOWER(u.lastName) LIKE LOWER(:search)',
+                )
+            )->setParameter('search', '%'.$search.'%');
+        }
+
+        $users = $qb->getQuery()->getResult();
+
+        // Filtre rôle en PHP (les rôles sont stockés en JSON, pas requêtable facilement en DQL)
+        if (null !== $role && '' !== $role) {
+            $users = array_values(array_filter(
+                $users,
+                static fn (User $u): bool => in_array($role, $u->getRoles(), true)
+            ));
+        }
+
+        return $users;
+    }
 }

@@ -9,6 +9,8 @@
 /public/bundles/
 /var/
 /vendor/
+/php-cs-fixer.cache
+
 
 ###< symfony/framework-bundle ###
 
@@ -34,3 +36,22 @@ compose.override.yaml
 ###< symfony/flex ###
 
 .DS_Store
+tailwindcss-linux-arm64
+
+# Local AI/dev assistant artifacts
+.codex
+.codex/
+.claude/
+.roo/
+.aider*
+###> jetbrains ###
+.idea/
+*.iml
+*.ipr
+*.iws
+out/
+###< jetbrains ###
+
+# QR codes générés à l’exécution (ne pas versionner)
+/public/uploads/qrcodes/*
+!/public/uploads/qrcodes/.gitkeep

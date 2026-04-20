@@ -1,0 +1,84 @@
+{#
+  Composant carte restaurant.
+  Variants: 'first' (grande gauche), 'small', 'bottom'
+  Optionnel: price_amount (chiffres formatés seuls) + affichage € groupé pour éviter les coupures de ligne
+#}
+
+{% set variant = variant|default('default') %}
+
+{# Hauteurs fixes : éviter flex-1 sur l’axe colonne (mobile) — le contenu est en absolute, min-height auto ≈ 0 et flex-shrink peut écraser la carte. shrink-0 + min-h ; flex-1 seulement ≥ md/lg où la ligne a une hauteur définie. #}
+{% if variant == 'first' %}
+	{% set size_classes = 'min-h-[500px] h-[500px] shrink-0 lg:min-h-0 lg:h-[700px] lg:flex-1' %}
+{% elseif variant == 'small' %}
+	{% set size_classes = 'min-h-[320px] h-[320px] shrink-0 md:h-[280px] md:min-h-[280px] lg:h-[338px] lg:min-h-[338px] lg:flex-1' %}
+{% elseif variant == 'bottom' %}
+	{% set size_classes = 'min-h-[300px] h-[300px] shrink-0 md:h-[320px] md:min-h-[320px] md:flex-1' %}
+{% else %}
+	{% set size_classes = 'min-h-[300px] h-[300px] shrink-0' %}
+{% endif %}
+
+<div class="group relative rounded-2xl border border-white/10 overflow-hidden {{ size_classes }} transition-all duration-300 hover:border-primary/50 min-w-0 max-w-full">
+	<a href="{{ href }}" class="absolute inset-0 flex flex-col justify-end outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset rounded-2xl">
+		{# Image de fond #}
+		<div class="absolute inset-0 bg-gray-900">
+			{% if image|default(null) %}
+				<img src="{{ image }}" alt="" class="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" loading="lazy" decoding="async">
+			{% endif %}
+		</div>
+
+		{# Gradient renforcé en bas pour lisibilité sur photo claire #}
+		<div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-transparent pointer-events-none"></div>
+
+		{# Contenu #}
+		<div class="relative z-10 w-full max-w-full min-w-0 p-4 sm:p-5 md:p-6">
+			{# Titre + badge places (flux flex, plus de chevauchement) #}
+			<div class="flex items-start justify-between gap-3 mb-2 min-w-0">
+				<div class="min-w-0 flex-1 pr-1">
+					<p class="text-[10px] sm:text-xs text-primary uppercase tracking-wider font-semibold mb-1 line-clamp-2">
+						{{ category }}
+					</p>
+					<h3 class="font-bold text-white text-lg sm:text-xl {{ variant == 'first' ? 'lg:text-3xl' : '' }} leading-snug break-words [overflow-wrap:anywhere]">
+						{{ name }}
+					</h3>
+				</div>
+				<p class="shrink-0 self-start max-w-[42%] px-2 py-1 sm:px-3 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-primary text-white text-center leading-tight whitespace-normal sm:whitespace-nowrap">
+					{{ seats }}
+				</p>
+			</div>
+
+			<p class="text-xs sm:text-sm text-gray-200 mb-3 sm:mb-4 line-clamp-3 break-words [overflow-wrap:anywhere]">
+				{{ city }}
+			</p>
+
+			{# Prix + CTA : colonne sur mobile #}
+			<div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between min-w-0">
+				<div class="min-w-0">
+					<p class="text-[10px] sm:text-xs text-gray-300 mb-1 leading-snug break-words">{{ price_label }}</p>
+					<p class="font-bold text-primary tabular-nums {{ variant == 'first' ? 'text-2xl sm:text-3xl lg:text-4xl' : 'text-xl sm:text-2xl' }} inline-flex flex-wrap items-baseline gap-x-1.5 gap-y-0">
+						{% if price_amount is defined and price_amount is not same as(null) and price_amount != '' %}
+							<span class="min-w-0">{{ price_amount }}</span>
+							<span class="text-[0.7em] font-bold text-primary opacity-95" aria-hidden="true">€</span>
+						{% else %}
+							<span class="min-w-0">{{ price }}</span>
+						{% endif %}
+					</p>
+				</div>
+
+				<div class="w-full sm:w-auto shrink-0 min-w-0 flex sm:block">
+					{% include 'Components/buttons/buttons-primary.html.twig' with {
+						button_tag: 'span',
+						label: 'Découvrir',
+						variant: 'primary',
+						with_arrow: true,
+						extra_classes: 'w-full justify-center sm:w-fit group-hover:bg-white group-hover:text-primary [&_svg]:transition-transform [&_svg]:duration-300 [&_svg]:group-hover:translate-x-1'
+					} %}
+				</div>
+			</div>
+		</div>
+	</a>
+
+	{{ include('favorites/_favoris-toggle.html.twig', {
+		restaurantId: restaurantId|default(null),
+		isFavorite: isFavorite|default(false)
+	}) }}
+</div>

@@ -1,0 +1,398 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}
+	{{ restaurant.name }}
+	— Carte Blanche
+{% endblock %}
+
+{% block body %}
+
+	<section class="relative h-[70vh] overflow-hidden">
+
+		{% if restaurant.images is not empty %}
+			<img src="{{ asset('uploads/restaurants/' ~ restaurant.images|first.filename) }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover">
+		{% else %}
+			<div class="w-full h-full bg-neutral-900"></div>
+		{% endif %}
+
+		<div class="absolute inset-0 bg-gradient-to-t from-background via-background/80 to-transparent"></div>
+
+		<div class="absolute bottom-0 left-0 right-0 pb-12">
+			<div class="container mx-auto px-4">
+
+				<a href="{{ path('app_encheres') }}" class="inline-flex items-center gap-2 mb-6 text-foreground hover:text-primary transition-colors text-sm">
+					<svg class="size-4 shrink-0 text-muted-foreground" aria-hidden="true"><use href="#icon-chevron-left"/></svg>
+					Retour
+				</a>
+
+				<div>
+					<div class="inline-block bg-primary text-primary-foreground px-4 py-1 text-xs tracking-widest mb-4 font-semibold">
+						{% for category in restaurant.categories %}
+							{{ category.name }}
+							{% if not loop.last %},
+							{% endif %}
+						{% endfor %}
+					</div>
+
+					<h1 class="text-5xl md:text-6xl font-bold mb-4 tracking-tight text-foreground">
+						{{ restaurant.name }}
+					</h1>
+
+					{% if app.user %}
+						<form method="post" action="{{ isFavorite ? path('app_favorite_remove', { id: restaurant.id }) : path('app_favorite_add', { id: restaurant.id }) }}" class="inline" data-preserve-scroll>
+							<input type="hidden" name="_token" value="{{ csrf_token(isFavorite ? 'favorite_remove_' ~ restaurant.id : 'favorite_add_' ~ restaurant.id) }}">
+							<button type="submit" class="inline-flex items-center gap-2 px-4 py-2 rounded-full border transition-all duration-200
+																		                {{ isFavorite
+																		                    ? 'bg-primary/20 border-primary text-primary hover:bg-red-500/20 hover:border-red-400 hover:text-red-400'
+																		                    : 'bg-background/50 border-border text-muted-foreground hover:bg-primary/10 hover:border-primary hover:text-primary' }}">
+								<svg class="w-4 h-4" fill="{{ isFavorite ? 'currentColor' : 'none' }}" stroke="currentColor" viewbox="0 0 24 24">
+									<path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
+								</svg>
+								{{ isFavorite ? 'Retirer des favoris' : 'Ajouter aux favoris' }}
+							</button>
+						</form>
+					{% endif %}
+
+					<div class="flex items-start gap-2 text-xl text-muted-foreground">
+						<svg class="size-6 text-primary shrink-0 mt-0.5" aria-hidden="true"><use href="#icon-map"/></svg>
+						<span>{{ restaurant.address }}</span>
+					</div>
+				</div>
+				{% if restaurant.owner %}
+					<div class="absolute top-6 right-6 z-20">
+						<div class="backdrop-blur-md bg-background/70 border border-border rounded-full px-5 py-3 shadow-lg flex items-center gap-4">
+
+							<div class="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center text-primary font-bold text-sm flex-shrink-0">
+								{{ restaurant.owner.firstName|first|upper }}
+							</div>
+
+							<div class="hidden sm:block">
+								<p class="text-xs text-muted-foreground uppercase tracking-wider mb-0.5">
+									Vendeur
+								</p>
+								<p class="text-sm font-semibold text-foreground leading-none">
+									{{ restaurant.owner.firstName }}
+									{{ restaurant.owner.lastName }}
+								</p>
+							</div>
+
+						</div>
+					</div>
+				{% endif %}
+
+			</div>
+		</div>
+	</section>
+
+	<section class="py-12">
+		<div class="container mx-auto px-4">
+			<div class="grid grid-cols-1 lg:grid-cols-3 gap-12">
+
+				<div class="lg:col-span-2 space-y-8">
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+						<div class="grid grid-cols-2 md:[grid-template-columns:repeat(auto-fit,minmax(0,1fr))] gap-6">
+
+							{% if restaurant.askingPrice %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ (restaurant.askingPrice / 1000)|number_format(0, ',', ' ') }}k€
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Prix de vente
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.maxCapacity %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ restaurant.maxCapacity }}
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Couverts
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.annualRevenue %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ (restaurant.annualRevenue / 1000)|number_format(0, ',', ' ') }}k€
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										CA annuel
+									</div>
+								</div>
+							{% endif %}
+
+							{% if restaurant.maxCapacity and restaurant.ticketsSold %}
+								<div class="text-center">
+									<div class="text-3xl font-bold text-primary mb-1">
+										{{ restaurant.maxCapacity - restaurant.ticketsSold }}
+									</div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider">
+										Places restantes
+									</div>
+								</div>
+							{% endif %}
+
+						</div>
+					</div>
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+
+						<div class="flex items-center gap-3 mb-6">
+							<div class="h-px flex-1 bg-primary/60"></div>
+							<span class="size-2 rounded-full bg-primary shrink-0" aria-hidden="true"></span>
+							<div class="h-px flex-1 bg-primary/60"></div>
+						</div>
+
+						{% if restaurant.description %}
+							<h2 class="text-2xl font-bold mb-4 tracking-wide text-foreground">À PROPOS</h2>
+							<p class="text-muted-foreground leading-relaxed mb-8">
+								{{ restaurant.description }}
+							</p>
+						{% endif %}
+
+						{% if restaurant.rent or restaurant.leaseRemaining or restaurant.pappersUrl or restaurant.status %}
+							<h3 class="text-xl font-bold mb-4 tracking-wide text-foreground">CARACTÉRISTIQUES</h3>
+							<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+								{% if restaurant.rent %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<svg class="size-3 text-primary group-hover:text-white" aria-hidden="true"><use href="#icon-check"/></svg>
+										</div>
+										<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+											Loyer :
+											{{ restaurant.rent|number_format(0, ',', ' ') }}
+											€/mois
+										</span>
+									</div>
+								{% endif %}
+
+								{% if restaurant.leaseRemaining %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<svg class="size-3 text-primary group-hover:text-white" aria-hidden="true"><use href="#icon-check"/></svg>
+										</div>
+										<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+											Bail restant :
+											{{ restaurant.leaseRemaining }}
+											ans
+										</span>
+									</div>
+								{% endif %}
+
+								{% if restaurant.pappersUrl %}
+									<div class="flex items-start gap-3 group">
+										<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+											<svg class="size-3 text-primary group-hover:text-white" aria-hidden="true"><use href="#icon-check"/></svg>
+										</div>
+										<a href="{{ restaurant.pappersUrl }}" target="_blank" rel="noopener noreferrer" class="text-primary hover:underline transition-colors inline-flex items-center gap-1.5">
+											Données légales Pappers
+											<svg class="size-3.5 shrink-0 opacity-80" aria-hidden="true"><use href="#icon-external-link"/></svg>
+										</a>
+									</div>
+								{% endif %}
+
+								<div class="flex items-start gap-3 group">
+									<div class="w-5 h-5 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0 mt-0.5 group-hover:bg-primary transition-colors">
+										<svg class="size-3 text-primary group-hover:text-white" aria-hidden="true"><use href="#icon-check"/></svg>
+									</div>
+									<span class="text-muted-foreground group-hover:text-foreground transition-colors">
+										Statut :
+										{{ restaurant.status.value }}
+									</span>
+								</div>
+
+							</div>
+						</div>
+					{% endif %}
+
+					<div class="p-8 bg-(--card) border border-border rounded-lg">
+						<h2 class="text-2xl font-bold mb-6 tracking-wide text-foreground">DÉTAILS DE L'ENCHÈRE</h2>
+
+						<div class="grid gap-6 sm:grid-cols-2">
+
+							<div class="flex items-start gap-4">
+								<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<svg class="size-6 text-primary" aria-hidden="true"><use href="#icon-calendar-range"/></svg>
+								</div>
+								<div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+										Date & Heure
+									</div>
+									<div class="font-semibold text-foreground">
+										{{ restaurant.auctionDate|date('d/m/Y') }}
+										{% if restaurant.auctionTime %}
+											—
+											{{ restaurant.auctionTime|date('H:i') }}
+										{% endif %}
+									</div>
+								</div>
+							</div>
+
+							{% if restaurant.auctionLocation %}
+								<div class="flex items-start gap-4">
+									<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+										<svg class="size-6 text-primary" aria-hidden="true"><use href="#icon-map"/></svg>
+									</div>
+									<div>
+										<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+											Lieu
+										</div>
+										<div class="font-semibold text-foreground">
+											{{ restaurant.auctionLocation }}
+										</div>
+									</div>
+								</div>
+							{% endif %}
+
+							<div class="flex items-start gap-4 sm:col-span-2">
+								<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center flex-shrink-0">
+									<svg class="size-6 text-primary" aria-hidden="true"><use href="#icon-euro"/></svg>
+								</div>
+								<div>
+									<div class="text-xs text-muted-foreground uppercase tracking-wider mb-1">
+										Prix de départ
+									</div>
+									<div class="font-semibold text-xl text-primary">
+										{{ restaurant.askingPrice|number_format(0, ',', ' ') }}
+										€
+									</div>
+								</div>
+							</div>
+
+						</div>
+
+						{% if restaurant.description %}
+							<div class="mt-8 p-6 bg-primary/5 border border-primary/20 rounded-lg">
+								<p class="text-sm text-foreground/80 leading-relaxed">
+									{{ restaurant.description|slice(0, 300) }}
+									{% if restaurant.description|length > 300 %}…
+									{% endif %}
+								</p>
+							</div>
+						{% endif %}
+
+						{% if restaurant.auctionLocationLatitude is defined and restaurant.auctionLocationLatitude %}
+							<div id="map" class="w-full h-64 mt-8 rounded-lg overflow-hidden border border-border" data-lat="{{ restaurant.auctionLocationLatitude }}" data-lng="{{ restaurant.auctionLocationLongitude }}" data-name="{{ restaurant.auctionLocation }}"></div>
+						{% endif %}
+
+					</div>
+
+				</div>
+
+				<div class="lg:col-span-1">
+					<div class="sticky top-8">
+
+						<div class="p-8 bg-(--card) border border-primary/50 rounded-lg">
+
+							<div class="text-center mb-8">
+								<div class="text-xs text-muted-foreground uppercase tracking-widest mb-2">Prix par place</div>
+								<div class="text-5xl font-bold text-primary mb-2">
+									{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+									€
+								</div>
+								<div class="text-sm text-muted-foreground">Accès garanti à l'enchère</div>
+							</div>
+
+							<hr class="border-border mb-8">
+
+							<div class="space-y-6">
+
+								{% if restaurant.ticketsSold >= restaurant.maxCapacity %}
+
+									<div class="text-center py-4">
+										<span class="text-muted-foreground font-semibold">Complet</span>
+									</div>
+
+								{% elseif app.user %}
+
+									<script type="application/json" id="auction-ticket-config">{{ {
+										ticketPrice: restaurant.ticketPrice,
+										maxCapacity: restaurant.maxCapacity,
+										ticketsSold: restaurant.ticketsSold,
+										maxPerOrder: 10
+									}|json_encode|raw }}</script>
+
+									<div>
+										<label class="block text-xs font-semibold uppercase tracking-wider mb-4 text-foreground">
+											Nombre de places
+										</label>
+										<div class="flex items-center gap-4 justify-center">
+											<button type="button" id="btn-minus" class="w-6 h-6 rounded border border-border hover:border-primary hover:text-primary text-foreground transition-colors flex items-center justify-center text-lg cursor-pointer font-bold" disabled>
+												−
+											</button>
+											<div id="qty-display" class="text-4xl font-bold w-16 text-center text-primary">1</div>
+											<button type="button" id="btn-plus" class="w-6 h-6 rounded border border-border hover:border-primary hover:text-primary text-foreground transition-colors flex items-center justify-center text-lg cursor-pointer font-bold">
+												+
+											</button>
+										</div>
+										<p class="text-xs text-center text-muted-foreground mt-3">Maximum 10 places par commande</p>
+									</div>
+
+									<div class="p-6 bg-background rounded-lg border border-border">
+										<div class="space-y-3 text-sm">
+											<div class="flex items-center justify-between">
+												<span class="text-muted-foreground">Sous-total</span>
+												<span class="font-semibold text-foreground" id="subtotal">{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+													€</span>
+											</div>
+											<div class="flex items-center justify-between">
+												<span class="text-muted-foreground">Frais</span>
+												<span class="font-semibold text-primary">Inclus</span>
+											</div>
+											<hr class="border-border">
+											<div class="flex items-center justify-between text-lg">
+												<span class="font-bold text-foreground">Total</span>
+												<span class="font-bold text-primary" id="total">{{ restaurant.ticketPrice|number_format(0, ',', ' ') }}
+													€</span>
+											</div>
+										</div>
+									</div>
+
+									<form method="post" action="{{ path('app_cart_add', { id: restaurant.id }) }}" class="w-full">
+										<input type="hidden" name="_token" value="{{ csrf_token('cart_add_' ~ restaurant.id) }}">
+										<input type="hidden" name="quantity" id="cart-quantity" value="1">
+
+										<button type="submit" class="w-full py-3 bg-primary hover:bg-primary/90 text-white font-semibold rounded-lg transition-colors text-sm flex items-center justify-center gap-2 cursor-pointer">
+											<svg class="size-4" xmlns="http://www.w3.org/2000/svg" viewbox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+												<circle cx="8" cy="21" r="1"/><circle cx="19" cy="21" r="1"/><path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 1.95-1.57l1.65-7.43H5.12"/>
+											</svg>
+											Ajouter au panier
+										</button>
+									</form>
+
+							{% else %}
+
+								<a href="{{ path('app_login') }}" class="block w-full py-3 text-center bg-primary hover:bg-primary/90 text-primary-foreground font-semibold rounded-lg transition-colors text-sm">
+									Se connecter pour participer
+								</a>
+
+							{% endif %}
+
+							<div class="pt-6 border-t border-border space-y-2">
+								{% for item in ['Paiement sécurisé', 'Confirmation immédiate', 'Places garanties'] %}
+									<div class="flex items-center gap-2 text-sm">
+										<svg class="size-4 text-primary shrink-0" aria-hidden="true"><use href="#icon-check"/></svg>
+										<span class="text-muted-foreground">{{ item }}</span>
+									</div>
+								{% endfor %}
+							</div>
+
+						</div>
+					</div>
+
+				</div>
+			</div>
+
+		</div>
+	</div>
+</section>{% endblock %}{% block javascripts %}
+{{ parent() }}
+{% if app.user and restaurant.ticketsSold < restaurant.maxCapacity %}
+	{{ importmap('encheres-detail') }}
+{% endif %}{% endblock %}

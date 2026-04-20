@@ -4,36 +4,56 @@ namespace App\Form;
 
 use App\Dto\RegistrationInputDto;
 use Symfony\Component\Form\AbstractType;
-// use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-// use Symfony\Component\Form\Extension\Core\Type\PasswordType;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
-use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Symfony\Component\Form\Extension\Core\Type\PasswordType;
+use Symfony\Component\Form\Extension\Core\Type\TelType;
+use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolver;
-
-// use Symfony\Component\Validator\Constraints\IsTrue;
-// use Symfony\Component\Validator\Constraints\Length;
-// use Symfony\Component\Validator\Constraints\NotBlank;
 
 class RegistrationFormType extends AbstractType
 {
     public function buildForm(FormBuilderInterface $builder, array $options): void
     {
         $builder
-            ->add('email')
-            ->add('plainPassword')
-            ->add('firstName')
-            ->add('lastName')
-            ->add('phoneNumber')
-            ->add('roles', ChoiceType::class, [
-                'choices' => [
-                    'Buyer' => 'ROLE_USER',
-                    'Vendor' => 'ROLE_VENDOR',
-                ],
-                'expanded' => true,
-                'multiple' => true,
+            ->add('firstName', TextType::class, [
+                'required' => true,
+                'empty_data' => '',
             ])
-            ->add('agreeTerms', CheckboxType::class)
+            ->add('lastName', TextType::class, [
+                'required' => true,
+                'empty_data' => '',
+            ])
+            ->add('email', EmailType::class, [
+                'required' => true,
+                'empty_data' => '',
+            ])
+            ->add('plainPassword', PasswordType::class, [
+                'required' => true,
+                'empty_data' => '',
+                'label' => 'Mot de passe',
+                'attr' => [
+                    'placeholder' => 'Entrez votre mot de passe',
+                ],
+            ])
+            ->add('confirmPassword', PasswordType::class, [
+                'required' => true,
+                'empty_data' => '',
+                'label' => 'Confirmez votre mot de passe',
+                'attr' => [
+                    'placeholder' => 'Entrez à nouveau votre mot de passe',
+                ],
+            ])
+            ->add('phoneNumber', TelType::class, [
+                'required' => false,
+                'empty_data' => '',
+            ])
+            ->add('agreeTerms', CheckboxType::class, [
+                'required' => true,
+                'label_html' => true,
+                'label' => 'J\'accepte les <span class="text-gradient"> conditions d\'utilisation </span> et la <span class="text-gradient"> politique de confidentialité </span>',
+            ])
         ;
     }
 
@@ -41,15 +61,6 @@ class RegistrationFormType extends AbstractType
     {
         $resolver->setDefaults([
             'data_class' => RegistrationInputDto::class,
-            'empty_data' => fn ($form) => new RegistrationInputDto(
-                email: $form->get('email')->getData() ?? '',
-                plainPassword: $form->get('plainPassword')->getData() ?? '',
-                firstName: $form->get('firstName')->getData() ?? '',
-                lastName: $form->get('lastName')->getData() ?? '',
-                phoneNumber: $form->get('phoneNumber')->getData() ?? '',
-                agreeTerms: $form->get('agreeTerms')->getData() ?? false,
-                roles: $form->get('roles')->getData() ?? []
-            ),
         ]);
     }
 }
