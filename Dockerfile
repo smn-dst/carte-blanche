@@ -95,9 +95,6 @@ COPY --from=composer /app/vendor ./vendor
 COPY --from=assets /app/public/assets ./public/assets
 COPY --from=assets /app/public/build ./public/build 2>/dev/null || true
 
-# Copie .env.prod
-COPY .env.prod .env.local
-
 # Permissions
 RUN chown -R www-data:www-data /var/www/html/var \
     && chmod -R 775 /var/www/html/var
