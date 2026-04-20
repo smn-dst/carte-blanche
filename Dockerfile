@@ -28,8 +28,13 @@ RUN npm ci --ignore-scripts
 COPY . .
 COPY --from=composer /app/vendor ./vendor
 
+# Crée les dossiers assets avant compilation
+RUN mkdir -p public/assets public/build
+
 # Installe les vendor JS (importmap)
-RUN ./vendor/bin/symfony-cmd importmap:install 2>/dev/null || php vendor/bin/console importmap:install 2>/dev/null || true
+RUN ./vendor/bin/symfony-cmd importmap:install 2>/dev/null \
+    || php vendor/bin/console importmap:install 2>/dev/null \
+    || true
 
 # Build Tailwind
 RUN php vendor/bin/console tailwind:build --minify 2>/dev/null || true
@@ -92,13 +97,13 @@ COPY . .
 # Copie vendor depuis stage composer
 COPY --from=composer /app/vendor ./vendor
 
-# Copie assets compilés depuis stage assets
-COPY --from=assets /app/public/assets ./public/assets
-COPY --from=assets /app/public/build ./public/build 2>/dev/null || true
+# Copie le dossier public entier depuis stage assets (inclut assets + build)
+COPY --from=assets /app/public ./public
 
 # Permissions
-RUN chown -R www-data:www-data /var/www/html/var \
-    && chmod -R 775 /var/www/html/var
+RUN mkdir -p var/cache var/log \
+    && chown -R www-data:www-data var \
+    && chmod -R 775 var
 
 # Cache Symfony prod (sans connexion DB)
 RUN APP_ENV=prod php bin/console cache:warmup --no-debug 2>/dev/null || true
