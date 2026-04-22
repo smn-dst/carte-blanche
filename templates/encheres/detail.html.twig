@@ -9,8 +9,8 @@
 
 	<section class="relative h-[70vh] overflow-hidden">
 
-		{% if restaurant.images is not empty %}
-			<img src="{{ asset('uploads/restaurants/' ~ restaurant.images|first.filename) }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover">
+		{% if primaryImage %}
+			<img src="{{ asset('uploads/restaurants/' ~ primaryImage.fileName) }}" alt="{{ restaurant.name }}" class="w-full h-full object-cover">
 		{% else %}
 			<div class="w-full h-full bg-neutral-900"></div>
 		{% endif %}
@@ -207,6 +207,20 @@
 									</span>
 								</div>
 
+							</div>
+						</div>
+					{% endif %}
+
+					{% if galleryImages is not empty %}
+						<div class="p-8 bg-(--card) border border-border rounded-lg">
+							<h2 class="text-2xl font-bold mb-6 tracking-wide text-foreground">LE RESTAURANT</h2>
+							<div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+								{% for image in galleryImages %}
+									<img
+										src="{{ asset('uploads/restaurants/' ~ image.fileName) }}"
+										alt="{{ restaurant.name }} — image {{ loop.index + 1 }}"
+										class="w-full h-56 object-cover rounded-lg border border-border">
+								{% endfor %}
 							</div>
 						</div>
 					{% endif %}
