@@ -4,13 +4,12 @@ namespace App\Controller;
 
 use App\Dto\ProfileUpdateInputDto;
 use App\Entity\User;
-use App\Exception\InvalidCurrentPasswordException;
-use App\Exception\ProfileEmailAlreadyUsedException;
-use App\Form\ChangePasswordType;
 use App\Form\ProfileType;
+use App\Service\EmailChangeService;
+use App\Service\PasswordResetService;
 use App\Service\ProfileService;
+use Psr\Log\LoggerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\Form\FormError;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -19,6 +18,9 @@ final class ProfileController extends AbstractController
 {
     public function __construct(
         private readonly ProfileService $profileService,
+        private readonly PasswordResetService $passwordResetService,
+        private readonly EmailChangeService $emailChangeService,
+        private readonly LoggerInterface $logger,
     ) {
     }
 
@@ -39,22 +41,25 @@ final class ProfileController extends AbstractController
             /** @var ProfileUpdateInputDto $dto */
             $dto = $form->getData();
             try {
-                $this->profileService->updateProfile($user, $dto);
-                $this->addFlash('success', 'Profil mis a jour avec succes.');
+                $this->emailChangeService->requestEmailChange($user, $dto->email);
+                $this->addFlash('success', 'Un email de confirmation a été envoyé à votre nouvelle adresse.');
 
                 return $this->redirectToRoute('app_profile');
-            } catch (ProfileEmailAlreadyUsedException $exception) {
-                $form->get('email')->addError(new FormError($exception->getMessage()));
+            } catch (\InvalidArgumentException $exception) {
+                $this->addFlash('error', $exception->getMessage());
+            } catch (\Throwable $exception) {
+                $this->logger->error('ProfileController: email change request failed for user {id}: {message}', [
+                    'id' => $user->getId(),
+                    'message' => $exception->getMessage(),
+                ]);
+                $this->addFlash('error', "Impossible d'envoyer l'e-mail de confirmation pour le moment.");
             }
         }
-
-        $changePasswordForm = $this->createForm(ChangePasswordType::class);
 
         return $this->render('profile/index.html.twig', [
             'profile' => $this->profileService->getProfileViewData($user),
             'user' => $user,
             'form' => $form,
-            'changePasswordForm' => $changePasswordForm,
         ]);
     }
 
@@ -68,21 +73,55 @@ final class ProfileController extends AbstractController
             throw $this->createAccessDeniedException();
         }
 
-        $form = $this->createForm(ChangePasswordType::class);
-        $form->handleRequest($request);
+        $csrfToken = $request->request->getString('_token');
+        if (!$this->isCsrfTokenValid('profile_password_reset', '' !== $csrfToken ? $csrfToken : null)) {
+            $this->addFlash('error', 'Action invalide.');
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            try {
-                $this->profileService->changePassword($user, $form->getData());
-                $this->addFlash('success', 'Mot de passe modifié avec succès.');
-            } catch (InvalidCurrentPasswordException $e) {
-                $this->addFlash('error', $e->getMessage());
-            }
-        } else {
-            $this->addFlash('error', 'Formulaire invalide. Veuillez vérifier les champs.');
+            return $this->redirectToRoute('app_profile');
+        }
+
+        $email = $user->getEmail();
+        if (null === $email || '' === trim($email)) {
+            $this->addFlash('error', 'Aucune adresse e-mail associée à ce compte.');
+
+            return $this->redirectToRoute('app_profile');
+        }
+
+        try {
+            $this->passwordResetService->requestReset($email);
+            $this->addFlash('success', "Un email vous a été envoyé à l'adresse mail associée.");
+        } catch (\Throwable $e) {
+            $this->logger->error('ProfileController: password reset email failed for user {id} ({email}): {message}', [
+                'id' => $user->getId(),
+                'email' => $email,
+                'message' => $e->getMessage(),
+            ]);
+            $this->addFlash('error', 'Impossible d’envoyer l’e-mail pour le moment. Réessayez plus tard.');
         }
 
         return $this->redirectToRoute('app_profile');
+    }
+
+    #[Route('/profil/changer-email/{token}', name: 'app_profile_confirm_email_change', methods: ['GET'])]
+    public function confirmEmailChange(string $token): Response
+    {
+        try {
+            $this->emailChangeService->confirmEmailChange($token);
+            $this->addFlash('success', 'Votre adresse email a été mise à jour.');
+        } catch (\RuntimeException $exception) {
+            $this->addFlash('error', $exception->getMessage());
+        } catch (\Throwable $exception) {
+            $this->logger->error('ProfileController: email change confirmation failed: {message}', [
+                'message' => $exception->getMessage(),
+            ]);
+            $this->addFlash('error', "Impossible de valider le changement d'email.");
+        }
+
+        if ($this->isGranted('IS_AUTHENTICATED_FULLY')) {
+            return $this->redirectToRoute('app_profile');
+        }
+
+        return $this->redirectToRoute('app_login');
     }
 
     #[Route('/profil/supprimer', name: 'app_profile_delete_confirm', methods: ['GET'])]

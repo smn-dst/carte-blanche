@@ -128,6 +128,12 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     #[ORM\OneToMany(targetEntity: PasswordResetToken::class, mappedBy: 'owner', orphanRemoval: true)]
     private Collection $passwordResetTokens;
 
+    /**
+     * @var Collection<int, EmailChangeToken>
+     */
+    #[ORM\OneToMany(targetEntity: EmailChangeToken::class, mappedBy: 'owner', orphanRemoval: true)]
+    private Collection $emailChangeTokens;
+
     #[ORM\Column(length: 500, nullable: true)]
     private ?string $picture = null;
 
@@ -142,6 +148,7 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
         $this->favorites = new ArrayCollection();
         $this->aiLogs = new ArrayCollection();
         $this->passwordResetTokens = new ArrayCollection();
+        $this->emailChangeTokens = new ArrayCollection();
         $this->vendorRequests = new ArrayCollection();
     }
 
@@ -607,6 +614,35 @@ class User implements UserInterface, PasswordAuthenticatedUserInterface
     public function setPicture(?string $picture): static
     {
         $this->picture = $picture;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, EmailChangeToken>
+     */
+    public function getEmailChangeTokens(): Collection
+    {
+        return $this->emailChangeTokens;
+    }
+
+    public function addEmailChangeToken(EmailChangeToken $emailChangeToken): static
+    {
+        if (!$this->emailChangeTokens->contains($emailChangeToken)) {
+            $this->emailChangeTokens->add($emailChangeToken);
+            $emailChangeToken->setOwner($this);
+        }
+
+        return $this;
+    }
+
+    public function removeEmailChangeToken(EmailChangeToken $emailChangeToken): static
+    {
+        if ($this->emailChangeTokens->removeElement($emailChangeToken)) {
+            if ($emailChangeToken->getOwner() === $this) {
+                $emailChangeToken->setOwner(null);
+            }
+        }
 
         return $this;
     }
