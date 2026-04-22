@@ -98,6 +98,9 @@ RUN mkdir -p var/cache var/log \
     && chown -R www-data:www-data var public \
     && chmod -R 775 var
 
+RUN mkdir -p /var/www/html/public/uploads/restaurants && chmod 777 /var/www/html/public/uploads/restaurants
+
+
 # Cache warmup en tant que www-data pour éviter les problèmes de permissions
 RUN su -s /bin/sh www-data -c "APP_ENV=prod php bin/console cache:warmup --no-debug" || true
 
