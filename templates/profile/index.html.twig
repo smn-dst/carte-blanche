@@ -69,14 +69,12 @@
 					{{ form_start(form, {'attr': {'class': 'space-y-4'}}) }}
 					<div class="grid gap-4 md:grid-cols-2">
 						<div>
-							{{ form_label(form.firstName, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-							{{ form_widget(form.firstName, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-							<div class="text-red-400 text-xs mt-1">{{ form_errors(form.firstName) }}</div>
+							<label class="text-sm text-muted-foreground">Prénom</label>
+							<input type="text" value="{{ user.firstName }}" class="mt-1 w-full rounded-md border border-border bg-background/50 px-3 py-2 text-muted-foreground" readonly>
 						</div>
 						<div>
-							{{ form_label(form.lastName, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-							{{ form_widget(form.lastName, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-							<div class="text-red-400 text-xs mt-1">{{ form_errors(form.lastName) }}</div>
+							<label class="text-sm text-muted-foreground">Nom</label>
+							<input type="text" value="{{ user.lastName }}" class="mt-1 w-full rounded-md border border-border bg-background/50 px-3 py-2 text-muted-foreground" readonly>
 						</div>
 						<div>
 							{{ form_label(form.email, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
@@ -84,13 +82,14 @@
 							<div class="text-red-400 text-xs mt-1">{{ form_errors(form.email) }}</div>
 						</div>
 						<div>
-							{{ form_label(form.phoneNumber, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-							{{ form_widget(form.phoneNumber, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-							<div class="text-red-400 text-xs mt-1">{{ form_errors(form.phoneNumber) }}</div>
+							<label class="text-sm text-muted-foreground">Téléphone</label>
+							<input type="text" value="{{ user.phoneNumber ?? 'Non renseigné' }}" class="mt-1 w-full rounded-md border border-border bg-background/50 px-3 py-2 text-muted-foreground" readonly>
 						</div>
 					</div>
-
-					<button class="primary-btn cursor-pointer" type="submit">Enregistrer</button>
+					<p class="text-xs text-muted-foreground">
+						Le changement d’email nécessite une confirmation par lien sécurisé envoyé à la nouvelle adresse.
+					</p>
+					<button class="primary-btn cursor-pointer" type="submit">Envoyer le lien de confirmation</button>
 					{{ form_end(form) }}
 				</section>
 
@@ -144,31 +143,15 @@
 				<section class="rounded-xl border border-border bg-secondary/20 p-6">
 					<h2 class="text-lg font-semibold mb-4">Sécurité</h2>
 					<div class="space-y-6">
-
-						{{ form_start(changePasswordForm, {
-							'action': path('app_profile_change_password'),
-							'method': 'POST',
-							'attr': {'class': 'space-y-4'}
-						}) }}
-						<div class="grid gap-4 md:grid-cols-3">
-							<div>
-								{{ form_label(changePasswordForm.currentPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-								{{ form_widget(changePasswordForm.currentPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.currentPassword) }}</div>
-							</div>
-							<div>
-								{{ form_label(changePasswordForm.newPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-								{{ form_widget(changePasswordForm.newPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.newPassword) }}</div>
-							</div>
-							<div>
-								{{ form_label(changePasswordForm.confirmPassword, null, {'label_attr': {'class': 'text-sm text-muted-foreground'}}) }}
-								{{ form_widget(changePasswordForm.confirmPassword, {'attr': {'class': 'mt-1 w-full rounded-md border border-border bg-background px-3 py-2'}}) }}
-								<div class="text-red-400 text-xs mt-1">{{ form_errors(changePasswordForm.confirmPassword) }}</div>
-							</div>
+						<div class="rounded-lg border border-border bg-background/60 p-4 text-sm space-y-3">
+							<p class="text-muted-foreground">
+								Pour modifier votre mot de passe, cliquez sur le bouton ci-dessous. Un e-mail de réinitialisation sécurisé sera envoyé à l’adresse associée à votre compte.
+							</p>
+							<form action="{{ path('app_profile_change_password') }}" method="post">
+								<input type="hidden" name="_token" value="{{ csrf_token('profile_password_reset') }}">
+								<button class="primary-btn cursor-pointer" type="submit">Modifier mon mot de passe</button>
+							</form>
 						</div>
-						<button class="primary-btn cursor-pointer" type="submit">Changer le mot de passe</button>
-						{{ form_end(changePasswordForm) }}
 
 						<div class="border-t border-border pt-4 space-y-3 text-sm">
                             {#
@@ -179,7 +162,7 @@
 							</a>
                             #}
 							<a href="{{ path('app_profile_delete_confirm') }}"
-							   class="flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 hover:bg-red-500/10 transition-colors text-red-400">
+							   class="w-fit gap-4 flex items-center justify-between rounded-lg border border-red-500/30 bg-red-500/5 px-4 py-3 hover:bg-red-500/10 transition-colors text-red-400">
 								<span>Supprimer mon compte</span>
 								<span>→</span>
 							</a>

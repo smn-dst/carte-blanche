@@ -6,8 +6,6 @@ use App\Dto\ChangePasswordInputDto;
 use App\Dto\ProfileUpdateInputDto;
 use App\Entity\User;
 use App\Exception\InvalidCurrentPasswordException;
-use App\Exception\ProfileEmailAlreadyUsedException;
-use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 
@@ -15,7 +13,6 @@ readonly class ProfileService
 {
     public function __construct(
         private EntityManagerInterface $entityManager,
-        private UserRepository $userRepository,
         private UserPasswordHasherInterface $passwordHasher,
     ) {
     }
@@ -24,9 +21,6 @@ readonly class ProfileService
     {
         return new ProfileUpdateInputDto(
             email: $user->getEmail() ?? '',
-            firstName: $user->getFirstName() ?? '',
-            lastName: $user->getLastName() ?? '',
-            phoneNumber: $user->getPhoneNumber() ?? '',
         );
     }
 
@@ -97,27 +91,9 @@ readonly class ProfileService
         foreach ($user->getPasswordResetTokens() as $token) {
             $this->entityManager->remove($token);
         }
-
-        $this->entityManager->flush();
-    }
-
-    /**
-     * @throws ProfileEmailAlreadyUsedException
-     */
-    public function updateProfile(User $user, ProfileUpdateInputDto $dto): void
-    {
-        $normalizedEmail = strtolower(trim($dto->email));
-        $existingUser = $this->userRepository->findOneBy(['email' => $normalizedEmail]);
-
-        if ($existingUser instanceof User && $existingUser->getId() !== $user->getId()) {
-            throw new ProfileEmailAlreadyUsedException();
+        foreach ($user->getEmailChangeTokens() as $token) {
+            $this->entityManager->remove($token);
         }
-
-        $user->setFirstName(trim($dto->firstName));
-        $user->setLastName(trim($dto->lastName));
-        $user->setEmail($normalizedEmail);
-        $user->setPhoneNumber(trim($dto->phoneNumber));
-        $user->setUpdatedAt(new \DateTimeImmutable());
 
         $this->entityManager->flush();
     }
