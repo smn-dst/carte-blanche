@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Dto\RestaurantInputDto;
+use App\Entity\Image;
 use App\Entity\User;
 use App\Enum\StatusRestaurantEnum;
 use App\Exception\RestaurantNotFoundException;
@@ -35,6 +36,19 @@ class RestaurantController extends AbstractController
             throw $this->createNotFoundException('Restaurant non trouvé.');
         }
 
+        /** @var list<Image> $sortedImages */
+        $sortedImages = $restaurant->getImages()->toArray();
+        usort($sortedImages, static function (Image $a, Image $b): int {
+            $positionCompare = $a->getPosition() <=> $b->getPosition();
+            if (0 !== $positionCompare) {
+                return $positionCompare;
+            }
+
+            return ($a->getId() ?? 0) <=> ($b->getId() ?? 0);
+        });
+        $primaryImage = $sortedImages[0] ?? null;
+        $galleryImages = array_slice($sortedImages, 1);
+
         $isFavorite = false;
         if ($this->getUser()) {
             $isFavorite = null !== $favoriteRepository->findOneBy([
@@ -46,6 +60,8 @@ class RestaurantController extends AbstractController
         return $this->render('encheres/detail.html.twig', [
             'restaurant' => $restaurant,
             'isFavorite' => $isFavorite,
+            'primaryImage' => $primaryImage,
+            'galleryImages' => $galleryImages,
         ]);
     }
 

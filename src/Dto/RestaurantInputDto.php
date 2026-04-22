@@ -71,7 +71,7 @@ final class RestaurantInputDto
          */
         #[Assert\All([
             new Assert\File(
-                maxSize: '5M',
+                maxSize: '10M',
                 mimeTypes: ['image/jpeg', 'image/png', 'image/webp'],
                 mimeTypesMessage: 'Seuls les formats JPEG, PNG et WebP sont acceptés.',
                 maxSizeMessage: "L'image ne doit pas dépasser 5 Mo.",
