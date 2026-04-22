@@ -10,6 +10,7 @@ use App\Entity\User;
 use App\Entity\UserPreferenceEmbedding;
 use App\Enum\StatusRestaurantEnum;
 use App\Repository\RestaurantEmbeddingRepository;
+use App\Repository\RestaurantRepository;
 use App\Service\RecommendationService;
 use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
@@ -18,6 +19,7 @@ use Psr\Log\LoggerInterface;
 final class RecommendationServiceTest extends TestCase
 {
     private RestaurantEmbeddingRepository&MockObject $embeddingRepository;
+    private RestaurantRepository&MockObject $restaurantRepository;
 
     private LoggerInterface&MockObject $logger;
 
@@ -26,8 +28,13 @@ final class RecommendationServiceTest extends TestCase
     protected function setUp(): void
     {
         $this->embeddingRepository = $this->createMock(RestaurantEmbeddingRepository::class);
+        $this->restaurantRepository = $this->createMock(RestaurantRepository::class);
         $this->logger = $this->createMock(LoggerInterface::class);
-        $this->service = new RecommendationService($this->embeddingRepository, $this->logger);
+        $this->service = new RecommendationService(
+            $this->embeddingRepository,
+            $this->restaurantRepository,
+            $this->logger
+        );
     }
 
     public function testReturnsEmptyWhenUserHasNoEmbedding(): void
@@ -104,7 +111,9 @@ final class RecommendationServiceTest extends TestCase
         $upe = new UserPreferenceEmbedding();
         $upe->setPreferencesText('Préférences');
         $upe->setEmbedding($vector);
-        $upe->setPreferencesData([]);
+        $upe->setPreferencesData([
+            'preferredCity' => 'Toulouse',
+        ]);
         $upe->setUpdatedAt(new \DateTimeImmutable());
         $upe->setUser($user);
 

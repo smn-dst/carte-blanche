@@ -344,7 +344,7 @@ jobs:
         run: |
           cat > .env.prod << 'EOF'
           APP_SECRET=buildsecret_placeholder
-          DATABASE_URL=postgresql://x:x@localhost/x
+          DATABASE_URL=postgresql://x:x@localhost:5432/x?serverVersion=16&charset=utf8
           REDIS_URL=redis://localhost:6379
           MESSENGER_TRANSPORT_DSN=doctrine://default
           MAILER_DSN=null://null
@@ -365,34 +365,4 @@ jobs:
           EOF
 
       - run: php bin/console cache:warmup --env=prod --no-debug
-
       - run: echo "Build prod OK ✅"
-
-  # ─── DEPLOY (main uniquement) ────────────────
-
-  deploy:
-    name: "Deploy → Railway"
-    if: github.ref == 'refs/heads/main'
-    needs: [build]
-    runs-on: ubuntu-latest
-    environment: production
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Install Railway CLI
-        run: npm install -g @railway/cli
-
-      - name: Deploy sur Railway
-        run: railway up --detach
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Migrations en prod
-        run: railway run php bin/console doctrine:migrations:migrate --no-interaction --allow-no-migration
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}
-
-      - name: Cache clear prod
-        run: railway run php bin/console cache:clear --env=prod --no-debug
-        env:
-          RAILWAY_TOKEN: ${{ secrets.RAILWAY_TOKEN }}

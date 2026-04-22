@@ -95,6 +95,24 @@ readonly class SendMailService
     /**
      * @throws TransportExceptionInterface
      */
+    public function sendEmailChangeConfirmationEmail(string $email, string $confirmUrl, ?string $firstName = null): void
+    {
+        $message = new TemplatedEmail()
+            ->from(new Address(self::SENDER_EMAIL, self::SENDER_NAME))
+            ->to($email)
+            ->subject('Confirmez votre nouvelle adresse email — Carte Blanche')
+            ->htmlTemplate('emails/change_email_confirmation.html.twig')
+            ->context([
+                'confirmUrl' => $confirmUrl,
+                'firstName' => $firstName,
+            ]);
+
+        $this->mailer->send($message);
+    }
+
+    /**
+     * @throws TransportExceptionInterface
+     */
     public function sendOrderConfirmationEmail(User $user, Order $order): void
     {
         $email = $user->getEmail();
